@@ -7,6 +7,7 @@ Includes door/window cutouts and decorative patterns
 from typing import Dict, List, Optional
 from .geometry import HouseGeometry, Point, calculate_layout_positions, calculate_rotated_layout_positions, calculate_rotated_bounding_box
 from .finger_joints import HousePanelGenerator
+from .multi_finger_joints import EnhancedHousePanelGenerator
 from .constants import HouseStyle, COORDINATE_PRECISION
 from .exceptions import SVGGenerationError
 from .architectural_config import ArchitecturalConfiguration
@@ -36,7 +37,8 @@ class SVGGenerator:
         self.material_width = material_width   # 18 inches in mm
         self.material_height = material_height # 12 inches in mm
         self.architectural_config = architectural_config
-        self.panel_generator = HousePanelGenerator(geometry, architectural_config)
+        # Use enhanced multi-finger joint system for improved structural integrity
+        self.panel_generator = EnhancedHousePanelGenerator(geometry, architectural_config)
         
         # Calculate layout positions with optimized spacing for material efficiency
         if use_rotated_layout:
