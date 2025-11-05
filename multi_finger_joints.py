@@ -81,20 +81,21 @@ class MultiFingerJointGenerator:
         else:
             return 1
     
-    def calculate_joint_positions(self, edge_length: float, joint_count: int) -> List[Tuple[float, float]]:
+    def calculate_joint_positions(self, edge_length: float, joint_count: int, offset: float = 0.0) -> List[Tuple[float, float]]:
         """
         Calculate evenly distributed joint positions along an edge
         
         Args:
             edge_length: Length of the edge
             joint_count: Number of joints to place
+            offset: Offset to add to all joint positions (for gable wall alignment)
             
         Returns:
             List of (start, end) positions for each joint
         """
         if joint_count == 1:
             # Single centered joint (existing behavior)
-            start = (edge_length - self.finger_length) / 2
+            start = (edge_length - self.finger_length) / 2 + offset
             return [(start, start + self.finger_length)]
         
         # Multiple joints - distribute evenly
@@ -114,10 +115,10 @@ class MultiFingerJointGenerator:
         min_reasonable_gap = self.finger_length * 0.3  # 30% of finger length minimum
         if gap_size < min_reasonable_gap:
             # Reduce joint count if gaps become too small
-            return self.calculate_joint_positions(edge_length, max(1, joint_count - 2))
+            return self.calculate_joint_positions(edge_length, max(1, joint_count - 2), offset)
         
         # Place joints with calculated gaps
-        current_pos = gap_size
+        current_pos = gap_size + offset
         for i in range(joint_count):
             positions.append((current_pos, current_pos + self.finger_length))
             current_pos += self.finger_length + gap_size
@@ -126,7 +127,8 @@ class MultiFingerJointGenerator:
     
     def generate_multi_joint_edge(self, start_point: Point, end_point: Point,
                                  has_joint: bool, is_male: bool,
-                                 thickness_direction: int = 1) -> str:
+                                 thickness_direction: int = 1,
+                                 panel_name: str = None, edge_name: str = None) -> str:
         """
         Generate SVG path for an edge with multiple finger joints
         
@@ -136,6 +138,8 @@ class MultiFingerJointGenerator:
             has_joint: True if this edge should have finger joints
             is_male: True for male joints (tabs), False for female joints (gaps)
             thickness_direction: 1 for standard direction, -1 for reversed direction
+            panel_name: Name of the panel (for gable wall adjustment)
+            edge_name: Name of the edge (for gable wall adjustment)
             
         Returns:
             SVG path string for the edge with multiple joints
@@ -170,8 +174,19 @@ class MultiFingerJointGenerator:
         vy = outward_vy
         
         # Determine optimal number of joints and their positions
-        joint_count = self.calculate_optimal_joint_count(edge_length)
-        joint_positions = self.calculate_joint_positions(edge_length, joint_count)
+        # For gable wall bottom edges, adjust positions to align with floor
+        offset = 0.0
+        calc_length = edge_length
+        
+        if panel_name in ['gable_wall_front', 'gable_wall_back'] and edge_name == 'bottom':
+            # Gable wall bottom is y + 2*thickness, but should align with floor edge (y)
+            # So calculate positions based on floor length (edge_length - 2*thickness)
+            # And add thickness offset to shift joints to the right position
+            calc_length = edge_length - 2 * self.thickness
+            offset = self.thickness
+        
+        joint_count = self.calculate_optimal_joint_count(calc_length)
+        joint_positions = self.calculate_joint_positions(calc_length, joint_count, offset)
         
         # Generate path segments
         path_parts = []
@@ -371,7 +386,8 @@ class EnhancedHousePanelGenerator:
             
             # Use enhanced multi-joint generation
             path += " " + self.multi_joint_generator.generate_multi_joint_edge(
-                start_corner, end_corner, has_joint, is_male, thickness_direction)
+                start_corner, end_corner, has_joint, is_male, thickness_direction,
+                panel_name=panel_name, edge_name=edge_name)
         
         path += " Z"
         
