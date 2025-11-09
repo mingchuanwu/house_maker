@@ -23,10 +23,11 @@ class MultiFingerJointGenerator:
     5. Ensures male/female relationships remain correct
     """
     
-    def __init__(self, geometry: HouseGeometry):
+    def __init__(self, geometry: HouseGeometry, single_joints: bool = False):
         self.geometry = geometry
         self.thickness = geometry.thickness
         self.finger_length = geometry.finger_length
+        self.single_joints = single_joints  # Force single joint per edge
         
         # Kerf-compensated dimensions (preserve existing system)
         self.male_thickness = geometry.thickness + geometry.kerf
@@ -44,10 +45,11 @@ class MultiFingerJointGenerator:
         Calculate optimal number of joints for an edge based on its length
         
         Rules:
-        1. Short edges (< 3*finger_length): 1 joint
-        2. Medium edges: 3 joints  
-        3. Long edges: 5 or 7 joints based on length
-        4. Always use odd numbers for symmetry
+        1. If single_joints mode: always return 1
+        2. Short edges (< 3*finger_length): 1 joint
+        3. Medium edges: 3 joints
+        4. Long edges: 5 or 7 joints based on length
+        5. Always use odd numbers for symmetry
         
         Args:
             edge_length: Length of the edge
@@ -55,6 +57,10 @@ class MultiFingerJointGenerator:
         Returns:
             Number of joints to place (always odd)
         """
+        # Rule 0: If single_joints mode is enabled, always use 1 joint
+        if self.single_joints:
+            return 1
+            
         # Rule 1: Very short edges get 1 joint
         if edge_length < self.min_edge_length_for_multiple:
             return 1
@@ -257,9 +263,9 @@ class EnhancedHousePanelGenerator:
     while maintaining compatibility with the existing architecture
     """
     
-    def __init__(self, geometry: HouseGeometry, architectural_config=None):
+    def __init__(self, geometry: HouseGeometry, architectural_config=None, single_joints: bool = False):
         self.geometry = geometry
-        self.multi_joint_generator = MultiFingerJointGenerator(geometry)
+        self.multi_joint_generator = MultiFingerJointGenerator(geometry, single_joints)
         self.joint_config = geometry.get_finger_joint_configuration()
         self.architectural_config = architectural_config
     

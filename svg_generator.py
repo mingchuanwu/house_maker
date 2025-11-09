@@ -30,7 +30,8 @@ class SVGGenerator:
     
     def __init__(self, geometry: HouseGeometry, style: HouseStyle = HouseStyle.BASIC_HOUSE,
                  use_rotated_layout: bool = False, material_width: float = 457.2, material_height: float = 304.8,
-                 architectural_config: Optional[ArchitecturalConfiguration] = None):
+                 architectural_config: Optional[ArchitecturalConfiguration] = None,
+                 single_joints: bool = False):
         self.geometry = geometry
         self.style = style
         self.use_rotated_layout = use_rotated_layout
@@ -38,7 +39,7 @@ class SVGGenerator:
         self.material_height = material_height # 12 inches in mm
         self.architectural_config = architectural_config
         # Use enhanced multi-finger joint system for improved structural integrity
-        self.panel_generator = EnhancedHousePanelGenerator(geometry, architectural_config)
+        self.panel_generator = EnhancedHousePanelGenerator(geometry, architectural_config, single_joints)
         
         # Calculate layout positions with optimized spacing for material efficiency
         if use_rotated_layout:

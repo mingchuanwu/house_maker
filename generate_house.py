@@ -84,6 +84,8 @@ Architectural options:
                        help='Material thickness in mm (default: 3)')
     parser.add_argument('--finger-length', '-f', type=float, default=10.0,
                        help='Finger joint length in mm (default: 10)')
+    parser.add_argument('--single-joints', action='store_true',
+                       help='Force single finger joint per edge (default: multiple joints for long edges)')
     parser.add_argument('--kerf', '-k', type=float, default=0.0,
                        help='Laser kerf compensation in mm (default: 0)')
     
@@ -262,6 +264,7 @@ def main():
             kerf=args.kerf,
             material_width=args.material_width,
             material_height=args.material_height,
+            single_joints=args.single_joints,
             **architectural_options
         )
         

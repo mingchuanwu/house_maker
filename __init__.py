@@ -62,7 +62,8 @@ class HouseMaker:
                  architectural_preset=None,
                  auto_add_components=True,
                  window_type=WindowType.RECTANGULAR,
-                 door_type=DoorType.RECTANGULAR):
+                 door_type=DoorType.RECTANGULAR,
+                 single_joints=False):
         """
         Create a HouseMaker instance with specified dimensions and architectural features
         
@@ -85,6 +86,7 @@ class HouseMaker:
             auto_add_components: Automatically add doors and windows with aesthetic proportions
             window_type: Default window type for automatic placement
             door_type: Default door type for automatic placement
+            single_joints: Force single finger joint per edge (default: multiple for long edges)
         """
         self.geometry = HouseGeometry(
             x=length,
@@ -98,6 +100,7 @@ class HouseMaker:
         self.style = house_style  # Legacy style for backward compatibility
         self.material_width = material_width
         self.material_height = material_height
+        self.single_joints = single_joints
         self.svg_generator = None
         
         # Initialize architectural configuration
@@ -134,7 +137,8 @@ class HouseMaker:
                                             use_rotated_layout=False,
                                             material_width=self.material_width,
                                             material_height=self.material_height,
-                                            architectural_config=self.architectural_config)
+                                            architectural_config=self.architectural_config,
+                                            single_joints=self.single_joints)
         
         svg_content = self.svg_generator.generate_svg(include_labels)
         
@@ -161,7 +165,8 @@ class HouseMaker:
                                                 use_rotated_layout=False,
                                                 material_width=self.material_width,
                                                 material_height=self.material_height,
-                                                architectural_config=self.architectural_config)
+                                                architectural_config=self.architectural_config,
+                                                single_joints=self.single_joints)
             
             summary = self.svg_generator.get_cutting_summary()
             assembly = self.svg_generator.get_assembly_instructions()
@@ -197,7 +202,8 @@ class HouseMaker:
                                             use_rotated_layout=False,
                                             material_width=self.material_width,
                                             material_height=self.material_height,
-                                            architectural_config=self.architectural_config)
+                                            architectural_config=self.architectural_config,
+                                            single_joints=self.single_joints)
         return self.svg_generator.get_assembly_instructions()
     
     def get_cutting_summary(self):
@@ -207,7 +213,8 @@ class HouseMaker:
                                             use_rotated_layout=False,
                                             material_width=self.material_width,
                                             material_height=self.material_height,
-                                            architectural_config=self.architectural_config)
+                                            architectural_config=self.architectural_config,
+                                            single_joints=self.single_joints)
         return self.svg_generator.get_cutting_summary()
     
     def get_assembly_instructions(self):
