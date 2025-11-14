@@ -374,23 +374,36 @@ class ProportionalSizer:
     def __init__(self, house_geometry: HouseGeometry):
         self.house_geometry = house_geometry
     
-    def get_door_dimensions(self, panel_name: str) -> Tuple[float, float]:
-        """Calculate aesthetically pleasing door dimensions"""
+    def get_door_dimensions(self, panel_name: str, floor_height: float = None) -> Tuple[float, float]:
+        """
+        Calculate aesthetically pleasing door dimensions based on floor height.
+        
+        Args:
+            panel_name: Name of the panel
+            floor_height: Height of the floor where door is located (ground floor)
+                         If None, uses old method with entire wall height
+        
+        Returns:
+            Tuple of (door_width, door_height) in mm
+        """
         panel_dims = self.house_geometry.get_panel_dimensions().get(panel_name)
         if not panel_dims:
             return (15.0, 30.0)  # Fallback minimum
         
         panel_width, panel_height = panel_dims
         
-        # For gable walls, use the rectangular portion height
-        if panel_name.startswith('gable_wall'):
+        # Use floor height if provided, otherwise use wall height
+        if floor_height is not None:
+            usable_height = floor_height
+        elif panel_name.startswith('gable_wall'):
+            # For gable walls, use the rectangular portion height
             usable_height = self.house_geometry.z
         else:
             usable_height = panel_height
         
-        # Calculate door height (80% of usable wall height, but reasonable limits)
+        # Calculate door height (80% of floor/wall height, but reasonable limits)
         door_height = usable_height * self.DOOR_HEIGHT_RATIO
-        door_height = max(15.0, min(door_height, usable_height - 10))  # Min 15mm, max wall-10mm
+        door_height = max(15.0, min(door_height, usable_height - 10))  # Min 15mm, max height-10mm
         
         # Calculate door width using proportional ratio
         door_width = door_height * self.DOOR_WIDTH_RATIO
@@ -398,8 +411,20 @@ class ProportionalSizer:
         
         return (door_width, door_height)
     
-    def get_window_dimensions(self, panel_name: str, window_type: WindowType) -> Tuple[float, float]:
-        """Calculate aesthetically pleasing window dimensions"""
+    def get_window_dimensions(self, panel_name: str, window_type: WindowType,
+                             floor_height: float = None) -> Tuple[float, float]:
+        """
+        Calculate aesthetically pleasing window dimensions based on floor height.
+        
+        Args:
+            panel_name: Name of the panel
+            window_type: Type of window
+            floor_height: Height of the floor where window is located
+                         If None, uses old method with entire wall height
+        
+        Returns:
+            Tuple of (window_width, window_height) in mm
+        """
         panel_dims = self.house_geometry.get_panel_dimensions().get(panel_name)
         if not panel_dims:
             return (12.0, 10.0)  # Fallback minimum
@@ -415,14 +440,20 @@ class ProportionalSizer:
                 base_width = base_height * self.GOLDEN_RATIO
                 scale = self.ATTIC_WINDOW_SCALE
             else:
-                # Regular windows in rectangular portion
-                usable_height = self.house_geometry.z
+                # Regular windows based on floor height if provided
+                if floor_height is not None:
+                    usable_height = floor_height
+                else:
+                    usable_height = self.house_geometry.z
                 base_height = usable_height * self.WINDOW_HEIGHT_RATIO
                 base_width = base_height * self.WINDOW_WIDTH_RATIO
                 scale = 1.0
         else:
-            # Side wall windows
-            base_height = panel_height * self.WINDOW_HEIGHT_RATIO
+            # Side wall windows based on floor height if provided
+            if floor_height is not None:
+                base_height = floor_height * self.WINDOW_HEIGHT_RATIO
+            else:
+                base_height = panel_height * self.WINDOW_HEIGHT_RATIO
             base_width = base_height * self.WINDOW_WIDTH_RATIO
             scale = 1.0
         
@@ -441,8 +472,9 @@ class ProportionalSizer:
             # Arched windows need extra height for the arch
             window_height *= 1.2
         
-        # Apply reasonable limits
-        window_height = max(5.0, min(window_height, panel_height * 0.6))
+        # Apply reasonable limits based on floor height if available
+        max_height = floor_height * 0.6 if floor_height else panel_height * 0.6
+        window_height = max(5.0, min(window_height, max_height))
         window_width = max(5.0, min(window_width, panel_width * 0.8))
         
         return (window_width, window_height)
@@ -659,6 +691,70 @@ class ComponentPositioner:
         self.house_geometry = house_geometry
         self.sizer = ProportionalSizer(house_geometry)
     
+    def calculate_number_of_floors(self) -> int:
+        """
+        Calculate the number of floors based on house height and dimensions.
+        Uses the formula: house_height // ((house_length + house_width)/2) as floor height
+        
+        If remaining height > 1/4 * floor_height, it becomes an attic floor.
+        Otherwise, the extra height is added to the ground floor as high ceiling.
+        
+        Returns:
+            Number of floors (minimum 1)
+        """
+        avg_dimension = (self.house_geometry.x + self.house_geometry.y) / 2
+        floor_height = avg_dimension
+        
+        if floor_height <= 0:
+            return 1
+        
+        num_floors = int(self.house_geometry.z // floor_height)
+        remaining_height = self.house_geometry.z - (num_floors * floor_height)
+        
+        # If remaining height > 1/4 of floor height, add an attic floor
+        if remaining_height > floor_height * 0.25:
+            num_floors += 1
+        
+        return max(1, num_floors)
+    
+    def get_floor_height(self, floor_index: int = 0) -> float:
+        """
+        Get the height of a specific floor.
+        Ground floor (index 0) may have extra height if remaining_height < 1/4 floor_height.
+        Attic floor (last floor) may be shorter if it's made from remaining height.
+        
+        Args:
+            floor_index: 0-based floor index (0 = ground floor)
+            
+        Returns:
+            Height of the specified floor in mm
+        """
+        avg_dimension = (self.house_geometry.x + self.house_geometry.y) / 2
+        standard_floor_height = avg_dimension
+        
+        if standard_floor_height <= 0:
+            return self.house_geometry.z
+        
+        num_standard_floors = int(self.house_geometry.z // standard_floor_height)
+        remaining_height = self.house_geometry.z - (num_standard_floors * standard_floor_height)
+        total_floors = self.calculate_number_of_floors()
+        
+        # Determine if we have an attic
+        has_attic = remaining_height > standard_floor_height * 0.25
+        
+        if has_attic:
+            # Last floor is attic with remaining height
+            if floor_index == total_floors - 1:
+                return remaining_height
+            else:
+                return standard_floor_height
+        else:
+            # Extra height goes to ground floor
+            if floor_index == 0:
+                return standard_floor_height + remaining_height
+            else:
+                return standard_floor_height
+    
     def validate_component_placement(self, component: ComponentPosition, 
                                    panel_dims: Tuple[float, float]) -> bool:
         """Validate that a component fits within its target panel"""
@@ -771,8 +867,11 @@ class ComponentPositioner:
                             door_type: DoorType = DoorType.RECTANGULAR,
                             existing_components: List[ComponentPosition] = None) -> List[Door]:
         """Get recommended doors with proper proportions for a panel"""
-        # Calculate appropriate door size
-        door_size = self.sizer.get_door_dimensions(panel_name)
+        # Doors are always on ground floor (floor 0)
+        ground_floor_height = self.get_floor_height(0)
+        
+        # Calculate appropriate door size based on ground floor height
+        door_size = self.sizer.get_door_dimensions(panel_name, ground_floor_height)
         
         # Get positions for this door size, avoiding existing components
         positions = self._get_positions_for_component(panel_name, 'door', door_size, existing_components)
@@ -807,36 +906,60 @@ class ComponentPositioner:
         if panel_name.startswith('side_wall'):
             # Side wall recommendations
             if component_type == 'window':
-                window_y = panel_height * 0.35  # Upper third, aesthetically pleasing
+                # Calculate number of floors and distribute windows
+                num_floors = self.calculate_number_of_floors()
                 
-                # Start with center position if no conflicts
-                center_x = (panel_width - comp_width) / 2
-                center_pos = ComponentPosition(center_x, window_y, comp_width, comp_height, panel_name)
-                
-                if not self._has_collision(center_pos, existing_components):
-                    positions.append(center_pos)
-                else:
-                    # If center conflicts, try left and right positions
-                    candidate_positions = []
+                # Place windows on each floor with floor-specific sizing
+                floor_y_start = 0
+                for floor in range(num_floors):
+                    # Get this floor's height
+                    floor_height = self.get_floor_height(floor)
                     
-                    # Try multiple positions across the wall
-                    for fraction in [0.2, 0.4, 0.6, 0.8]:
-                        x = panel_width * fraction - comp_width / 2
-                        if x >= margin and x + comp_width <= panel_width - margin:
-                            candidate_pos = ComponentPosition(x, window_y, comp_width, comp_height, panel_name)
-                            if not self._has_collision(candidate_pos, existing_components):
-                                candidate_positions.append(candidate_pos)
+                    # Calculate window size for THIS specific floor
+                    comp_width, comp_height = self.sizer.get_window_dimensions(
+                        panel_name, WindowType.RECTANGULAR, floor_height)
                     
-                    # Add non-overlapping positions with proper spacing
-                    for pos in candidate_positions:
-                        if not any(self._components_too_close(pos, existing, min_spacing)
-                                  for existing in positions):
-                            positions.append(pos)
-                            if len(positions) >= 2:  # Limit to 2 windows max for side walls
-                                break
+                    # Position window in the middle of this floor
+                    window_y = floor_y_start + floor_height * 0.4
+                    
+                    # Ensure window doesn't go beyond this floor or panel height
+                    if window_y + comp_height > floor_y_start + floor_height - margin:
+                        floor_y_start += floor_height
+                        continue
+                    if window_y + comp_height > panel_height - margin:
+                        break
+                    
+                    min_spacing = comp_width * 0.2
+                    
+                    # Start with center position if no conflicts
+                    center_x = (panel_width - comp_width) / 2
+                    center_pos = ComponentPosition(center_x, window_y, comp_width, comp_height, panel_name)
+                    
+                    if not self._has_collision(center_pos, existing_components):
+                        positions.append(center_pos)
+                    else:
+                        # If center conflicts, try left and right positions
+                        candidate_positions = []
+                        
+                        # Try multiple positions across the wall
+                        for fraction in [0.2, 0.4, 0.6, 0.8]:
+                            x = panel_width * fraction - comp_width / 2
+                            if x >= margin and x + comp_width <= panel_width - margin:
+                                candidate_pos = ComponentPosition(x, window_y, comp_width, comp_height, panel_name)
+                                if not self._has_collision(candidate_pos, existing_components):
+                                    candidate_positions.append(candidate_pos)
+                        
+                        # Add non-overlapping positions with proper spacing
+                        for pos in candidate_positions:
+                            if not any(self._components_too_close(pos, existing, min_spacing)
+                                      for existing in positions):
+                                positions.append(pos)
+                                break  # One window per floor
+                    
+                    floor_y_start += floor_height
             
             elif component_type == 'door':
-                # Center door horizontally, place at bottom with proper clearance
+                # Center door horizontally, place at ground level (bottom) with proper clearance
                 center_x = (panel_width - comp_width) / 2
                 door_y = margin
                 positions.append(ComponentPosition(center_x, door_y, comp_width, comp_height, panel_name))
@@ -844,42 +967,66 @@ class ComponentPositioner:
         elif panel_name.startswith('gable_wall'):
             # Gable wall recommendations
             if component_type == 'window':
-                window_y = self.house_geometry.z * 0.382  # Golden ratio complement
+                # Calculate number of floors and distribute windows on gable walls too
+                num_floors = self.calculate_number_of_floors()
                 
-                # Check if there's room for window without conflicting with door
-                center_x = (panel_width - comp_width) / 2
-                main_window_pos = ComponentPosition(center_x, window_y, comp_width, comp_height, panel_name)
-                
-                if not self._has_collision(main_window_pos, existing_components):
-                    positions.append(main_window_pos)
-                else:
-                    # Try to fit window beside door
-                    door_positions = [comp for comp in existing_components if comp.panel == panel_name]
-                    if door_positions:
-                        door = door_positions[0]  # Assume one door per gable wall
-                        
-                        # Try positions on either side of the door
-                        left_x = door.x - comp_width - min_spacing
-                        right_x = door.x + door.width + min_spacing
-                        
-                        # Smaller windows to fit beside door, but ensure minimum size
-                        side_comp_width = max(comp_width * 0.7, 5.0)  # Minimum 5mm
-                        side_comp_height = max(comp_height * 0.7, 5.0)  # Minimum 5mm
-                        
-                        # Only try side windows if they can fit properly
-                        if (left_x >= margin and
-                            left_x + side_comp_width <= panel_width - margin and
-                            side_comp_width >= 5.0 and side_comp_height >= 5.0):
-                            left_pos = ComponentPosition(left_x, window_y, side_comp_width, side_comp_height, panel_name)
-                            if not self._has_collision(left_pos, existing_components):
-                                positions.append(left_pos)
-                        
-                        if (right_x >= margin and
-                            right_x + side_comp_width <= panel_width - margin and
-                            side_comp_width >= 5.0 and side_comp_height >= 5.0):
-                            right_pos = ComponentPosition(right_x, window_y, side_comp_width, side_comp_height, panel_name)
-                            if not self._has_collision(right_pos, existing_components):
-                                positions.append(right_pos)
+                # Place windows on each floor with floor-specific sizing (only in the rectangular portion, not the gable)
+                floor_y_start = 0
+                for floor in range(num_floors):
+                    # Get this floor's height
+                    floor_height = self.get_floor_height(floor)
+                    
+                    # Calculate window size for THIS specific floor
+                    comp_width, comp_height = self.sizer.get_window_dimensions(
+                        panel_name, WindowType.RECTANGULAR, floor_height)
+                    
+                    window_y = floor_y_start + floor_height * 0.4
+                    
+                    # Ensure window stays in the rectangular portion of gable wall
+                    if window_y + comp_height > self.house_geometry.z - margin:
+                        break
+                    if window_y + comp_height > floor_y_start + floor_height - margin:
+                        floor_y_start += floor_height
+                        continue
+                    
+                    min_spacing = comp_width * 0.2
+                    
+                    # Check if there's room for window without conflicting with door
+                    center_x = (panel_width - comp_width) / 2
+                    main_window_pos = ComponentPosition(center_x, window_y, comp_width, comp_height, panel_name)
+                    
+                    if not self._has_collision(main_window_pos, existing_components):
+                        positions.append(main_window_pos)
+                    else:
+                        # Try to fit window beside door
+                        door_positions = [comp for comp in existing_components if comp.panel == panel_name]
+                        if door_positions:
+                            door = door_positions[0]  # Assume one door per gable wall
+                            
+                            # Try positions on either side of the door
+                            left_x = door.x - comp_width - min_spacing
+                            right_x = door.x + door.width + min_spacing
+                            
+                            # Smaller windows to fit beside door, but ensure minimum size
+                            side_comp_width = max(comp_width * 0.7, 5.0)  # Minimum 5mm
+                            side_comp_height = max(comp_height * 0.7, 5.0)  # Minimum 5mm
+                            
+                            # Only try side windows if they can fit properly
+                            if (left_x >= margin and
+                                left_x + side_comp_width <= panel_width - margin and
+                                side_comp_width >= 5.0 and side_comp_height >= 5.0):
+                                left_pos = ComponentPosition(left_x, window_y, side_comp_width, side_comp_height, panel_name)
+                                if not self._has_collision(left_pos, existing_components):
+                                    positions.append(left_pos)
+                            
+                            if (right_x >= margin and
+                                right_x + side_comp_width <= panel_width - margin and
+                                side_comp_width >= 5.0 and side_comp_height >= 5.0):
+                                right_pos = ComponentPosition(right_x, window_y, side_comp_width, side_comp_height, panel_name)
+                                if not self._has_collision(right_pos, existing_components):
+                                    positions.append(right_pos)
+                    
+                    floor_y_start += floor_height
                 
                 # Attic window if conditions are met and no conflicts
                 if self.can_add_attic_window(self.house_geometry.gable_peak_height,
@@ -898,7 +1045,7 @@ class ComponentPositioner:
                             positions.append(attic_pos)
             
             elif component_type == 'door':
-                # Center door horizontally at bottom
+                # Center door horizontally at ground level (bottom)
                 center_x = (panel_width - comp_width) / 2
                 door_y = margin
                 positions.append(ComponentPosition(center_x, door_y, comp_width, comp_height, panel_name))

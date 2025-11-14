@@ -114,11 +114,14 @@ class HouseMaker:
             )
             
             if auto_add_components:
+                # Add doors and windows with automatic sizing
+                # By default, door is placed on gable_wall_front at ground level
                 self.architectural_config.add_automatic_components(
                     add_windows=True,
                     add_doors=True,
                     window_type=window_type,
-                    door_type=door_type
+                    door_type=door_type,
+                    door_panel='gable_wall_front'  # Can be changed to 'side_wall_right'
                 )
     
     def generate_svg(self, filename=None, include_labels=True):

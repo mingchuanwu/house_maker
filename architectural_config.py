@@ -53,7 +53,8 @@ class ArchitecturalConfiguration:
                                 add_windows: bool = True,
                                 add_doors: bool = True,
                                 window_type: WindowType = WindowType.RECTANGULAR,
-                                door_type: DoorType = DoorType.RECTANGULAR):
+                                door_type: DoorType = DoorType.RECTANGULAR,
+                                door_panel: str = 'gable_wall_front'):
         """
         Add automatically sized and positioned components to appropriate panels,
         using collision avoidance to prevent overlapping.
@@ -63,13 +64,15 @@ class ArchitecturalConfiguration:
             add_doors: Whether to add doors
             window_type: Type of windows to add
             door_type: Type of doors to add
+            door_panel: Panel to place door on ('gable_wall_front' or 'side_wall_right' at ground level)
         """
         panel_dims = self.house_geometry.get_panel_dimensions()
         
         # First pass: Add doors (they have priority for positioning)
+        # Doors are always placed at ground level
         if add_doors:
             for panel_name in panel_dims.keys():
-                if panel_name == 'gable_wall_front':  # Primary entrance
+                if panel_name == door_panel:  # Place door on specified panel
                     doors = self.positioner.get_recommended_doors(panel_name, door_type, existing_components=[])
                     self.doors.extend(doors)
         

@@ -649,9 +649,101 @@ class HousePanelGenerator:
                 f"L {x + width:.{COORDINATE_PRECISION}f},{center_y:.{COORDINATE_PRECISION}f}"
             )
             return " ".join(patterns)
+        elif window_type == WindowType.COLONIAL_SET:
+            # Colonial set - 3 separate windows side by side
+            window_width = width / 3
+            spacing = window_width * 0.1
+            actual_width = window_width - spacing
+            patterns = []
+            for i in range(3):
+                window_x = x + i * window_width + spacing/2
+                patterns.append(self._generate_rectangular_cutout(window_x, y, actual_width, height))
+            return " ".join(patterns)
+        elif window_type == WindowType.PALLADIAN:
+            # Palladian window - arched center with 2 rectangular sides
+            central_width = width * 0.6
+            side_width = width * 0.2
+            patterns = []
+            # Left rectangular window
+            patterns.append(self._generate_rectangular_cutout(x, y, side_width, height))
+            # Central arched window
+            center_x = x + side_width
+            arch_height = central_width / 2
+            rect_height = height - arch_height
+            center_mid = center_x + central_width / 2
+            patterns.append(
+                f"M {center_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {center_x + central_width:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {center_x + central_width:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} "
+                f"Q {center_mid:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+                f"{center_x:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} Z"
+            )
+            # Right rectangular window
+            patterns.append(self._generate_rectangular_cutout(x + side_width + central_width, y, side_width, height))
+            return " ".join(patterns)
+        elif window_type == WindowType.GOTHIC_PAIR:
+            # Gothic pair - 2 gothic arched windows
+            window_width = (width - 3) / 2
+            spacing = 3.0
+            patterns = []
+            # Left gothic window
+            patterns.append(self._generate_gothic_arch_cutout(x, y, window_width, height))
+            # Right gothic window
+            patterns.append(self._generate_gothic_arch_cutout(x + window_width + spacing, y, window_width, height))
+            return " ".join(patterns)
+        elif window_type == WindowType.DOUBLE_HUNG:
+            # Double-hung window - rectangle with horizontal division
+            mid_y = y + height / 2
+            divider_height = 1.0
+            return (
+                f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+                f"L {x:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} Z "
+                # Horizontal divider
+                f"M {x:.{COORDINATE_PRECISION}f},{mid_y - divider_height/2:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{mid_y - divider_height/2:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{mid_y + divider_height/2:.{COORDINATE_PRECISION}f} "
+                f"L {x:.{COORDINATE_PRECISION}f},{mid_y + divider_height/2:.{COORDINATE_PRECISION}f} Z"
+            )
+        elif window_type == WindowType.CASEMENT:
+            # Casement window - simple rectangular (side-hinged)
+            return self._generate_rectangular_cutout(x, y, width, height)
+        elif window_type == WindowType.BAY:
+            # Bay window - rectangular (protruding effect shown by wider dimension)
+            return self._generate_rectangular_cutout(x, y, width, height)
+        elif window_type == WindowType.DORMER:
+            # Dormer window - rectangular with peaked roof top
+            peak_height = height * 0.2
+            rect_height = height - peak_height
+            center_x = x + width / 2
+            return (
+                f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                f"L {x + width:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} "
+                f"L {center_x:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+                f"L {x:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} Z"
+            )
         else:
             # Default rectangular window
             return self._generate_rectangular_cutout(x, y, width, height)
+    
+    def _generate_gothic_arch_cutout(self, x: float, y: float, width: float, height: float) -> str:
+        """Generate a gothic arched window cutout (pointed arch)"""
+        rect_height = height * 0.7
+        arch_height = height * 0.3
+        center_x = x + width / 2
+        return (
+            f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+            f"L {x + width:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+            f"L {x + width:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} "
+            # Right side of pointed arch
+            f"Q {x + width * 0.75:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+            f"{center_x:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+            # Left side of pointed arch
+            f"Q {x + width * 0.25:.{COORDINATE_PRECISION}f},{y + height:.{COORDINATE_PRECISION}f} "
+            f"{x:.{COORDINATE_PRECISION}f},{y + rect_height:.{COORDINATE_PRECISION}f} Z"
+        )
     
     def _generate_decorative_patterns(self, position: Point, panel_name: str, corners: List[Point]) -> str:
         """
