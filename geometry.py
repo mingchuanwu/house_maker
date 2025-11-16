@@ -61,15 +61,20 @@ class HouseGeometry:
     
     def _calculate_derived_dimensions(self):
         """Calculate all derived dimensions from base parameters"""
+        # CRITICAL: Gable wall width is y + 2*thickness (not just y)
+        # All roof geometry must use this actual gable width for consistency
+        actual_gable_width = self.y + 2 * self.thickness
+        
         # Gable geometry (from specification diagrams)
-        self.gable_peak_height = (self.y / 2) * math.tan(self.theta_rad)
+        # Peak height uses actual gable wall width for correct angle
+        self.gable_peak_height = (actual_gable_width / 2) * math.tan(self.theta_rad)
         self.total_gable_height = self.z + self.gable_peak_height
         
         # Roof panel dimensions
         self.roof_panel_length = self.x + 6 * self.thickness  # House length + 6*thickness
         
-        # Base roof width calculation - stored for reuse (calculated from gable geometry)
-        self.base_roof_width = (self.y / 2) / math.cos(self.theta_rad)
+        # Base roof width calculation - MUST use actual gable width for consistent angle
+        self.base_roof_width = (actual_gable_width / 2) / math.cos(self.theta_rad)
         
         # Asymmetric roof panel widths as requested
         self.roof_panel_left_width = self.base_roof_width + 4 * self.thickness   # Left: +4*thickness

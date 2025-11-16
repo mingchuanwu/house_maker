@@ -6,7 +6,6 @@ Includes door/window cutouts and decorative patterns
 
 from typing import Dict, List, Optional
 from .geometry import HouseGeometry, Point, calculate_layout_positions, calculate_rotated_layout_positions, calculate_rotated_bounding_box
-from .finger_joints import HousePanelGenerator
 from .multi_finger_joints import EnhancedHousePanelGenerator
 from .constants import HouseStyle, COORDINATE_PRECISION
 from .exceptions import SVGGenerationError
@@ -120,6 +119,20 @@ class SVGGenerator:
                 f'        stroke-linecap: round;',
                 f'        stroke-linejoin: round;',
                 '      }',
+                '      .chimney-pattern {',
+                '        stroke: #000000;',
+                '        stroke-width: 0.1mm;',
+                '        fill: none;',
+                '        stroke-linecap: round;',
+                '        stroke-linejoin: round;',
+                '      }',
+                '      .roof-pattern {',
+                '        stroke: #000000;',
+                '        stroke-width: 0.1mm;',
+                '        fill: none;',
+                '        stroke-linecap: round;',
+                '        stroke-linejoin: round;',
+                '      }',
                 '      .label-text {',
                 '        font-family: Arial, sans-serif;',
                 '        font-size: 1.5mm;',
@@ -142,6 +155,16 @@ class SVGGenerator:
                     position, rotation = self.layout_positions[panel_name]
                     panel_svg = self._generate_panel_svg(panel_name, position, rotation, include_labels)
                     svg_parts.append(panel_svg)
+            
+            # Generate chimney panels if any chimneys exist
+            if self.architectural_config and self.architectural_config.chimneys:
+                chimney_panels = self._generate_chimney_panels(include_labels)
+                svg_parts.extend(chimney_panels)
+            
+            # Generate casing panels for doors and windows
+            if self.architectural_config:
+                casing_panels = self._generate_casing_panels(include_labels)
+                svg_parts.extend(casing_panels)
             
             # Close SVG
             svg_parts.extend([
@@ -214,9 +237,11 @@ class SVGGenerator:
                 f'      <path class="cut-line" d="{structural_path}" />',
             ]
             
-            # Add decorative patterns with thicker line width if present
+            # Add decorative patterns with appropriate line width
             if decorative_patterns and decorative_patterns.strip():
-                panel_parts.append(f'      <path class="decorative-line" d="{decorative_patterns}" />')
+                # Use roof-pattern class for roof panels (0.1mm), decorative-line for others
+                pattern_class = "roof-pattern" if "roof_panel" in panel_name else "decorative-line"
+                panel_parts.append(f'      <path class="{pattern_class}" d="{decorative_patterns}" />')
             
             # Add label if requested - position at bottom of panel, outside boundaries
             if include_labels:
@@ -237,6 +262,224 @@ class SVGGenerator:
             
         except Exception as e:
             raise SVGGenerationError(panel_name, str(e))
+    
+    def _generate_chimney_panels(self, include_labels: bool) -> List[str]:
+        """
+        Generate SVG for all chimney wall panels in 3-column layout
+        
+        Layout (left to right):
+        - Column 1: Chimney walls (front, back, left, right)
+        - Column 2: Roof casings (front, back, left, right)
+        - Column 3: Top casings (front, back, left, right)
+        
+        Args:
+            include_labels: Whether to include panel labels
+            
+        Returns:
+            List of SVG strings for chimney panels
+        """
+        chimney_svgs = []
+        
+        # Calculate layout position for chimney panels (place them to the right of main panels)
+        # Find the rightmost panel position
+        max_x = 0
+        for panel_name, (position, rotation) in self.layout_positions.items():
+            panel_dims = self.geometry.get_panel_dimensions().get(panel_name)
+            if panel_dims:
+                width, height = panel_dims
+                panel_right = position.x + width
+                max_x = max(max_x, panel_right)
+        
+        # Base position for chimney panels
+        base_x = max_x + 20.0  # 20mm spacing from main panels
+        base_y = 0.0
+        
+        # Generate each chimney's panels in 3-column layout
+        for chimney_idx, chimney in enumerate(self.architectural_config.chimneys):
+            # Define the 3 columns of panels
+            column1_panels = ['chimney_front', 'chimney_back', 'chimney_left', 'chimney_right']
+            column2_panels = ['chimney_roof_casing_front', 'chimney_roof_casing_back',
+                            'chimney_roof_casing_left', 'chimney_roof_casing_right']
+            column3_panels = ['chimney_top_casing_front', 'chimney_top_casing_back',
+                            'chimney_top_casing_left', 'chimney_top_casing_right']
+            
+            # Track column widths for positioning
+            column_spacing = 20.0  # Spacing between columns
+            column_x_positions = [base_x, 0, 0]  # Will be calculated
+            column_max_widths = [0, 0, 0]
+            
+            # Calculate column 1 width
+            for panel_name in column1_panels:
+                panel_dims = chimney.get_panel_dimensions()[panel_name]
+                column_max_widths[0] = max(column_max_widths[0], panel_dims[0])
+            
+            # Calculate column 2 and 3 widths
+            for panel_name in column2_panels:
+                panel_dims = chimney.get_panel_dimensions()[panel_name]
+                column_max_widths[1] = max(column_max_widths[1], panel_dims[0])
+            
+            for panel_name in column3_panels:
+                panel_dims = chimney.get_panel_dimensions()[panel_name]
+                column_max_widths[2] = max(column_max_widths[2], panel_dims[0])
+            
+            # Set column X positions
+            column_x_positions[0] = base_x
+            column_x_positions[1] = column_x_positions[0] + column_max_widths[0] + column_spacing
+            column_x_positions[2] = column_x_positions[1] + column_max_widths[1] + column_spacing
+            
+            # Process all 3 columns
+            all_columns = [column1_panels, column2_panels, column3_panels]
+            
+            for col_idx, column_panels in enumerate(all_columns):
+                column_y = base_y
+                
+                for panel_name in column_panels:
+                    # Calculate position for this panel
+                    panel_position = Point(column_x_positions[col_idx], column_y)
+                    
+                    # Generate the panel
+                    if 'casing' in panel_name:
+                        structural_path, decorative = self.panel_generator.generate_chimney_casing(
+                            panel_position, chimney, panel_name)
+                    else:
+                        structural_path, decorative = self.panel_generator.generate_chimney_panel(
+                            panel_position, chimney, panel_name)
+                    
+                    # Get panel dimensions for labeling
+                    panel_dims = chimney.get_panel_dimensions()[panel_name]
+                    
+                    # Create SVG group for this chimney panel
+                    panel_parts = [
+                        f'    <!-- {panel_name.replace("_", " ").title()} (Chimney {chimney_idx + 1}) -->',
+                        f'    <g id="{panel_name}_{chimney_idx}">',
+                        f'      <path class="cut-line" d="{structural_path}" />',
+                    ]
+                    
+                    # Add decorative brick pattern with 0.1mm line width for chimney walls (not casings)
+                    if decorative and decorative.strip() and 'casing' not in panel_name:
+                        panel_parts.append(f'      <path class="chimney-pattern" d="{decorative}" />')
+                    
+                    # Add label if requested
+                    if include_labels:
+                        label_x = panel_position.x + panel_dims[0] / 2
+                        label_y = panel_position.y + panel_dims[1] + 5.0
+                        label_text = f"{panel_name.replace('_', ' ').title()} {chimney_idx + 1}"
+                        panel_parts.append(
+                            f'      <text class="label-text" x="{label_x:.{COORDINATE_PRECISION}f}" '
+                            f'y="{label_y:.{COORDINATE_PRECISION}f}">{label_text}</text>')
+                    
+                    panel_parts.append('    </g>')
+                    panel_parts.append('')
+                    
+                    chimney_svgs.append('\n'.join(panel_parts))
+                    
+                    # Move to next position in this column (stack vertically)
+                    column_y += panel_dims[1] + 10.0  # 10mm spacing between panels
+        
+        return chimney_svgs
+    
+    def _generate_casing_panels(self, include_labels: bool) -> List[str]:
+        """
+        Generate SVG for all door and window casing panels
+        
+        Args:
+            include_labels: Whether to include panel labels
+            
+        Returns:
+            List of SVG strings for casing panels
+        """
+        casing_svgs = []
+        
+        # Find the rightmost position for layout
+        max_x = 0
+        for panel_name, (position, rotation) in self.layout_positions.items():
+            panel_dims = self.geometry.get_panel_dimensions().get(panel_name)
+            if panel_dims:
+                width, height = panel_dims
+                panel_right = position.x + width
+                max_x = max(max_x, panel_right)
+        
+        # Add spacing for chimney panels if they exist
+        if self.architectural_config and self.architectural_config.chimneys:
+            # Chimneys are already placed, so add more spacing
+            casing_x = max_x + 20.0  # Additional spacing
+            # Find max Y from chimney panels
+            casing_y = 0.0
+            for chimney in self.architectural_config.chimneys:
+                all_panel_names = ['chimney_front', 'chimney_back', 'chimney_left', 'chimney_right',
+                                  'chimney_roof_casing_front', 'chimney_roof_casing_back',
+                                  'chimney_roof_casing_left', 'chimney_roof_casing_right',
+                                  'chimney_top_casing_front', 'chimney_top_casing_back',
+                                  'chimney_top_casing_left', 'chimney_top_casing_right']
+                for panel_name in all_panel_names:
+                    panel_dims = chimney.get_panel_dimensions().get(panel_name)
+                    if panel_dims:
+                        casing_y += panel_dims[1] + 10.0
+        else:
+            casing_x = max_x + 20.0
+            casing_y = 0.0
+        
+        # Collect all casing panels from all walls
+        all_casing_dims = {}
+        
+        # Get windows and doors from each panel
+        from .geometry import Point
+        
+        for panel_name in self._get_panels_for_style():
+            # Get windows for this panel
+            windows = self.architectural_config.get_windows_for_panel(panel_name)
+            for idx, window in enumerate(windows):
+                window_casings = self.panel_generator.generate_window_casing_panels(window, f"{panel_name}_w{idx}")
+                all_casing_dims.update(window_casings)
+            
+            # Get doors for this panel
+            doors = self.architectural_config.get_doors_for_panel(panel_name)
+            for idx, door in enumerate(doors):
+                door_casings = self.panel_generator.generate_door_casing_panels(door, f"{panel_name}_d{idx}")
+                all_casing_dims.update(door_casings)
+        
+        # Generate SVG for each casing piece
+        for casing_name, (width, height, svg_path) in all_casing_dims.items():
+            position = Point(casing_x, casing_y)
+            
+            # Generate the casing panel with pre-computed path
+            structural_path, decorative = self.panel_generator.generate_casing_panel(
+                position, casing_name, width, height, svg_path)
+            
+            # Create SVG group for this casing panel
+            panel_parts = [
+                f'    <!-- {casing_name.replace("_", " ").title()} -->',
+                f'    <g id="{casing_name}">',
+                f'      <path class="cut-line" d="{structural_path}" />',
+            ]
+            
+            # Add label if requested
+            if include_labels:
+                label_x = position.x + width / 2
+                label_y = position.y + height + 5.0
+                # Simplify label text
+                label_parts = casing_name.split('_')
+                if 'casing' in label_parts:
+                    # Extract panel type and casing position
+                    casing_idx = label_parts.index('casing')
+                    position_label = label_parts[casing_idx + 1] if casing_idx + 1 < len(label_parts) else ''
+                    label_text = f"Casing {position_label}"
+                else:
+                    label_text = casing_name.replace('_', ' ').title()
+                    
+                panel_parts.append(
+                    f'      <text class="label-text" x="{label_x:.{COORDINATE_PRECISION}f}" '
+                    f'y="{label_y:.{COORDINATE_PRECISION}f}">{label_text}</text>')
+            
+            panel_parts.append('    </g>')
+            panel_parts.append('')
+            
+            casing_svgs.append('\n'.join(panel_parts))
+            
+            # Move to next position (stack vertically with small spacing)
+            casing_y += height + 3.0  # 3mm spacing between casing pieces
+        
+        return casing_svgs
     
     def get_cutting_summary(self) -> Dict[str, any]:
         """Get summary information for the cutting job"""

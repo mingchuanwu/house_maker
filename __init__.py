@@ -9,8 +9,8 @@ from .geometry import HouseGeometry
 from .svg_generator import SVGGenerator
 from .constants import HouseStyle
 from .architectural_components import (
-    RoofType, WindowType, DoorType, ArchitecturalStyle,
-    RoofGeometry, ArchitecturalPatternGenerator
+    RoofType, WindowType, DoorType, ArchitecturalStyle, ShingleType,
+    RoofGeometry, ArchitecturalPatternGenerator, Chimney
 )
 from .architectural_config import ArchitecturalConfiguration, create_preset_configuration
 from .exceptions import (
@@ -35,6 +35,8 @@ __all__ = [
     'WindowType',
     'DoorType',
     'ArchitecturalStyle',
+    'ShingleType',
+    'Chimney',
     'ArchitecturalConfiguration',
     'create_preset_configuration',
     'HouseMakerError',
@@ -59,6 +61,7 @@ class HouseMaker:
                  # New architectural parameters
                  roof_type=RoofType.GABLE,
                  architectural_style=ArchitecturalStyle.BASIC,
+                 shingle_type=ShingleType.SHINGLES,
                  architectural_preset=None,
                  auto_add_components=True,
                  window_type=WindowType.RECTANGULAR,
@@ -110,7 +113,7 @@ class HouseMaker:
         else:
             # Use custom configuration
             self.architectural_config = ArchitecturalConfiguration(
-                self.geometry, roof_type, architectural_style
+                self.geometry, roof_type, architectural_style, shingle_type
             )
             
             if auto_add_components:
@@ -259,6 +262,27 @@ class HouseMaker:
             True if door was successfully added, False if invalid placement
         """
         return self.architectural_config.add_custom_door(panel_name, x, y, width, height, door_type)
+    
+    def add_chimney(self, panel_name, x, y, width=None, height=None, chimney_height=20.0):
+        """
+        Add a chimney to a roof panel
+        
+        The chimney will be oriented perpendicular to the roof surface,
+        coordinating with the gable angle. The cutout will be smaller than
+        the chimney footprint to provide a lip for the chimney to rest on.
+        This generates both the roof cutout and 4 chimney wall panels.
+        
+        Args:
+            panel_name: Name of roof panel ('roof_panel_left' or 'roof_panel_right')
+            x, y: Position on the roof panel (mm)
+            width: Chimney footprint width perpendicular to roof (mm, default: 8mm)
+            height: Chimney footprint depth along roof slope (mm, default: 12mm)
+            chimney_height: Height of chimney extending above roof (mm, default: 20mm)
+        
+        Returns:
+            True if chimney was successfully added, False if invalid placement
+        """
+        return self.architectural_config.add_chimney(panel_name, x, y, width, height, chimney_height)
     
     def get_windows_for_panel(self, panel_name):
         """Get all windows on a specific panel"""

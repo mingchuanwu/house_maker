@@ -191,7 +191,12 @@ class MultiFingerJointGenerator:
             calc_length = edge_length - 2 * self.thickness
             offset = self.thickness
         
-        joint_count = self.calculate_optimal_joint_count(calc_length)
+        # CRITICAL: Gable wall roof edges must have exactly ONE joint to match roof internal cutouts
+        if panel_name in ['gable_wall_front', 'gable_wall_back'] and edge_name in ['roof_left', 'roof_right']:
+            joint_count = 1
+        else:
+            joint_count = self.calculate_optimal_joint_count(calc_length)
+        
         joint_positions = self.calculate_joint_positions(calc_length, joint_count, offset)
         
         # Generate path segments
@@ -337,7 +342,14 @@ class EnhancedHousePanelGenerator:
         ]
         
         edge_names = ['gable_edge', 'right', 'outer', 'left']
-        return self._generate_panel_with_multi_joints(roof_type, position, corners, edge_names)
+        structural_path, decorative = self._generate_panel_with_multi_joints(roof_type, position, corners, edge_names)
+        
+        # Add shingles pattern to roof panels
+        shingles_pattern = self._generate_roof_shingles_pattern(position, roof_panel_length, roof_panel_width)
+        if shingles_pattern:
+            decorative = (decorative + " " + shingles_pattern).strip()
+        
+        return structural_path, decorative
     
     def _generate_panel_with_multi_joints(self, panel_name: str, position: Point,
                                         corners: List[Point], edge_names: List[str]) -> tuple:
@@ -440,7 +452,18 @@ class EnhancedHousePanelGenerator:
         return result
     
     def _generate_internal_cutouts(self, position: Point, panel_name: str, cutouts: List[str]) -> str:
-        """Generate internal cutouts (preserve existing functionality)"""
+        """
+        Generate internal cutouts for gable wall finger joints
+        
+        CRITICAL ALIGNMENT WITH GABLE WALLS:
+        - Right panel (male joint on gable edge): Alignment starts at position.y
+          Cutout center = position.y + base_roof_width/2
+        
+        - Left panel (female joint on gable edge): Offset by 1×thickness due to female joint
+          Cutout center = position.y + thickness + base_roof_width/2
+        
+        The male joints on gable walls are centered on the sloped edge (base_roof_width length).
+        """
         cutout_paths = []
         
         if panel_name.startswith('roof_panel'):
@@ -448,8 +471,10 @@ class EnhancedHousePanelGenerator:
             base_roof_width = self.geometry.base_roof_width
             
             if panel_name == 'roof_panel_left':
-                cutout_center_y = position.y + (base_roof_width / 2) + self.geometry.thickness
+                # Left panel has female joint on gable edge, requiring 1×thickness offset
+                cutout_center_y = position.y + self.geometry.thickness + (base_roof_width / 2)
             elif panel_name == 'roof_panel_right':
+                # Right panel has male joint on gable edge, no offset needed
                 cutout_center_y = position.y + (base_roof_width / 2)
             else:
                 cutout_center_y = position.y + (base_roof_width / 2)
@@ -494,6 +519,14 @@ class EnhancedHousePanelGenerator:
             if cutout_path:
                 structural_cutouts.append(cutout_path)
         
+        # Get chimneys for this panel (roof panels only)
+        chimneys = self.architectural_config.get_chimneys_for_panel(panel_name)
+        for chimney in chimneys:
+            # Generate chimney cutout
+            cutout_path = self._generate_chimney_cutout(chimney, position)
+            if cutout_path:
+                structural_cutouts.append(cutout_path)
+        
         # Get decorative patterns for this panel
         panel_dims = self.geometry.get_panel_dimensions().get(panel_name)
         if panel_dims:
@@ -504,7 +537,7 @@ class EnhancedHousePanelGenerator:
         return " ".join(structural_cutouts), " ".join(decorative_patterns)
     
     def _generate_window_cutout(self, window, position: Point) -> str:
-        """Generate SVG path for a window cutout"""
+        """Generate SVG path for a window cutout (with separate casing)"""
         from .architectural_components import WindowType
         
         # Calculate absolute position (window position is relative to panel origin)
@@ -545,7 +578,7 @@ class EnhancedHousePanelGenerator:
             return self._generate_rectangular_cutout(abs_x, abs_y, width, height)
     
     def _generate_door_cutout(self, door, position: Point) -> str:
-        """Generate SVG path for a door cutout"""
+        """Generate SVG path for a door cutout (without integrated casing)"""
         from .architectural_components import DoorType
         
         # Calculate absolute position (door position is relative to panel origin)
@@ -769,6 +802,921 @@ class EnhancedHousePanelGenerator:
         path += "Z"
         
         return path
+    
+    def generate_window_casing_panels(self, window, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """
+        Generate dimensions for window casing as a single frame piece with inner cutout.
+        Casing shape matches the window type (rectangular, arched, circular, etc.).
+        Returns dictionary mapping casing name to (width, height, svg_path) tuple.
+        Skip casings for attic windows.
+        """
+        from .architectural_components import WindowType
+        
+        # Skip casings for attic windows (too small)
+        if window.type == WindowType.ATTIC:
+            return {}
+        
+        inner_width = window.position.width
+        inner_height = window.position.height
+        
+        # Casing dimensions
+        casing_width = 2.0  # Width/thickness of casing trim (2mm)
+        extension = 1.5     # How much horizontal pieces extend beyond vertical pieces (1.5mm each side)
+        
+        # Generate casing based on window type
+        if window.type == WindowType.ARCHED:
+            return self._generate_arched_window_casing(inner_width, inner_height, casing_width, extension, panel_name)
+        elif window.type == WindowType.CIRCULAR:
+            return self._generate_circular_window_casing(inner_width, inner_height, casing_width, extension, panel_name)
+        else:
+            # Rectangular casing for most window types
+            # (rectangular, bay, dormer, double_hung, casement, colonial_set, cross_pane, multi_pane, palladian, gothic_pair)
+            return self._generate_rectangular_window_casing(inner_width, inner_height, casing_width, extension, panel_name)
+    
+    def _generate_rectangular_window_casing(self, inner_width: float, inner_height: float,
+                                           casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """Generate rectangular window casing"""
+        # Outer frame dimensions
+        outer_width = inner_width + 2 * casing_width + 2 * extension
+        outer_height = inner_height + 2 * casing_width
+        
+        # Inner cutout position
+        inner_x = extension + casing_width
+        inner_y = casing_width
+        
+        # Create path with outer perimeter and inner cutout
+        svg_path = (
+            # Outer perimeter (clockwise)
+            f"M 0.000,0.000 "
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "
+            f"L {outer_width:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            f"L 0.000,{outer_height:.{COORDINATE_PRECISION}f} Z "
+            # Inner cutout (counter-clockwise to create hole)
+            f"M {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "
+            f"L {inner_x:.{COORDINATE_PRECISION}f},{inner_y + inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y + inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} Z"
+        )
+        
+        return {
+            f'{panel_name}_window_casing': (outer_width, outer_height, svg_path)
+        }
+    
+    def _generate_arched_window_casing(self, inner_width: float, inner_height: float,
+                                      casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """Generate arched window casing (arched on both inner and outer edges)"""
+        # Outer frame dimensions
+        outer_width = inner_width + 2 * casing_width + 2 * extension
+        outer_height = inner_height + 2 * casing_width
+        
+        # Inner cutout position
+        inner_x = extension + casing_width
+        inner_y = casing_width
+        
+        # Calculate arch dimensions (top 30% of window is arched)
+        inner_arch_start = inner_height * 0.7
+        
+        # Outer arch starts at same relative position but with casing offset
+        outer_arch_start = inner_arch_start + casing_width
+        
+        # Create path with ARCHED outer perimeter and ARCHED inner cutout
+        svg_path = (
+            # Outer perimeter with arched top (clockwise)
+            f"M 0.000,0.000 "  # Bottom-left
+            f"L 0.000,{outer_arch_start:.{COORDINATE_PRECISION}f} "  # Up left side to arch start
+            # Outer arch using quadratic bezier
+            f"Q {outer_width/2:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            f"{outer_width:.{COORDINATE_PRECISION}f},{outer_arch_start:.{COORDINATE_PRECISION}f} "  # Arch across top
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "  # Down right side
+            f"L 0.000,0.000 Z "  # Close bottom
+            # Inner arched cutout (counter-clockwise)
+            f"M {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Bottom-left of opening
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Bottom edge
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y + inner_arch_start:.{COORDINATE_PRECISION}f} "  # Up right side
+            # Inner arch using quadratic bezier (counter-clockwise)
+            f"Q {inner_x + inner_width/2:.{COORDINATE_PRECISION}f},{inner_y + inner_height:.{COORDINATE_PRECISION}f} "
+            f"{inner_x:.{COORDINATE_PRECISION}f},{inner_y + inner_arch_start:.{COORDINATE_PRECISION}f} "  # Arch back
+            f"Z"  # Close
+        )
+        
+        return {
+            f'{panel_name}_window_casing': (outer_width, outer_height, svg_path)
+        }
+    
+    def _generate_circular_window_casing(self, inner_width: float, inner_height: float,
+                                        casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """Generate circular window casing (ring/donut shape - circular outer and inner edges)"""
+        # Use the smaller dimension for the circle
+        inner_diameter = min(inner_width, inner_height)
+        inner_radius = inner_diameter / 2
+        
+        # Outer circle has casing width added
+        outer_radius = inner_radius + casing_width
+        outer_diameter = outer_radius * 2
+        outer_size = outer_diameter  # Bounding box
+        
+        # Center position
+        center_x = outer_size / 2
+        center_y = outer_size / 2
+        
+        # Magic number for bezier control points to approximate a circle
+        inner_control_offset = inner_radius * 0.552284749831
+        outer_control_offset = outer_radius * 0.552284749831
+        
+        # Create path with CIRCULAR outer perimeter and CIRCULAR inner cutout (ring/donut shape)
+        svg_path = (
+            # Outer circle using 4 cubic bezier curves (clockwise from top)
+            f"M {center_x:.{COORDINATE_PRECISION}f},{center_y - outer_radius:.{COORDINATE_PRECISION}f} "
+            f"C {center_x + outer_control_offset:.{COORDINATE_PRECISION}f},{center_y - outer_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x + outer_radius:.{COORDINATE_PRECISION}f},{center_y - outer_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x + outer_radius:.{COORDINATE_PRECISION}f},{center_y:.{COORDINATE_PRECISION}f} "
+            f"C {center_x + outer_radius:.{COORDINATE_PRECISION}f},{center_y + outer_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x + outer_control_offset:.{COORDINATE_PRECISION}f},{center_y + outer_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x:.{COORDINATE_PRECISION}f},{center_y + outer_radius:.{COORDINATE_PRECISION}f} "
+            f"C {center_x - outer_control_offset:.{COORDINATE_PRECISION}f},{center_y + outer_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x - outer_radius:.{COORDINATE_PRECISION}f},{center_y + outer_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x - outer_radius:.{COORDINATE_PRECISION}f},{center_y:.{COORDINATE_PRECISION}f} "
+            f"C {center_x - outer_radius:.{COORDINATE_PRECISION}f},{center_y - outer_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x - outer_control_offset:.{COORDINATE_PRECISION}f},{center_y - outer_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x:.{COORDINATE_PRECISION}f},{center_y - outer_radius:.{COORDINATE_PRECISION}f} Z "
+            # Inner circle cutout using 4 cubic bezier curves (counter-clockwise from top for hole)
+            f"M {center_x:.{COORDINATE_PRECISION}f},{center_y - inner_radius:.{COORDINATE_PRECISION}f} "
+            f"C {center_x - inner_control_offset:.{COORDINATE_PRECISION}f},{center_y - inner_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x - inner_radius:.{COORDINATE_PRECISION}f},{center_y - inner_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x - inner_radius:.{COORDINATE_PRECISION}f},{center_y:.{COORDINATE_PRECISION}f} "
+            f"C {center_x - inner_radius:.{COORDINATE_PRECISION}f},{center_y + inner_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x - inner_control_offset:.{COORDINATE_PRECISION}f},{center_y + inner_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x:.{COORDINATE_PRECISION}f},{center_y + inner_radius:.{COORDINATE_PRECISION}f} "
+            f"C {center_x + inner_control_offset:.{COORDINATE_PRECISION}f},{center_y + inner_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x + inner_radius:.{COORDINATE_PRECISION}f},{center_y + inner_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x + inner_radius:.{COORDINATE_PRECISION}f},{center_y:.{COORDINATE_PRECISION}f} "
+            f"C {center_x + inner_radius:.{COORDINATE_PRECISION}f},{center_y - inner_control_offset:.{COORDINATE_PRECISION}f} "
+            f"{center_x + inner_control_offset:.{COORDINATE_PRECISION}f},{center_y - inner_radius:.{COORDINATE_PRECISION}f} "
+            f"{center_x:.{COORDINATE_PRECISION}f},{center_y - inner_radius:.{COORDINATE_PRECISION}f} Z"
+        )
+        
+        return {
+            f'{panel_name}_window_casing': (outer_size, outer_size, svg_path)
+        }
+    
+    def generate_door_casing_panels(self, door, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """
+        Generate dimensions for door casing as a single 3-sided frame piece (no bottom) with inner cutout.
+        Casing shape matches the door type (rectangular, arched).
+        Returns dictionary mapping casing name to (width, height, svg_path) tuple.
+        Left and right vertical frames are symmetric.
+        """
+        from .architectural_components import DoorType
+        
+        inner_width = door.position.width
+        inner_height = door.position.height
+        
+        # Casing dimensions
+        casing_width = 2.5  # Width/thickness of casing trim (2.5mm, slightly wider for doors)
+        extension = 2.0     # How much horizontal piece extends beyond vertical pieces (2mm each side)
+        
+        # Generate casing based on door type
+        if door.type == DoorType.ARCHED:
+            return self._generate_arched_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
+        else:
+            # Rectangular casing for most door types (rectangular, double, dutch)
+            return self._generate_rectangular_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
+    
+    def _generate_rectangular_door_casing(self, inner_width: float, inner_height: float,
+                                         casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """Generate rectangular door casing (3-sided U-shape)"""
+        # Outer frame dimensions (3-sided, no bottom)
+        outer_width = inner_width + 2 * casing_width + 2 * extension
+        outer_height = inner_height + casing_width  # Only top casing, no bottom
+        
+        # Inner cutout position (centered horizontally with extensions on both sides)
+        inner_x = extension + casing_width
+        inner_y = casing_width
+        inner_right_x = inner_x + inner_width
+        
+        # Create path with U-shaped outer perimeter and inner cutout (symmetric)
+        svg_path = (
+            # Outer U-shape perimeter (clockwise, starting bottom-left)
+            f"M 0.000,{outer_height:.{COORDINATE_PRECISION}f} "  # Bottom-left outer
+            f"L 0.000,0.000 "  # Up to top-left outer
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "  # Across top outer
+            f"L {outer_width:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Down to bottom-right outer
+            f"L {inner_right_x:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Left to inner-right bottom
+            f"L {inner_right_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Up inner-right vertical
+            f"L {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Across inner top
+            f"L {inner_x:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Down inner-left vertical
+            f"Z"
+        )
+        
+        return {
+            f'{panel_name}_door_casing': (outer_width, outer_height, svg_path)
+        }
+    
+    def _generate_arched_door_casing(self, inner_width: float, inner_height: float,
+                                    casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
+        """Generate arched door casing (horseshoe shape with arch at BOTTOM, opening at TOP for upside-down gable walls)"""
+        # Outer frame dimensions (3-sided, opening at top)
+        outer_width = inner_width + 2 * casing_width + 2 * extension
+        outer_height = inner_height + casing_width
+        
+        # Inner cutout position
+        inner_x = extension + casing_width
+        inner_y = 0.0  # No top casing (opening is at top)
+        inner_right_x = inner_x + inner_width
+        
+        # Calculate arch dimensions (bottom 30% of door is arched)
+        inner_arch_start = inner_height * 0.7
+        
+        # For outer arch, calculate where rectangular portion ends
+        outer_arch_start = inner_arch_start + casing_width
+        
+        # Create path with ARCHED outer perimeter (arch at bottom) and ARCHED inner cutout
+        # The outer edge follows the arch shape of the door
+        svg_path = (
+            # Start at top-left
+            f"M 0.000,0.000 "
+            # Down left side to where arch begins
+            f"L 0.000,{outer_arch_start:.{COORDINATE_PRECISION}f} "
+            # Outer arch across bottom using quadratic bezier
+            f"Q {outer_width/2:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            f"{outer_width:.{COORDINATE_PRECISION}f},{outer_arch_start:.{COORDINATE_PRECISION}f} "
+            # Up right side
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "
+            # Inward to inner-right top
+            f"L {inner_right_x:.{COORDINATE_PRECISION}f},0.000 "
+            # Down inner-right to arch start
+            f"L {inner_right_x:.{COORDINATE_PRECISION}f},{inner_arch_start:.{COORDINATE_PRECISION}f} "
+            # Inner arch using quadratic bezier (arch at bottom)
+            f"Q {inner_x + inner_width/2:.{COORDINATE_PRECISION}f},{inner_height:.{COORDINATE_PRECISION}f} "
+            f"{inner_x:.{COORDINATE_PRECISION}f},{inner_arch_start:.{COORDINATE_PRECISION}f} "
+            # Up inner-left
+            f"L {inner_x:.{COORDINATE_PRECISION}f},0.000 "
+            # Close path
+            f"Z"
+        )
+        
+        return {
+            f'{panel_name}_door_casing': (outer_width, outer_height, svg_path)
+        }
+    
+    def generate_casing_panel(self, position: Point, casing_name: str, width: float, height: float, svg_path: str) -> tuple:
+        """
+        Generate a casing panel from pre-computed SVG path.
+        Translates the path to the correct position.
+        
+        Args:
+            position: Position in SVG
+            casing_name: Name of the casing piece
+            width: Width of the casing piece
+            height: Height of the casing piece
+            svg_path: Pre-computed SVG path (relative to 0,0)
+            
+        Returns:
+            Tuple of (structural_path, decorative_patterns)
+        """
+        # Parse the path and translate all coordinates
+        import re
+        
+        # Find all coordinate pairs in the path
+        def translate_coords(match):
+            x = float(match.group(1)) + position.x
+            y = float(match.group(2)) + position.y
+            return f"{x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}"
+        
+        # Replace all coordinate pairs
+        translated_path = re.sub(
+            r'([-\d.]+),([-\d.]+)',
+            translate_coords,
+            svg_path
+        )
+        
+        return translated_path, ""
+    
+    def _generate_chimney_cutout(self, chimney, position: Point) -> str:
+        """
+        Generate TWO SEPARATE female finger joint cutouts for chimney connection.
+        
+        The joints are spaced by the HORIZONTAL PROJECTION of the chimney depth:
+        distance = chimney_depth × cos(roof_angle)
+        
+        Args:
+            chimney: Chimney object with position and roof_angle
+            position: Position of the roof panel
+            
+        Returns:
+            SVG path string for TWO separate finger joint cutouts
+        """
+        import math
+        
+        thickness = self.geometry.thickness
+        
+        # Calculate absolute position of chimney on roof panel
+        chimney_x = position.x + chimney.position.x
+        chimney_y = position.y + chimney.position.y
+        chimney_width = chimney.position.width
+        chimney_depth = chimney.position.height  # Depth along roof slope
+        
+        # Calculate horizontal spacing on roof panel
+        # Account for: front/back panels sit INSIDE left/right panels (reduce by thickness)
+        horizontal_spacing = (chimney_depth / math.cos(math.radians(chimney.roof_angle))) - thickness
+        
+        # Use chimney width/2 for finger joint width
+        finger_width = chimney_width / 2
+        
+        # Account for roof slope: DEPTH (along slope) increases as joint extends into roof
+        # Depth adjustment = thickness / tan(90° - angle)
+        complement_angle = 90 - chimney.roof_angle
+        depth_adjustment = thickness / math.tan(math.radians(complement_angle))
+        adjusted_finger_depth = thickness + depth_adjustment
+        
+        # Center finger joints horizontally on chimney footprint
+        joint_x_start = chimney_x + (chimney_width - finger_width) / 2
+        
+        # FRONT female joint (upslope side) - deeper due to slope
+        front_joint = (
+            f"M {joint_x_start:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{chimney_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start:.{COORDINATE_PRECISION}f},{chimney_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} Z"
+        )
+        
+        # BACK female joint (downslope side) - adjusted spacing and depth
+        back_joint_y = chimney_y + horizontal_spacing
+        back_joint = (
+            f"M {joint_x_start:.{COORDINATE_PRECISION}f},{back_joint_y:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{back_joint_y:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{back_joint_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} "
+            f"L {joint_x_start:.{COORDINATE_PRECISION}f},{back_joint_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} Z"
+        )
+        
+        return front_joint + " " + back_joint
+    
+    def generate_chimney_panel(self, position: Point, chimney, wall_name: str) -> tuple:
+        """
+        Generate a single chimney wall panel with angled base to sit on sloped roof
+        
+        For a VERTICAL chimney on a sloped roof at angle θ:
+        - Front/back walls (parallel to ridge): NO height variation - RECTANGLES
+        - Left/right walls (perpendicular to ridge, along slope): height varies by depth × tan(θ) - TRAPEZOIDS
+        
+        Args:
+            position: Position to place this wall panel in the SVG
+            chimney: Chimney object with dimensions and roof_angle
+            wall_name: Name of wall ('chimney_front', 'chimney_back', 'chimney_left', 'chimney_right')
+            
+        Returns:
+            Tuple of (structural_path, decorative_patterns)
+        """
+        panel_dims = chimney.get_panel_dimensions()
+        if wall_name not in panel_dims:
+            return ("", "")
+        
+        width, height = panel_dims[wall_name]
+        
+        # Get chimney footprint depth (along roof slope) from position
+        footprint_depth = chimney.position.height  # This is the depth along roof slope
+        
+        if 'left' in wall_name or 'right' in wall_name:
+            # Left/right walls are perpendicular to ridge - trapezoid shape
+            # Base edge is angled based on depth along slope
+            corners = self._generate_angled_base_wall(position, width, height, chimney.roof_angle, footprint_depth)
+        else:
+            # Front/back walls parallel to ridge - rectangles with finger joint on bottom
+            corners = [
+                Point(position.x, position.y),
+                Point(position.x + width, position.y),
+                Point(position.x + width, position.y + height),
+                Point(position.x, position.y + height)
+            ]
+        
+        # Generate path with finger joint on bottom edge for front/back walls
+        if 'front' in wall_name or 'back' in wall_name:
+            path = self._generate_chimney_wall_with_finger_joint(corners, width, height, wall_name, chimney)
+        else:
+            # Left/right trapezoids - no finger joints
+            path = f"M {corners[0].x:.{COORDINATE_PRECISION}f},{corners[0].y:.{COORDINATE_PRECISION}f}"
+            for i in range(1, len(corners)):
+                path += f" L {corners[i].x:.{COORDINATE_PRECISION}f},{corners[i].y:.{COORDINATE_PRECISION}f}"
+            path += " Z"
+        
+        # Generate brick pattern for chimney walls
+        decorative_pattern = self._generate_chimney_brick_pattern(wall_name, position, width, height, corners)
+        
+        return path, decorative_pattern
+    
+    def generate_chimney_casing(self, position: Point, chimney, casing_name: str) -> tuple:
+        """
+        Generate individual chimney casing piece (one of 4 pieces per casing)
+        
+        Each casing has 4 separate pieces:
+        - Front/back pieces (red): width × thickness
+        - Left/right pieces (blue): thickness × (depth + 2×thickness) for wrapping
+        
+        Args:
+            position: Position in SVG
+            chimney: Chimney object
+            casing_name: Specific casing piece name
+            
+        Returns:
+            Tuple of (structural_path, decorative_patterns)
+        """
+        panel_dims = chimney.get_panel_dimensions()
+        if casing_name not in panel_dims:
+            return ("", "")
+        
+        width, height = panel_dims[casing_name]
+        
+        # Simple rectangle for each piece
+        path = (
+            f"M {position.x:.{COORDINATE_PRECISION}f},{position.y:.{COORDINATE_PRECISION}f} "
+            f"L {position.x + width:.{COORDINATE_PRECISION}f},{position.y:.{COORDINATE_PRECISION}f} "
+            f"L {position.x + width:.{COORDINATE_PRECISION}f},{position.y + height:.{COORDINATE_PRECISION}f} "
+            f"L {position.x:.{COORDINATE_PRECISION}f},{position.y + height:.{COORDINATE_PRECISION}f} Z"
+        )
+        
+        return path, ""
+    
+    def _generate_angled_base_wall(self, position: Point, width: float, height: float, roof_angle: float, slope_depth: float = None) -> List[Point]:
+        """
+        Generate corners for a chimney wall with angled base to match roof slope
+        
+        For a VERTICAL chimney on a sloped roof at angle θ:
+        - The height difference is based on how far the wall extends along the slope direction
+        - For left/right walls (perpendicular to ridge): height_diff = depth × tan(θ)
+        
+        Args:
+            position: Base position
+            width: Width of the wall panel
+            height: Height of the wall extending above roof
+            roof_angle: Roof gable angle in degrees
+            slope_depth: Depth of chimney footprint along roof slope (for left/right walls)
+            
+        Returns:
+            List of corner points for the trapezoid
+        """
+        import math
+        
+        # The base needs to be cut at roof_angle to sit flush on sloped roof
+        # For left/right walls going along the slope:
+        # Height difference = depth along slope × tan(θ)
+        theta_rad = math.radians(roof_angle)
+        
+        if slope_depth is not None:
+            # Use the provided slope depth for accurate height difference
+            height_diff = slope_depth * math.tan(theta_rad)
+        else:
+            # Fallback to using width
+            height_diff = width * math.tan(theta_rad)
+        
+        # Create TRAPEZOID: angled base (following roof slope), horizontal top (vertical chimney)
+        # For a vertical chimney, the base follows the roof angle but the top is level
+        # The left and right edges are VERTICAL (same height: height_diff + height)
+        corners = [
+            Point(position.x, position.y),  # Bottom-left (starts lower due to slope)
+            Point(position.x + width, position.y + height_diff),  # Bottom-right (higher due to slope)
+            Point(position.x + width, position.y + height_diff + height),  # Top-right (goes up vertically by height)
+            Point(position.x, position.y + height_diff + height)  # Top-left (at same height as top-right - HORIZONTAL top edge!)
+        ]
+        
+        return corners
+    
+    def _generate_chimney_wall_with_finger_joint(self, corners: List[Point], width: float, height: float, wall_name: str, chimney) -> str:
+        """
+        Generate chimney front/back wall with centered male finger joint at top edge
+        
+        Both front and back walls have male joints protruding from their top edges.
+        Finger joint length is proportional to chimney width (width/2) for better fit.
+        """
+        thickness = self.geometry.thickness
+        
+        # Use chimney width/2 for finger joint length (proportional to chimney size)
+        finger_length = chimney.position.width / 2
+        
+        # Center finger joint on top edge
+        joint_start = (width - finger_length) / 2
+        joint_end = joint_start + finger_length
+        
+        bottom_left = corners[0]
+        bottom_right = corners[1]
+        top_right = corners[2]
+        top_left = corners[3]
+        
+        if 'front' in wall_name:
+            # Front wall: Male joint at TOP edge (protrudes upward)
+            path = f"M {bottom_left.x:.{COORDINATE_PRECISION}f},{bottom_left.y:.{COORDINATE_PRECISION}f} "
+            # Bottom edge
+            path += f"L {bottom_right.x:.{COORDINATE_PRECISION}f},{bottom_right.y:.{COORDINATE_PRECISION}f} "
+            # Right edge up
+            path += f"L {top_right.x:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Top edge to joint start
+            path += f"L {top_right.x - joint_start:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Male joint protrudes UP
+            path += f"L {top_right.x - joint_start:.{COORDINATE_PRECISION}f},{top_right.y + thickness:.{COORDINATE_PRECISION}f} "
+            # Across joint
+            path += f"L {top_right.x - joint_end:.{COORDINATE_PRECISION}f},{top_right.y + thickness:.{COORDINATE_PRECISION}f} "
+            # Back down
+            path += f"L {top_right.x - joint_end:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Continue to top left
+            path += f"L {top_left.x:.{COORDINATE_PRECISION}f},{top_left.y:.{COORDINATE_PRECISION}f} "
+            # Left edge down
+            path += "Z"
+        else:
+            # Back wall: Male joint at TOP edge (protrudes upward like front)
+            path = f"M {bottom_left.x:.{COORDINATE_PRECISION}f},{bottom_left.y:.{COORDINATE_PRECISION}f} "
+            # Bottom edge
+            path += f"L {bottom_right.x:.{COORDINATE_PRECISION}f},{bottom_right.y:.{COORDINATE_PRECISION}f} "
+            # Right edge up
+            path += f"L {top_right.x:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Top edge to joint start
+            path += f"L {top_right.x - joint_start:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Male joint protrudes UP
+            path += f"L {top_right.x - joint_start:.{COORDINATE_PRECISION}f},{top_right.y + thickness:.{COORDINATE_PRECISION}f} "
+            # Across joint
+            path += f"L {top_right.x - joint_end:.{COORDINATE_PRECISION}f},{top_right.y + thickness:.{COORDINATE_PRECISION}f} "
+            # Back down
+            path += f"L {top_right.x - joint_end:.{COORDINATE_PRECISION}f},{top_right.y:.{COORDINATE_PRECISION}f} "
+            # Continue to top left
+            path += f"L {top_left.x:.{COORDINATE_PRECISION}f},{top_left.y:.{COORDINATE_PRECISION}f} "
+            # Left edge down
+            path += "Z"
+        
+        return path
+    
+    def _generate_chimney_brick_pattern(self, wall_name: str, position: Point, width: float, height: float, corners: List[Point]) -> str:
+        """
+        Generate brick pattern for chimney panels with 0.1mm line width
+        Properly fills trapezoid from bottom sloped edge to top, and rectangles completely
+        
+        Args:
+            position: Base position of the panel
+            width: Width of the panel
+            height: Height of the panel (for trapezoid, this is the maximum height)
+            corners: Corner points of the panel (for trapezoid boundaries)
+            
+        Returns:
+            SVG path string for brick pattern
+        """
+        
+        margin = 0.8  # Margin to avoid touching panel edges
+        
+        lines = []
+        
+        # Brick dimensions
+        brick_height = 2.5  # 2.5mm brick height
+        brick_width = brick_height * 2.5  # 2.5:1 ratio
+        
+        # Determine if this is a trapezoid panel
+        # Check if top edge (corners[0] to corners[1]) is diagonal (Y values differ)
+        if len(corners) == 4:
+            is_trapezoid = abs(corners[0].y - corners[1].y) > 0.01
+        else:
+            is_trapezoid = False
+        
+        if is_trapezoid:
+            # Trapezoid laid out upside down:
+            # corners[0] = (428, 118.875) top-left, SMALLEST Y
+            # corners[1] = (446, 135.750) where diagonal ends
+            # corners[2] = (446, 160.750) bottom-right, LARGEST Y
+            # corners[3] = (428, 160.750) bottom-left, LARGEST Y
+            
+            # CRITICAL: Use actual corner Y values, NOT the height parameter
+            # The height parameter doesn't include height_diff from slope
+            y_min = min(c.y for c in corners)  # Top of shape
+            y_max = max(c.y for c in corners)  # Bottom of shape - THIS IS THE ACTUAL MAX Y
+            
+            # Find where diagonal ends (transition from sloped to rectangular)
+            slope_end_y = corners[1].y
+            
+            def get_bounds_at_y(y_pos):
+                """Get left and right X bounds at given Y position"""
+                if y_pos <= slope_end_y:
+                    # In sloped region: left edge is vertical, right edge is diagonal
+                    # Interpolate right edge from corners[0] to corners[1]
+                    if slope_end_y > corners[0].y:
+                        t = (y_pos - corners[0].y) / (slope_end_y - corners[0].y)
+                    else:
+                        t = 0.0
+                    left_x = corners[0].x  # Left is always at same X
+                    right_x = corners[0].x + t * (corners[1].x - corners[0].x)  # Interpolate right
+                else:
+                    # In rectangular region: both edges are vertical
+                    left_x = corners[3].x  # Bottom-left X
+                    right_x = corners[2].x  # Bottom-right X
+                return left_x, right_x
+        else:
+            # Rectangle
+            y_min = position.y
+            y_max = position.y + height
+            
+            def get_bounds_at_y(y_pos):
+                """Get left and right X bounds (constant for rectangle)"""
+                return position.x, position.x + width
+        
+        # Start from top (smallest Y) with margin
+        y = y_min + margin
+        y_end = y_max - margin
+        row = 0
+        
+        
+        # Fill entire height from bottom to top
+        while y < y_end:
+            # Get bounds at current Y
+            left_x, right_x = get_bounds_at_y(y)
+            row_start_x = left_x + margin
+            row_end_x = right_x - margin
+            row_width = row_end_x - row_start_x
+            
+            # Calculate next row Y first
+            next_y = min(y + brick_height, y_end)
+            
+            # Skip drawing if too narrow, but always advance Y
+            # UNLESS we're very close to y_end (within one brick_height)
+            if row_width < brick_width * 0.3:
+                if y_end - y > brick_height:  # Still have significant distance to go
+                    y += brick_height
+                    row += 1
+                    continue
+                else:  # Close to end, break out to avoid getting stuck
+                    break
+            
+            # Get bounds at next Y for proper clipping
+            left_x_next, right_x_next = get_bounds_at_y(next_y)
+            row_start_x_next = left_x_next + margin
+            row_end_x_next = right_x_next - margin
+            
+            # Draw horizontal mortar line at current Y (clipped to current width)
+            lines.append(f"M {row_start_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                        f"L {row_end_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+            
+            # Offset for brick bond pattern
+            x_offset = (brick_width / 2) if row % 2 == 1 else 0
+            x = row_start_x + x_offset
+            
+            # Draw vertical mortar lines - these may be angled for trapezoids
+            first_brick_x = x  # Remember first position
+            brick_num = 0
+            while x < row_end_x:
+                # Draw vertical line for all bricks EXCEPT at the very first position (left edge)
+                # AND the very last position (right edge)
+                if x > first_brick_x + 0.1 and x < row_end_x - 0.1:
+                    # For vertical line, clip to bounds at both Y levels
+                    x_bottom = x  # X at current level
+                    
+                    # Clip to bounds at next level
+                    if x_bottom < row_start_x_next:
+                        x_bottom = row_start_x_next
+                    if x_bottom > row_end_x_next:
+                        x_bottom = row_end_x_next
+                    
+                    # Only draw if within bounds at both levels
+                    if row_start_x <= x <= row_end_x and row_start_x_next <= x_bottom <= row_end_x_next:
+                        lines.append(f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                                    f"L {x_bottom:.{COORDINATE_PRECISION}f},{next_y:.{COORDINATE_PRECISION}f}")
+                
+                x += brick_width
+                brick_num += 1
+            
+            y = next_y
+            row += 1
+        
+        # Add final horizontal line at bottom (clipped)
+        if lines:
+            left_x_bottom, right_x_bottom = get_bounds_at_y(y_end)
+            bottom_start_x = left_x_bottom + margin
+            bottom_end_x = right_x_bottom - margin
+            
+            if bottom_end_x > bottom_start_x + 0.1:
+                lines.append(f"M {bottom_start_x:.{COORDINATE_PRECISION}f},{y_end:.{COORDINATE_PRECISION}f} "
+                            f"L {bottom_end_x:.{COORDINATE_PRECISION}f},{y_end:.{COORDINATE_PRECISION}f}")
+        
+        return " ".join(lines)
+    
+    def _generate_roof_shingles_pattern(self, position: Point, width: float, height: float) -> str:
+        """
+        Generate shingles pattern for roof panels with 0.1mm line width
+        Supports multiple shingle types based on configuration
+        
+        Args:
+            position: Base position of the roof panel
+            width: Width of the roof panel
+            height: Height of the roof panel
+            
+        Returns:
+            SVG path string for shingles pattern
+        """
+        from .architectural_components import ShingleType
+        
+        # Get shingle type from architectural config, default to standard shingles
+        shingle_type = ShingleType.SHINGLES
+        if self.architectural_config and hasattr(self.architectural_config, 'shingle_type'):
+            shingle_type = self.architectural_config.shingle_type
+        
+        # Generate pattern based on shingle type
+        if shingle_type == ShingleType.SPANTILE:
+            return self._generate_spantile_pattern(position, width, height)
+        elif shingle_type == ShingleType.SPANISH:
+            return self._generate_spanish_tile_pattern(position, width, height)
+        elif shingle_type == ShingleType.SCALLOPS:
+            return self._generate_scallop_pattern(position, width, height)
+        elif shingle_type == ShingleType.S_TILE:
+            return self._generate_s_tile_pattern(position, width, height)
+        else:  # ShingleType.SHINGLES (default)
+            return self._generate_standard_shingles_pattern(position, width, height)
+    
+    def _generate_standard_shingles_pattern(self, position: Point, width: float, height: float) -> str:
+        """Generate standard rectangular shingles pattern"""
+        margin = 0.8
+        lines = []
+        
+        shingle_height = 4.0
+        shingle_width = 8.0
+        overlap = 1.5
+        
+        y = position.y + margin
+        y_end = position.y + height - margin
+        row = 0
+        
+        while y < y_end:
+            next_y = min(y + shingle_height - overlap, y_end)
+            
+            row_start_x = position.x + margin
+            row_end_x = position.x + width - margin
+            
+            # Horizontal line
+            lines.append(f"M {row_start_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                        f"L {row_end_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+            
+            # Vertical lines with offset
+            x_offset = (shingle_width / 2) if row % 2 == 1 else 0
+            x = row_start_x + x_offset
+            
+            while x < row_end_x - 0.1:
+                if x > row_start_x + 0.1:
+                    line_end_y = min(y + shingle_height, y_end)
+                    lines.append(f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                                f"L {x:.{COORDINATE_PRECISION}f},{line_end_y:.{COORDINATE_PRECISION}f}")
+                x += shingle_width
+            
+            y = next_y
+            row += 1
+        
+        return " ".join(lines)
+    
+    def _generate_spantile_pattern(self, position: Point, width: float, height: float) -> str:
+        """Generate Spanish tile (Spantile) pattern with wavy curves"""
+        margin = 0.8
+        lines = []
+        
+        tile_height = 5.0  # Height of each tile row
+        tile_width = 6.0   # Width of individual tiles
+        
+        y = position.y + margin
+        y_end = position.y + height - margin
+        row = 0
+        
+        while y < y_end:
+            row_start_x = position.x + margin
+            row_end_x = position.x + width - margin
+            
+            # Wavy horizontal line using quadratic curves
+            x = row_start_x
+            path_parts = [f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}"]
+            
+            while x < row_end_x:
+                next_x = min(x + tile_width, row_end_x)
+                mid_x = (x + next_x) / 2
+                # Create wave with control point above the line
+                path_parts.append(f" Q {mid_x:.{COORDINATE_PRECISION}f},{y - 1.5:.{COORDINATE_PRECISION}f} {next_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+                x = next_x
+            
+            lines.append("".join(path_parts))
+            
+            y += tile_height
+            row += 1
+        
+        return " ".join(lines)
+    
+    def _generate_spanish_tile_pattern(self, position: Point, width: float, height: float) -> str:
+        """Generate Spanish tile pattern with rounded edges"""
+        margin = 0.8
+        lines = []
+        
+        tile_height = 5.0
+        tile_width = 7.0
+        
+        y = position.y + margin
+        y_end = position.y + height - margin
+        row = 0
+        
+        while y < y_end:
+            row_start_x = position.x + margin
+            row_end_x = position.x + width - margin
+            
+            # Horizontal line
+            lines.append(f"M {row_start_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                        f"L {row_end_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+            
+            # Rounded vertical separators
+            x_offset = (tile_width / 2) if row % 2 == 1 else 0
+            x = row_start_x + x_offset
+            
+            while x < row_end_x - 0.1:
+                if x > row_start_x + 0.1:
+                    # Curved vertical line for tile edge
+                    curve_y = min(y + tile_height, y_end)
+                    mid_y = (y + curve_y) / 2
+                    lines.append(f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                                f"Q {x + 0.5:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                f"{x:.{COORDINATE_PRECISION}f},{curve_y:.{COORDINATE_PRECISION}f}")
+                x += tile_width
+            
+            y += tile_height
+            row += 1
+        
+        return " ".join(lines)
+    
+    def _generate_scallop_pattern(self, position: Point, width: float, height: float) -> str:
+        """Generate scalloped/fish-scale shingles pattern"""
+        margin = 0.8
+        lines = []
+        
+        scale_height = 4.0  # Height of each scallop row
+        scale_width = 5.0   # Width of individual scallops
+        overlap = 2.0       # Vertical overlap
+        
+        y = position.y + margin
+        y_end = position.y + height - margin
+        row = 0
+        
+        while y < y_end:
+            row_start_x = position.x + margin
+            row_end_x = position.x + width - margin
+            
+            # Offset every other row
+            x_offset = (scale_width / 2) if row % 2 == 1 else 0
+            x = row_start_x + x_offset
+            
+            # Draw scalloped bottom edges for each scale
+            while x < row_end_x:
+                next_x = min(x + scale_width, row_end_x)
+                if next_x - x > scale_width * 0.3:  # Only draw if wide enough
+                    mid_x = (x + next_x) / 2
+                    curve_y = min(y + scale_height, y_end)
+                    # Scallop curve pointing down
+                    lines.append(f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                                f"Q {mid_x:.{COORDINATE_PRECISION}f},{curve_y:.{COORDINATE_PRECISION}f} "
+                                f"{next_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+                x += scale_width
+            
+            y += scale_height - overlap
+            row += 1
+        
+        return " ".join(lines)
+    
+    def _generate_s_tile_pattern(self, position: Point, width: float, height: float) -> str:
+        """Generate S-shaped tiles pattern with alternating curves"""
+        margin = 0.8
+        lines = []
+        
+        tile_height = 5.0
+        tile_width = 6.0
+        
+        y = position.y + margin
+        y_end = position.y + height - margin
+        row = 0
+        
+        while y < y_end:
+            row_start_x = position.x + margin
+            row_end_x = position.x + width - margin
+            
+            # S-shaped curves
+            x = row_start_x
+            while x < row_end_x:
+                next_x = min(x + tile_width, row_end_x)
+                if next_x - x > tile_width * 0.3:
+                    mid_x = (x + next_x) / 2
+                    curve_y = min(y + tile_height, y_end)
+                    mid_y = (y + curve_y) / 2
+                    
+                    # S-curve: up then down (or down then up for alternating rows)
+                    if row % 2 == 0:
+                        lines.append(f"M {x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f} "
+                                    f"Q {x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"{mid_x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"Q {next_x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"{next_x:.{COORDINATE_PRECISION}f},{curve_y:.{COORDINATE_PRECISION}f}")
+                    else:
+                        lines.append(f"M {x:.{COORDINATE_PRECISION}f},{curve_y:.{COORDINATE_PRECISION}f} "
+                                    f"Q {x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"{mid_x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"Q {next_x:.{COORDINATE_PRECISION}f},{mid_y:.{COORDINATE_PRECISION}f} "
+                                    f"{next_x:.{COORDINATE_PRECISION}f},{y:.{COORDINATE_PRECISION}f}")
+                x += tile_width
+            
+            y += tile_height
+            row += 1
+        
+        return " ".join(lines)
     
     def generate_panel_info(self, panel_name: str, corners: List[Point], edge_names: List[str]) -> Dict:
         """

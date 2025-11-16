@@ -11,8 +11,9 @@ This document describes the architecture of the HouseMaker project, a standalone
 The HouseMaker implementation consists of:
 - **HouseGeometry**: Core geometric calculations and validation
 - **SVGGenerator**: Professional SVG output with layout optimization
-- **HousePanelGenerator**: Finger joint generation and panel creation
-- **FingerJointGenerator**: Low-level joint geometry generation
+- **EnhancedHousePanelGenerator**: Multi-finger joint generation and panel creation
+- **MultiFingerJointGenerator**: Enhanced joint geometry with 1-7 joints per edge
+- **ArchitecturalConfiguration**: Doors, windows, chimneys, and decorative patterns
 - **CLI Interface**: Command-line tool for easy usage (`generate_house.py`)
 
 ### 1.2 Generated Components
@@ -302,7 +303,7 @@ summary = svg_gen.get_cutting_summary()
 ### 13.1 ✅ FULLY IMPLEMENTED FEATURES
 - [x] Complete house box geometry calculation with asymmetric roof panels
 - [x] Triangular gable walls with house-shaped profiles
-- [x] Single finger joint coordination system with perfect male/female pairing
+- [x] Enhanced multi-finger joint system (1-7 joints per edge based on length)
 - [x] Professional SVG output with 0.0254mm precision
 - [x] Optimized panel layout with material size constraints
 - [x] Comprehensive CLI interface with all parameter control
@@ -310,6 +311,8 @@ summary = svg_gen.get_cutting_summary()
 - [x] Layout algorithms (rectangular packing, rotated layout)
 - [x] Complete validation system with clear error messages
 - [x] Cutting summaries and assembly information
+- [x] **Chimney system**: 4 walls + 2 casings (8 pieces) + 2 roof finger joints
+- [x] **Architectural components**: 13 window types, 4 door types, 8 styles, 6 roof types
 
 ### 13.2 🎯 PRODUCTION READY
 The HouseMaker implementation is **ready for production use** with:

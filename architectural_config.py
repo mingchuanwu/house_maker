@@ -10,8 +10,8 @@ Central configuration class that manages all architectural components:
 
 from typing import Dict, List, Tuple, Optional
 from .architectural_components import (
-    RoofType, WindowType, DoorType, ArchitecturalStyle,
-    Window, Door, RoofGeometry, ComponentPositioner, ArchitecturalPatternGenerator,
+    RoofType, WindowType, DoorType, ArchitecturalStyle, ShingleType,
+    Window, Door, Chimney, RoofGeometry, ComponentPositioner, ArchitecturalPatternGenerator,
     ProportionalSizer
 )
 from .geometry import HouseGeometry
@@ -30,10 +30,12 @@ class ArchitecturalConfiguration:
     
     def __init__(self, house_geometry: HouseGeometry,
                  roof_type: RoofType = RoofType.GABLE,
-                 architectural_style: ArchitecturalStyle = ArchitecturalStyle.BASIC):
+                 architectural_style: ArchitecturalStyle = ArchitecturalStyle.BASIC,
+                 shingle_type: ShingleType = ShingleType.SHINGLES):
         self.house_geometry = house_geometry
         self.roof_type = roof_type
         self.architectural_style = architectural_style
+        self.shingle_type = shingle_type
         
         # Initialize subsystems
         self.roof_geometry = RoofGeometry(roof_type, house_geometry)
@@ -44,10 +46,12 @@ class ArchitecturalConfiguration:
         # Component storage
         self.windows: List[Window] = []
         self.doors: List[Door] = []
+        self.chimneys: List[Chimney] = []
         
         # Custom component configurations
         self._custom_windows: Dict[str, List[Window]] = {}
         self._custom_doors: Dict[str, List[Door]] = {}
+        self._custom_chimneys: Dict[str, List[Chimney]] = {}
     
     def add_automatic_components(self,
                                 add_windows: bool = True,
@@ -186,6 +190,68 @@ class ArchitecturalConfiguration:
     def get_doors_for_panel(self, panel_name: str) -> List[Door]:
         """Get all doors assigned to a specific panel"""
         return [d for d in self.doors if d.position.panel == panel_name]
+    
+    def add_chimney(self, panel_name: str, x: float, y: float,
+                   width: float = None, height: float = None,
+                   chimney_height: float = 20.0) -> bool:
+        """
+        Add a chimney to a roof panel at the specified position.
+        
+        The chimney will be oriented perpendicular to the roof surface,
+        coordinating with the gable angle (theta). This generates both
+        the cutout in the roof and the 4 chimney wall panels.
+        
+        Args:
+            panel_name: Name of roof panel ('roof_panel_left' or 'roof_panel_right')
+            x, y: Position on the roof panel (mm)
+            width: Chimney footprint width perpendicular to roof (default: 8mm)
+            height: Chimney footprint depth along roof slope (default: 12mm)
+            chimney_height: Height of chimney extending above roof (default: 20mm)
+            
+        Returns:
+            True if chimney was successfully added
+        """
+        if 'roof' not in panel_name:
+            print(f"Warning: Chimneys should be added to roof panels, not {panel_name}")
+            return False
+        
+        # Default chimney dimensions if not specified
+        if width is None:
+            width = 8.0  # 8mm wide perpendicular to roof
+        if height is None:
+            height = 12.0  # 12mm tall along roof slope
+        
+        # Create chimney with roof angle for proper orientation
+        from .architectural_components import ComponentPosition
+        position = ComponentPosition(x, y, width, height, panel_name)
+        chimney = Chimney(position, self.house_geometry.theta, chimney_height, self.house_geometry)
+        
+        # Validate placement
+        panel_dims = self.house_geometry.get_panel_dimensions()
+        if panel_name not in panel_dims:
+            return False
+        
+        # Check if chimney fits within panel bounds with margin
+        panel_width, panel_height = panel_dims[panel_name]
+        margin = self.house_geometry.thickness
+        
+        if (x < margin or y < margin or
+            x + width > panel_width - margin or
+            y + height > panel_height - margin):
+            print(f"Warning: Chimney placement invalid - outside panel bounds")
+            return False
+        
+        # Add to collection
+        if panel_name not in self._custom_chimneys:
+            self._custom_chimneys[panel_name] = []
+        self._custom_chimneys[panel_name].append(chimney)
+        self.chimneys.append(chimney)
+        
+        return True
+    
+    def get_chimneys_for_panel(self, panel_name: str) -> List[Chimney]:
+        """Get all chimneys assigned to a specific panel"""
+        return [c for c in self.chimneys if c.position.panel == panel_name]
     
     def get_pattern_for_panel(self, panel_name: str) -> str:
         """Get decorative pattern SVG for a specific panel"""

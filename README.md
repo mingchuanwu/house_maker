@@ -11,8 +11,9 @@ A standalone Python library for generating precise laser-cut house boxes with so
 - **Comprehensive Architectural System**: Complete system for creating architecturally accurate house designs
   - **6 Roof Types**: Gable, flat, hip, gambrel, shed, and mansard roofs with automatic panel calculation
   - **8 Architectural Styles**: Basic, fachwerkhaus, farmhouse, colonial, brick, Tudor, Victorian, and Craftsman with decorative patterns
-  - **4 Window Types**: Rectangular, arched, circular, and attic windows with automatic positioning
+  - **13 Window Types**: Rectangular, arched, circular, attic, bay, dormer, double_hung, casement, palladian, gothic_pair, colonial_set, cross_pane, multi_pane
   - **4 Door Types**: Rectangular, double, arched, and Dutch doors with proportional sizing
+  - **Chimney System**: Complete 12-component chimney (4 walls, 8 casing pieces) with slope-coordinated geometry and finger joint connections
   - **Attic Window Support**: Automatic detection for tall houses and steep gables (>30° and sufficient height)
   - **Proportional Sizing**: All components automatically sized using golden ratio (1.618) and architectural best practices
 - **10 Preset Configurations**: Pre-configured architectural combinations (farmhouse, colonial, Tudor, German, modern, etc.)
@@ -49,6 +50,14 @@ python3 generate_house.py --roof-type gambrel --window-type arched --door-type d
 python3 generate_house.py --roof-type hip --architectural-style tudor \
     --window-type arched --door-type double --length 120 --width 100 --height 80 \
     --output tudor_hip_house.svg --verbose
+
+# House with chimney (12 components: 4 walls, 2 casings × 4 pieces, 2 finger joints)
+python3 generate_house.py --width 90 --length 90 --height 180 --angle 45 \
+    --thickness 3 --kerf 0.2 \
+    --add-chimney --chimney-panel roof_panel_right \
+    --chimney-x 40 --chimney-y 15 \
+    --chimney-width 12 --chimney-depth 18 --chimney-height 25 \
+    --output house_with_chimney.svg --verbose
 ```
 
 ### Command Line Options
@@ -351,17 +360,19 @@ The system includes two layout modes with configurable material constraints:
 
 ```
 house_maker/
-├── generate_house.py     # Main CLI script
-├── constants.py          # Configuration and enums
-├── exceptions.py         # Custom exceptions
-├── geometry.py           # Geometric calculations
-├── finger_joints.py      # Joint generation system
-├── svg_generator.py      # SVG output with precision
-├── template/             # Example SVG files
+├── generate_house.py          # Main CLI script
+├── constants.py               # Configuration and enums
+├── exceptions.py              # Custom exceptions
+├── geometry.py                # Geometric calculations
+├── multi_finger_joints.py     # Enhanced multi-finger joint system (1-7 joints per edge)
+├── svg_generator.py           # SVG output with precision
+├── architectural_components.py # Windows, doors, chimneys, styles
+├── architectural_config.py    # Component positioning and configuration
+├── template/                  # Example SVG files
 │   ├── example_house.svg
 │   ├── house_template.svg
 │   └── small-house.svg
-└── README.md            # This documentation
+└── README.md                 # This documentation
 ```
 
 ## Example Usage Scenarios

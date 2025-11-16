@@ -66,6 +66,15 @@ class ArchitecturalStyle(Enum):
     GINGERBREAD = "gingerbread"        # Festive gingerbread house style with ornate cutouts
 
 
+class ShingleType(Enum):
+    """Different roof shingle/tile patterns"""
+    SPANTILE = "spantile"              # Spanish tile with wavy pattern
+    SPANISH = "spanish"                # Spanish tile variant
+    SHINGLES = "shingles"              # Standard rectangular shingles
+    SCALLOPS = "scallops"              # Scalloped/fish-scale shingles
+    S_TILE = "s-tile"                  # S-shaped tiles with curves
+
+
 class ComponentPosition(NamedTuple):
     """Position and size specification for architectural components"""
     x: float          # X position (relative to panel)
@@ -336,6 +345,105 @@ class Window:
         # Minimum window sizes for manufacturability
         if self.position.width < 5.0 or self.position.height < 5.0:
             raise GeometryError("window_validation", "Window too small for laser cutting (minimum 5mm)")
+
+
+class Chimney:
+    """Chimney component for roof panels with wall panel generation"""
+    
+    def __init__(self, position: ComponentPosition, roof_angle: float, chimney_height: float = 20.0, house_geometry=None):
+        """
+        Initialize chimney with position and roof angle
+        
+        Args:
+            position: Position on the roof panel (x, y, width, height) - this is the footprint
+            roof_angle: Gable angle in degrees (theta) - nominal angle
+            chimney_height: Height of chimney extending above roof (default: 20mm)
+            house_geometry: HouseGeometry object for calculating actual roof slope
+        """
+        self.position = position
+        self.chimney_height = chimney_height
+        self.house_geometry = house_geometry  # Store for later use
+        
+        # Calculate ACTUAL roof slope angle from gable wall geometry
+        # The gable wall width is y + 2*thickness, but peak uses (y/2)*tan(theta)
+        if house_geometry:
+            import math
+            gable_wall_half_width = (house_geometry.y_kerf + 2 * house_geometry.thickness) / 2
+            gable_peak_height = house_geometry.gable_peak_height
+            self.roof_angle = math.degrees(math.atan(gable_peak_height / gable_wall_half_width))
+        else:
+            self.roof_angle = roof_angle
+        
+        self._validate_position()
+        self.wall_panels = self._generate_wall_panel_dimensions()
+    
+    def _validate_position(self):
+        """Validate that chimney position is reasonable"""
+        if self.position.width <= 0 or self.position.height <= 0:
+            raise GeometryError("chimney_validation", "Chimney dimensions must be positive")
+        
+        # Minimum chimney sizes for manufacturability
+        if self.position.width < 5.0 or self.position.height < 8.0:
+            raise GeometryError("chimney_validation", "Chimney too small (minimum 5×8mm)")
+    
+    def _generate_wall_panel_dimensions(self) -> Dict[str, Tuple[float, float]]:
+        """
+        Generate dimensions for the 4 chimney wall panels.
+        
+        For a VERTICAL chimney on a sloped roof:
+        - Front (downslope) and back (upslope) have DIFFERENT heights
+        - Left/right walls are trapezoids with angled base
+        
+        Returns:
+            Dictionary mapping wall panel names to (width, height) dimensions
+        """
+        import math
+        
+        # Footprint dimensions from position (in roof plane coordinates)
+        footprint_width = self.position.width   # Perpendicular to roof ridge
+        footprint_depth = self.position.height  # Along roof slope
+        
+        # Height difference due to slope
+        theta_rad = math.radians(self.roof_angle)
+        height_diff_across_depth = footprint_depth * math.tan(theta_rad)
+        
+        # For a VERTICAL chimney on sloped roof:
+        # - Front wall (downslope): shorter, height = chimney_height
+        # - Back wall (upslope): taller, height = chimney_height + height_diff
+        # - Left/right walls: trapezoids with this height variation
+        
+        # For chimney front: reduce height by thickness so that when male joint
+        # (which is thickness high) is added, total height equals chimney_height
+        thickness = self.house_geometry.thickness
+        
+        panels = {
+            'chimney_front': (footprint_width, self.chimney_height - thickness),  # Reduced by thickness
+            'chimney_back': (footprint_width, self.chimney_height + height_diff_across_depth),  # Upslope side (taller)
+            'chimney_left': (footprint_depth, self.chimney_height),
+            'chimney_right': (footprint_depth, self.chimney_height)
+        }
+        
+        # Add casings (4 pieces each) - front/back INSIDE left/right
+        # Casing depth for roof = chimney_depth / cos(angle)
+        casing_depth = footprint_depth / math.cos(math.radians(self.roof_angle))
+        
+        # Front/back casing pieces (red in diagram)
+        panels['chimney_roof_casing_front'] = (footprint_width, thickness)
+        panels['chimney_roof_casing_back'] = (footprint_width, thickness)
+        panels['chimney_top_casing_front'] = (footprint_width, thickness)
+        panels['chimney_top_casing_back'] = (footprint_width, thickness)
+        
+        # Left/right casing pieces (blue in diagram) - extended by 2*thickness
+        panels['chimney_roof_casing_left'] = (thickness, casing_depth + 2 * thickness)
+        panels['chimney_roof_casing_right'] = (thickness, casing_depth + 2 * thickness)
+        panels['chimney_top_casing_left'] = (thickness, footprint_depth + 2 * thickness)
+        panels['chimney_top_casing_right'] = (thickness, footprint_depth + 2 * thickness)
+        
+        return panels
+    
+    def get_panel_dimensions(self) -> Dict[str, Tuple[float, float]]:
+        """Get dimensions for all chimney wall panels"""
+        return self.wall_panels
 
 
 class Door:

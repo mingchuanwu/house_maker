@@ -35,7 +35,7 @@ parent_dir = current_dir.parent
 sys.path.insert(0, str(parent_dir))
 
 try:
-    from house_maker import HouseMaker, RoofType, ArchitecturalStyle, WindowType, DoorType
+    from house_maker import HouseMaker, RoofType, ArchitecturalStyle, WindowType, DoorType, ShingleType
 except ImportError as e:
     print(f"Error importing house_maker modules: {e}")
     print("Make sure all required modules are available in the house_maker directory")
@@ -102,6 +102,10 @@ Architectural options:
     parser.add_argument('--architectural-style', type=str, default=None,
                        choices=['basic', 'fachwerkhaus', 'farmhouse', 'colonial', 'brick', 'tudor', 'victorian', 'craftsman', 'gingerbread'],
                        help='Architectural style (default: basic)')
+    
+    parser.add_argument('--shingle-type', type=str, default='shingles',
+                       choices=['spantile', 'spanish', 'shingles', 'scallops', 's-tile'],
+                       help='Roof shingle/tile pattern type (default: shingles)')
     parser.add_argument('--window-type', type=str, default=None,
                        choices=['rectangular', 'arched', 'circular', 'attic', 'bay', 'dormer', 'double_hung', 'casement', 'palladian', 'gothic_pair', 'colonial_set', 'cross_pane', 'multi_pane'],
                        help='Window type (default: rectangular)')
@@ -113,6 +117,23 @@ Architectural options:
                        help='Pre-configured architectural style preset')
     parser.add_argument('--no-auto-components', action='store_true',
                        help='Disable automatic door/window placement')
+    
+    # Chimney options
+    parser.add_argument('--add-chimney', action='store_true',
+                       help='Add a chimney to the roof panel')
+    parser.add_argument('--chimney-panel', type=str, default='roof_panel_left',
+                       choices=['roof_panel_left', 'roof_panel_right'],
+                       help='Which roof panel to add chimney to (default: roof_panel_left)')
+    parser.add_argument('--chimney-x', type=float, default=50.0,
+                       help='Chimney X position on roof panel in mm (default: 50)')
+    parser.add_argument('--chimney-y', type=float, default=20.0,
+                       help='Chimney Y position on roof panel in mm (default: 20)')
+    parser.add_argument('--chimney-width', type=float, default=10.0,
+                       help='Chimney footprint width perpendicular to roof in mm (default: 10)')
+    parser.add_argument('--chimney-depth', type=float, default=15.0,
+                       help='Chimney footprint depth along roof slope in mm (default: 15)')
+    parser.add_argument('--chimney-height', type=float, default=20.0,
+                       help='Chimney height extending above roof in mm (default: 20)')
     
     # Output options
     parser.add_argument('--output', '-o', type=str, default='house_box.svg',
@@ -189,6 +210,17 @@ def convert_architectural_options(args):
             'gingerbread': ArchitecturalStyle.GINGERBREAD
         }
         architectural_options['architectural_style'] = style_map[args.architectural_style]
+    
+    # Convert shingle type
+    if args.shingle_type:
+        shingle_map = {
+            'spantile': ShingleType.SPANTILE,
+            'spanish': ShingleType.SPANISH,
+            'shingles': ShingleType.SHINGLES,
+            'scallops': ShingleType.SCALLOPS,
+            's-tile': ShingleType.S_TILE
+        }
+        architectural_options['shingle_type'] = shingle_map[args.shingle_type]
     
     # Convert window type
     if args.window_type:
@@ -267,6 +299,27 @@ def main():
             single_joints=args.single_joints,
             **architectural_options
         )
+        
+        # Add chimney if requested
+        if args.add_chimney:
+            chimney_added = house.add_chimney(
+                panel_name=args.chimney_panel,
+                x=args.chimney_x,
+                y=args.chimney_y,
+                width=args.chimney_width,
+                height=args.chimney_depth,
+                chimney_height=args.chimney_height
+            )
+            if chimney_added:
+                if args.verbose:
+                    print(f"\n🏭 Chimney added:")
+                    print(f"   Panel: {args.chimney_panel}")
+                    print(f"   Footprint: {args.chimney_width}×{args.chimney_depth}mm at ({args.chimney_x}, {args.chimney_y})")
+                    print(f"   Height above roof: {args.chimney_height}mm")
+                    print(f"   Cutout inset: {args.thickness}mm (provides structural lip)")
+                    print(f"   4 wall panels generated with angled base matching {house.geometry.theta}° roof angle")
+            else:
+                print(f"⚠️  Warning: Could not add chimney (check position and dimensions)")
         
         if args.verbose:
             # Get architectural summary
