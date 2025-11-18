@@ -819,9 +819,9 @@ class EnhancedHousePanelGenerator:
         inner_width = window.position.width
         inner_height = window.position.height
         
-        # Casing dimensions
-        casing_width = 2.0  # Width/thickness of casing trim (2mm)
-        extension = 1.5     # How much horizontal pieces extend beyond vertical pieces (1.5mm each side)
+        # Casing dimensions based on material thickness
+        casing_width = self.geometry.thickness  # Frame width = 1 * thickness
+        extension = 0.4 * self.geometry.thickness  # Horizontal extension = 0.2 * thickness per side
         
         # Generate casing based on window type
         if window.type == WindowType.ARCHED:
@@ -835,31 +835,112 @@ class EnhancedHousePanelGenerator:
     
     def _generate_rectangular_window_casing(self, inner_width: float, inner_height: float,
                                            casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
-        """Generate rectangular window casing"""
-        # Outer frame dimensions
-        outer_width = inner_width + 2 * casing_width + 2 * extension
-        outer_height = inner_height + 2 * casing_width
+        """Generate rectangular window casing matching test.svg pattern exactly"""
+        # Frame body dimensions (the narrow vertical part)
+        tab_height = casing_width * 1.5
+        frame_width = inner_width + 2 * casing_width
+        frame_height = inner_height + 2 * tab_height
         
-        # Inner cutout position
+        # Tab dimensions (horizontal extensions at top and bottom ONLY)
+        # Total width at tabs is wider than frame body
+        tab_width_total = frame_width + 2 * extension
+        
+        # Total bounding box dimensions
+        outer_width = tab_width_total
+        outer_height = frame_height
+        
+        # Inner cutout position (centered in frame body)
         inner_x = extension + casing_width
-        inner_y = casing_width
+        inner_y = tab_height
         
-        # Create path with outer perimeter and inner cutout
+        # Create path matching screenshot exactly
+        # The frame has a narrower body with wider tabs at top and bottom
+        # frame_height = inner_height + 2*casing_width (total height including casings)
+        # tab_height = casing_width (height of top and bottom tabs)
+        # Frame body spans from Y=tab_height to Y=(frame_height - tab_height)
+        
         svg_path = (
-            # Outer perimeter (clockwise)
-            f"M 0.000,0.000 "
-            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "
+            # Start at bottom-left of bottom tab
+            f"M 0.000,{outer_height:.{COORDINATE_PRECISION}f} "
+            # Across bottom tab to the right
             f"L {outer_width:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
-            f"L 0.000,{outer_height:.{COORDINATE_PRECISION}f} Z "
-            # Inner cutout (counter-clockwise to create hole)
+            # Up to top of bottom tab (bottom of frame body sides)
+            f"L {outer_width:.{COORDINATE_PRECISION}f},{outer_height - tab_height:.{COORDINATE_PRECISION}f} "
+            # Step LEFT (inward) to right edge of frame body
+            f"L {outer_width - extension:.{COORDINATE_PRECISION}f},{outer_height - tab_height:.{COORDINATE_PRECISION}f} "
+            # Up right side of frame body
+            f"L {outer_width - extension:.{COORDINATE_PRECISION}f},{tab_height:.{COORDINATE_PRECISION}f} "
+            # Step RIGHT (outward) to right edge of top tab
+            f"L {outer_width:.{COORDINATE_PRECISION}f},{tab_height:.{COORDINATE_PRECISION}f} "
+            # Up to top of top tab
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "
+            # Across top tab to the left
+            f"L 0.000,0.000 "
+            # Down to bottom of top tab (top of frame body sides)
+            f"L 0.000,{tab_height:.{COORDINATE_PRECISION}f} "
+            # Step RIGHT (inward) to left edge of frame body
+            f"L {extension:.{COORDINATE_PRECISION}f},{tab_height:.{COORDINATE_PRECISION}f} "
+            # Down left side of frame body
+            f"L {extension:.{COORDINATE_PRECISION}f},{outer_height - tab_height:.{COORDINATE_PRECISION}f} "
+            # Step LEFT (outward) to left edge of bottom tab
+            f"L 0.000,{outer_height - tab_height:.{COORDINATE_PRECISION}f} "
+            # Close path back to start
+            f"Z "
+            # Inner cutout (counter-clockwise)
             f"M {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "
             f"L {inner_x:.{COORDINATE_PRECISION}f},{inner_y + inner_height:.{COORDINATE_PRECISION}f} "
             f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y + inner_height:.{COORDINATE_PRECISION}f} "
             f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} Z"
         )
         
+        # Score lines create border region, COMPLETELY INSIDE red cut line
+        # Two rectangles: outer inset from frame body, inner at window cutout position
+        # The area between them represents the frame border to be folded
+        
+        score_inset = 0.2 * self.geometry.thickness  # Small inset from frame edges
+        
+        # Outer score rectangle - inset from frame body edges (not tabs)
+        # Frame body area is from Y=tab_height to Y=(outer_height - tab_height)
+        score_outer_x = extension + score_inset
+        score_outer_y = score_inset
+        score_outer_width = frame_width - 2 * score_inset
+        score_outer_height = outer_height - 2 * score_inset
+        
+        # Inner score rectangle - matches the window cutout position (not inset from it)
+        # This defines where the window opening will be after folding
+        score_inner_x = inner_x - score_inset
+        score_inner_y = inner_y - score_inset
+        score_inner_width = inner_width + 2 * score_inset
+        score_inner_height = inner_height + 2 * score_inset
+        
+        # Two separate rectangle paths
+        score_lines = (
+            # Outer rectangle (inset from frame body) From top-left corner, counterclock-wise
+            f"M {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_outer_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_outer_y + tab_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x:.{COORDINATE_PRECISION}f},{score_outer_y + tab_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height:.{COORDINATE_PRECISION}f} " # LEFT
+            f"L {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height + tab_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+
+            # bottom line
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height + tab_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_outer_y + tab_height + score_inner_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x + score_outer_width:.{COORDINATE_PRECISION}f},{score_outer_y + tab_height + score_inner_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x + score_outer_width:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} " # UP 
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} " # RIGHT
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_outer_y:.{COORDINATE_PRECISION}f} Z" # UP
+
+            # Inner rectangle (outset from window cutout)
+            f"M {score_inner_x:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_inner_x + score_inner_width:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_inner_x + score_inner_width:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {score_inner_x:.{COORDINATE_PRECISION}f},{score_inner_y + score_inner_height:.{COORDINATE_PRECISION}f} Z"
+        )
+        
         return {
-            f'{panel_name}_window_casing': (outer_width, outer_height, svg_path)
+            f'{panel_name}_window_casing': (outer_width, outer_height, svg_path),
+            f'{panel_name}_window_casing_scores': (outer_width, outer_height, score_lines)
         }
     
     def _generate_arched_window_casing(self, inner_width: float, inner_height: float,
@@ -971,9 +1052,9 @@ class EnhancedHousePanelGenerator:
         inner_width = door.position.width
         inner_height = door.position.height
         
-        # Casing dimensions
-        casing_width = 2.5  # Width/thickness of casing trim (2.5mm, slightly wider for doors)
-        extension = 2.0     # How much horizontal piece extends beyond vertical pieces (2mm each side)
+        # Casing dimensions based on material thickness
+        casing_width = self.geometry.thickness  # Frame width = 1 * thickness
+        extension = 0.4 * self.geometry.thickness  # Horizontal extension = 0.4 * thickness per side
         
         # Generate casing based on door type
         if door.type == DoorType.ARCHED:
@@ -984,32 +1065,98 @@ class EnhancedHousePanelGenerator:
     
     def _generate_rectangular_door_casing(self, inner_width: float, inner_height: float,
                                          casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
-        """Generate rectangular door casing (3-sided U-shape)"""
-        # Outer frame dimensions (3-sided, no bottom)
-        outer_width = inner_width + 2 * casing_width + 2 * extension
-        outer_height = inner_height + casing_width  # Only top casing, no bottom
+        """Generate rectangular door casing matching door_frame_example.svg - U-shape open at bottom with small tabs"""
+        # Frame body (U-shaped, no bottom bar)
+        top_bar_height = 1.5 * casing_width  # Height of the horizontal top bar
+        frame_width = inner_width + 2 * casing_width
+        frame_height = inner_height  # Full height for the vertical sides
         
-        # Inner cutout position (centered horizontally with extensions on both sides)
+        # Top section with tab
+        tab_width_total = frame_width + 2 * extension
+        
+        # Total dimensions
+        outer_width = tab_width_total
+        outer_height = frame_height + top_bar_height
+        
+        # Inner door opening - matches door size exactly
         inner_x = extension + casing_width
-        inner_y = casing_width
-        inner_right_x = inner_x + inner_width
+        inner_y = top_bar_height
         
-        # Create path with U-shaped outer perimeter and inner cutout (symmetric)
+        # U-shaped frame: vertical sides go all the way down, horizontal bar only at top with tab
         svg_path = (
-            # Outer U-shape perimeter (clockwise, starting bottom-left)
-            f"M 0.000,{outer_height:.{COORDINATE_PRECISION}f} "  # Bottom-left outer
-            f"L 0.000,0.000 "  # Up to top-left outer
-            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "  # Across top outer
-            f"L {outer_width:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Down to bottom-right outer
-            f"L {inner_right_x:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Left to inner-right bottom
-            f"L {inner_right_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Up inner-right vertical
-            f"L {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "  # Across inner top
-            f"L {inner_x:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "  # Down inner-left vertical
+            # Start at bottom-left of left vertical side
+            f"M {extension:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            # Up left vertical side
+            f"L {extension:.{COORDINATE_PRECISION}f},{top_bar_height:.{COORDINATE_PRECISION}f} "
+            # Step LEFT to start of top tab
+            f"L 0.000,{top_bar_height:.{COORDINATE_PRECISION}f} "
+            # Up to top of tab
+            f"L 0.000,0.000 "
+            # Across top tab
+            f"L {outer_width:.{COORDINATE_PRECISION}f},0.000 "
+            # Down to top bar level
+            f"L {outer_width:.{COORDINATE_PRECISION}f},{top_bar_height:.{COORDINATE_PRECISION}f} "
+            # Step RIGHT (inward)
+            f"L {outer_width - extension:.{COORDINATE_PRECISION}f},{top_bar_height:.{COORDINATE_PRECISION}f} "
+            # Down right vertical side
+            f"L {outer_width - extension:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            # Step LEFT to inner-right
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            # Up inner-right side
+            f"L {inner_x + inner_width:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "
+            # Across inner top
+            f"L {inner_x:.{COORDINATE_PRECISION}f},{inner_y:.{COORDINATE_PRECISION}f} "
+            # Down inner-left side
+            f"L {inner_x:.{COORDINATE_PRECISION}f},{outer_height:.{COORDINATE_PRECISION}f} "
+            # Close
+            f"Z"
+        )
+        
+        # Score lines create U-shaped border region, COMPLETELY INSIDE red cut line
+        # Must not overlap or extend beyond cut line boundaries
+        # Similar to window frame, but U-shaped (no bottom bar)
+        
+        score_inset = extension / 2  # Inset from both outer and inner edges
+        
+        # Outer score rectangle - inset from frame body edges (not tabs), forming U-shape
+        score_outer_x = extension + score_inset
+        score_outer_y = score_inset # top_bar_height + score_inset
+        score_outer_width = frame_width - 2 * score_inset
+        score_outer_height = frame_height + top_bar_height - 2 * score_inset  # Goes to bottom
+        
+        # Inner score rectangle - inset FROM door cutout (smaller than opening), forming U-shape
+        score_inner_x = inner_x - score_inset
+        score_inner_y = inner_y - score_inset
+        score_inner_width = inner_width + 2 * score_inset
+        score_inner_height = inner_height - 2 * score_inset  # Inset from bottom
+        inner_casing_width = casing_width - 2 * score_inset 
+        
+        # Single continuous U-shaped border path (similar to window but U-shaped)
+        # This creates the border region between outer and inner edges
+        score_lines = (
+            # Outer U-shape (clockwise from bottom-left)
+            f"M {score_outer_x:.{COORDINATE_PRECISION}f},{score_outer_y + score_outer_height:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x:.{COORDINATE_PRECISION}f},{score_outer_y + top_bar_height - 2 * score_inset :.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_outer_y + top_bar_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x - extension:.{COORDINATE_PRECISION}f},{score_outer_y:.{COORDINATE_PRECISION}f} "
+
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_outer_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x + score_outer_width + extension:.{COORDINATE_PRECISION}f},{score_outer_y + top_bar_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+            f"L {score_outer_x + score_outer_width:.{COORDINATE_PRECISION}f},{score_outer_y + top_bar_height - 2 * score_inset:.{COORDINATE_PRECISION}f} "
+
+            f"L {score_outer_x + score_outer_width:.{COORDINATE_PRECISION}f},{score_outer_y + score_outer_height:.{COORDINATE_PRECISION}f} "
+            # Step inward to inner U-shape
+            f"L {score_inner_x + score_inner_width:.{COORDINATE_PRECISION}f},{score_outer_y + score_outer_height:.{COORDINATE_PRECISION}f} "
+            # Inner U-shape (counter-clockwise from bottom-right)
+            f"L {score_inner_x + score_inner_width:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_inner_x:.{COORDINATE_PRECISION}f},{score_inner_y:.{COORDINATE_PRECISION}f} "
+            f"L {score_inner_x:.{COORDINATE_PRECISION}f},{score_outer_y + score_outer_height:.{COORDINATE_PRECISION}f} "
             f"Z"
         )
         
         return {
-            f'{panel_name}_door_casing': (outer_width, outer_height, svg_path)
+            f'{panel_name}_door_casing': (outer_width, outer_height, svg_path),
+            f'{panel_name}_door_casing_scores': (outer_width, outer_height, score_lines)
         }
     
     def _generate_arched_door_casing(self, inner_width: float, inner_height: float,
@@ -1094,21 +1241,17 @@ class EnhancedHousePanelGenerator:
     
     def _generate_chimney_cutout(self, chimney, position: Point) -> str:
         """
-        Generate TWO SEPARATE female finger joint cutouts for chimney connection.
-        
-        The joints are spaced by the HORIZONTAL PROJECTION of the chimney depth:
-        distance = chimney_depth × cos(roof_angle)
+        Generate chimney score lines on roof panel to mark footprint location.
+        Chimney no longer uses finger joints - just score lines to show where it sits.
         
         Args:
             chimney: Chimney object with position and roof_angle
             position: Position of the roof panel
             
         Returns:
-            SVG path string for TWO separate finger joint cutouts
+            SVG path string for score lines marking chimney footprint
         """
         import math
-        
-        thickness = self.geometry.thickness
         
         # Calculate absolute position of chimney on roof panel
         chimney_x = position.x + chimney.position.x
@@ -1117,39 +1260,19 @@ class EnhancedHousePanelGenerator:
         chimney_depth = chimney.position.height  # Depth along roof slope
         
         # Calculate horizontal spacing on roof panel
-        # Account for: front/back panels sit INSIDE left/right panels (reduce by thickness)
-        horizontal_spacing = (chimney_depth / math.cos(math.radians(chimney.roof_angle))) - thickness
+        # The chimney depth projects onto the roof as: depth / cos(roof_angle)
+        horizontal_spacing = chimney_depth / math.cos(math.radians(chimney.roof_angle))
         
-        # Use chimney width/2 for finger joint width
-        finger_width = chimney_width / 2
-        
-        # Account for roof slope: DEPTH (along slope) increases as joint extends into roof
-        # Depth adjustment = thickness / tan(90° - angle)
-        complement_angle = 90 - chimney.roof_angle
-        depth_adjustment = thickness / math.tan(math.radians(complement_angle))
-        adjusted_finger_depth = thickness + depth_adjustment
-        
-        # Center finger joints horizontally on chimney footprint
-        joint_x_start = chimney_x + (chimney_width - finger_width) / 2
-        
-        # FRONT female joint (upslope side) - deeper due to slope
-        front_joint = (
-            f"M {joint_x_start:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{chimney_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start:.{COORDINATE_PRECISION}f},{chimney_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} Z"
+        # Generate score line rectangle for chimney footprint
+        # This marks where the chimney will sit on the roof
+        score_line = (
+            f"M {chimney_x:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
+            f"L {chimney_x + chimney_width:.{COORDINATE_PRECISION}f},{chimney_y:.{COORDINATE_PRECISION}f} "
+            f"L {chimney_x + chimney_width:.{COORDINATE_PRECISION}f},{chimney_y + horizontal_spacing:.{COORDINATE_PRECISION}f} "
+            f"L {chimney_x:.{COORDINATE_PRECISION}f},{chimney_y + horizontal_spacing:.{COORDINATE_PRECISION}f} Z"
         )
         
-        # BACK female joint (downslope side) - adjusted spacing and depth
-        back_joint_y = chimney_y + horizontal_spacing
-        back_joint = (
-            f"M {joint_x_start:.{COORDINATE_PRECISION}f},{back_joint_y:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{back_joint_y:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start + finger_width:.{COORDINATE_PRECISION}f},{back_joint_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} "
-            f"L {joint_x_start:.{COORDINATE_PRECISION}f},{back_joint_y + adjusted_finger_depth:.{COORDINATE_PRECISION}f} Z"
-        )
-        
-        return front_joint + " " + back_joint
+        return score_line
     
     def generate_chimney_panel(self, position: Point, chimney, wall_name: str) -> tuple:
         """
@@ -1179,7 +1302,9 @@ class EnhancedHousePanelGenerator:
         if 'left' in wall_name or 'right' in wall_name:
             # Left/right walls are perpendicular to ridge - trapezoid shape
             # Base edge is angled based on depth along slope
-            corners = self._generate_angled_base_wall(position, width, height, chimney.roof_angle, footprint_depth)
+            # Right panel is mirrored version of left panel
+            is_mirrored = 'right' in wall_name
+            corners = self._generate_angled_base_wall(position, width, height, chimney.roof_angle, footprint_depth, is_mirrored)
         else:
             # Front/back walls parallel to ridge - rectangles with finger joint on bottom
             corners = [
@@ -1189,9 +1314,13 @@ class EnhancedHousePanelGenerator:
                 Point(position.x, position.y + height)
             ]
         
-        # Generate path with finger joint on bottom edge for front/back walls
+        # Generate simple rectangular path for front/back walls (no finger joints)
         if 'front' in wall_name or 'back' in wall_name:
-            path = self._generate_chimney_wall_with_finger_joint(corners, width, height, wall_name, chimney)
+            # Simple rectangle - no finger joints
+            path = f"M {corners[0].x:.{COORDINATE_PRECISION}f},{corners[0].y:.{COORDINATE_PRECISION}f}"
+            for i in range(1, len(corners)):
+                path += f" L {corners[i].x:.{COORDINATE_PRECISION}f},{corners[i].y:.{COORDINATE_PRECISION}f}"
+            path += " Z"
         else:
             # Left/right trapezoids - no finger joints
             path = f"M {corners[0].x:.{COORDINATE_PRECISION}f},{corners[0].y:.{COORDINATE_PRECISION}f}"
@@ -1204,45 +1333,57 @@ class EnhancedHousePanelGenerator:
         
         return path, decorative_pattern
     
-    def generate_chimney_casing(self, position: Point, chimney, casing_name: str) -> tuple:
+    def generate_chimney_casing(self, position: Point, chimney) -> tuple:
         """
-        Generate individual chimney casing piece (one of 4 pieces per casing)
+        Generate single chimney casing piece with inner cutout
         
-        Each casing has 4 separate pieces:
-        - Front/back pieces (red): width × thickness
-        - Left/right pieces (blue): thickness × (depth + 2×thickness) for wrapping
+        Dimensions from diagram:
+        - Outer: (k + 2.3 * thickness) × (l + 3 * thickness)
+        - Inner cutout: (k + 0.3 * thickness) × (l + thickness)
+        Where k = chimney depth, l = k / cos(roof_angle)
         
         Args:
             position: Position in SVG
             chimney: Chimney object
-            casing_name: Specific casing piece name
             
         Returns:
             Tuple of (structural_path, decorative_patterns)
         """
         panel_dims = chimney.get_panel_dimensions()
-        if casing_name not in panel_dims:
+        if 'chimney_casing' not in panel_dims:
             return ("", "")
         
-        width, height = panel_dims[casing_name]
+        outer_width, outer_height = panel_dims['chimney_casing']
+        inner_width, inner_height = chimney.get_casing_cutout_dimensions()
         
-        # Simple rectangle for each piece
+        # Calculate centered cutout position
+        cutout_x = position.x + (outer_width - inner_width) / 2
+        cutout_y = position.y + (outer_height - inner_height) / 2
+        
+        # Generate path with outer perimeter and inner cutout
         path = (
+            # Outer perimeter (clockwise)
             f"M {position.x:.{COORDINATE_PRECISION}f},{position.y:.{COORDINATE_PRECISION}f} "
-            f"L {position.x + width:.{COORDINATE_PRECISION}f},{position.y:.{COORDINATE_PRECISION}f} "
-            f"L {position.x + width:.{COORDINATE_PRECISION}f},{position.y + height:.{COORDINATE_PRECISION}f} "
-            f"L {position.x:.{COORDINATE_PRECISION}f},{position.y + height:.{COORDINATE_PRECISION}f} Z"
+            f"L {position.x + outer_width:.{COORDINATE_PRECISION}f},{position.y:.{COORDINATE_PRECISION}f} "
+            f"L {position.x + outer_width:.{COORDINATE_PRECISION}f},{position.y + outer_height:.{COORDINATE_PRECISION}f} "
+            f"L {position.x:.{COORDINATE_PRECISION}f},{position.y + outer_height:.{COORDINATE_PRECISION}f} Z "
+            # Inner cutout (counter-clockwise to create hole)
+            f"M {cutout_x:.{COORDINATE_PRECISION}f},{cutout_y:.{COORDINATE_PRECISION}f} "
+            f"L {cutout_x:.{COORDINATE_PRECISION}f},{cutout_y + inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {cutout_x + inner_width:.{COORDINATE_PRECISION}f},{cutout_y + inner_height:.{COORDINATE_PRECISION}f} "
+            f"L {cutout_x + inner_width:.{COORDINATE_PRECISION}f},{cutout_y:.{COORDINATE_PRECISION}f} Z"
         )
         
         return path, ""
     
-    def _generate_angled_base_wall(self, position: Point, width: float, height: float, roof_angle: float, slope_depth: float = None) -> List[Point]:
+    def _generate_angled_base_wall(self, position: Point, width: float, height: float, roof_angle: float, slope_depth: float = None, is_mirrored: bool = False) -> List[Point]:
         """
         Generate corners for a chimney wall with angled base to match roof slope
         
         For a VERTICAL chimney on a sloped roof at angle θ:
         - The height difference is based on how far the wall extends along the slope direction
         - For left/right walls (perpendicular to ridge): height_diff = depth × tan(θ)
+        - Right panel is mirrored version of left panel
         
         Args:
             position: Base position
@@ -1250,6 +1391,7 @@ class EnhancedHousePanelGenerator:
             height: Height of the wall extending above roof
             roof_angle: Roof gable angle in degrees
             slope_depth: Depth of chimney footprint along roof slope (for left/right walls)
+            is_mirrored: If True, create mirrored trapezoid (for right panel)
             
         Returns:
             List of corner points for the trapezoid
@@ -1271,12 +1413,23 @@ class EnhancedHousePanelGenerator:
         # Create TRAPEZOID: angled base (following roof slope), horizontal top (vertical chimney)
         # For a vertical chimney, the base follows the roof angle but the top is level
         # The left and right edges are VERTICAL (same height: height_diff + height)
-        corners = [
-            Point(position.x, position.y),  # Bottom-left (starts lower due to slope)
-            Point(position.x + width, position.y + height_diff),  # Bottom-right (higher due to slope)
-            Point(position.x + width, position.y + height_diff + height),  # Top-right (goes up vertically by height)
-            Point(position.x, position.y + height_diff + height)  # Top-left (at same height as top-right - HORIZONTAL top edge!)
-        ]
+        
+        if is_mirrored:
+            # Right panel: mirror of left - slope goes the opposite direction
+            corners = [
+                Point(position.x, position.y + height_diff),  # Bottom-left (higher due to mirrored slope)
+                Point(position.x + width, position.y),  # Bottom-right (lower due to mirrored slope)
+                Point(position.x + width, position.y + height_diff + height),  # Top-right (goes up vertically)
+                Point(position.x, position.y + height_diff + height)  # Top-left (at same height as top-right)
+            ]
+        else:
+            # Left panel: standard orientation
+            corners = [
+                Point(position.x, position.y),  # Bottom-left (starts lower due to slope)
+                Point(position.x + width, position.y + height_diff),  # Bottom-right (higher due to slope)
+                Point(position.x + width, position.y + height_diff + height),  # Top-right (goes up vertically by height)
+                Point(position.x, position.y + height_diff + height)  # Top-left (at same height as top-right - HORIZONTAL top edge!)
+            ]
         
         return corners
     
@@ -1363,7 +1516,7 @@ class EnhancedHousePanelGenerator:
         
         # Brick dimensions
         brick_height = 2.5  # 2.5mm brick height
-        brick_width = brick_height * 2.5  # 2.5:1 ratio
+        brick_width = brick_height * 2.5
         
         # Determine if this is a trapezoid panel
         # Check if top edge (corners[0] to corners[1]) is diagonal (Y values differ)
@@ -1373,36 +1526,58 @@ class EnhancedHousePanelGenerator:
             is_trapezoid = False
         
         if is_trapezoid:
-            # Trapezoid laid out upside down:
-            # corners[0] = (428, 118.875) top-left, SMALLEST Y
-            # corners[1] = (446, 135.750) where diagonal ends
-            # corners[2] = (446, 160.750) bottom-right, LARGEST Y
-            # corners[3] = (428, 160.750) bottom-left, LARGEST Y
+            # Detect if this is a mirrored trapezoid (right panel) by checking if slope goes opposite direction
+            # Standard: corners[0].y < corners[1].y (left edge lower, right edge higher)
+            # Mirrored: corners[0].y > corners[1].y (left edge higher, right edge lower)
+            is_mirrored = corners[0].y > corners[1].y
             
             # CRITICAL: Use actual corner Y values, NOT the height parameter
             # The height parameter doesn't include height_diff from slope
             y_min = min(c.y for c in corners)  # Top of shape
             y_max = max(c.y for c in corners)  # Bottom of shape - THIS IS THE ACTUAL MAX Y
             
-            # Find where diagonal ends (transition from sloped to rectangular)
-            slope_end_y = corners[1].y
-            
-            def get_bounds_at_y(y_pos):
-                """Get left and right X bounds at given Y position"""
-                if y_pos <= slope_end_y:
-                    # In sloped region: left edge is vertical, right edge is diagonal
-                    # Interpolate right edge from corners[0] to corners[1]
-                    if slope_end_y > corners[0].y:
-                        t = (y_pos - corners[0].y) / (slope_end_y - corners[0].y)
+            if is_mirrored:
+                # Mirrored trapezoid (right panel): corners[1].y < corners[0].y
+                # Diagonal is on LEFT side, vertical is on RIGHT side
+                slope_end_y = corners[0].y  # Where diagonal ends (higher Y)
+                
+                def get_bounds_at_y(y_pos):
+                    """Get left and right X bounds at given Y position for mirrored trapezoid"""
+                    if y_pos <= slope_end_y:
+                        # In sloped region: left edge is diagonal, right edge is vertical
+                        # Interpolate left edge from corners[1] to corners[0]
+                        if slope_end_y > corners[1].y:
+                            t = (y_pos - corners[1].y) / (slope_end_y - corners[1].y)
+                        else:
+                            t = 0.0
+                        left_x = corners[1].x + t * (corners[0].x - corners[1].x)  # Interpolate left
+                        right_x = corners[1].x  # Right is always at same X
                     else:
-                        t = 0.0
-                    left_x = corners[0].x  # Left is always at same X
-                    right_x = corners[0].x + t * (corners[1].x - corners[0].x)  # Interpolate right
-                else:
-                    # In rectangular region: both edges are vertical
-                    left_x = corners[3].x  # Bottom-left X
-                    right_x = corners[2].x  # Bottom-right X
-                return left_x, right_x
+                        # In rectangular region: both edges are vertical
+                        left_x = corners[3].x  # Bottom-left X
+                        right_x = corners[2].x  # Bottom-right X
+                    return left_x, right_x
+            else:
+                # Standard trapezoid (left panel): corners[0].y < corners[1].y
+                # Diagonal is on RIGHT side, vertical is on LEFT side
+                slope_end_y = corners[1].y  # Where diagonal ends
+                
+                def get_bounds_at_y(y_pos):
+                    """Get left and right X bounds at given Y position for standard trapezoid"""
+                    if y_pos <= slope_end_y:
+                        # In sloped region: left edge is vertical, right edge is diagonal
+                        # Interpolate right edge from corners[0] to corners[1]
+                        if slope_end_y > corners[0].y:
+                            t = (y_pos - corners[0].y) / (slope_end_y - corners[0].y)
+                        else:
+                            t = 0.0
+                        left_x = corners[0].x  # Left is always at same X
+                        right_x = corners[0].x + t * (corners[1].x - corners[0].x)  # Interpolate right
+                    else:
+                        # In rectangular region: both edges are vertical
+                        left_x = corners[3].x  # Bottom-left X
+                        right_x = corners[2].x  # Bottom-right X
+                    return left_x, right_x
         else:
             # Rectangle
             y_min = position.y

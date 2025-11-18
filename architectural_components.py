@@ -412,38 +412,48 @@ class Chimney:
         # - Back wall (upslope): taller, height = chimney_height + height_diff
         # - Left/right walls: trapezoids with this height variation
         
-        # For chimney front: reduce height by thickness so that when male joint
-        # (which is thickness high) is added, total height equals chimney_height
+        # Chimney front and back no longer have finger joints
+        # Both front and back are reduced by thickness to account for roof slope fit
         thickness = self.house_geometry.thickness
         
         panels = {
-            'chimney_front': (footprint_width, self.chimney_height - thickness),  # Reduced by thickness
-            'chimney_back': (footprint_width, self.chimney_height + height_diff_across_depth),  # Upslope side (taller)
+            'chimney_front': (footprint_width, self.chimney_height - thickness),  # Reduced by thickness for roof fit
+            'chimney_back': (footprint_width, self.chimney_height + height_diff_across_depth - thickness),  # Upslope side (taller), also reduced by thickness
             'chimney_left': (footprint_depth, self.chimney_height),
             'chimney_right': (footprint_depth, self.chimney_height)
         }
         
-        # Add casings (4 pieces each) - front/back INSIDE left/right
-        # Casing depth for roof = chimney_depth / cos(angle)
-        casing_depth = footprint_depth / math.cos(math.radians(self.roof_angle))
+        # Add single casing piece that wraps around chimney
+        # m = chimney width (footprint_width)
+        # k = chimney depth (footprint_depth)
+        # l = k / cos(roof_angle) - projection of depth onto sloped roof
+        import math
+        theta_rad = math.radians(self.roof_angle)
+        m = footprint_width
+        k = footprint_depth
+        l = k / math.cos(theta_rad)
         
-        # Front/back casing pieces (red in diagram)
-        panels['chimney_roof_casing_front'] = (footprint_width, thickness)
-        panels['chimney_roof_casing_back'] = (footprint_width, thickness)
-        panels['chimney_top_casing_front'] = (footprint_width, thickness)
-        panels['chimney_top_casing_back'] = (footprint_width, thickness)
+        # Casing dimensions as shown in diagram
+        # Outer: (m + 4.1 * thickness) × (l + 3 * thickness)
+        # Inner cutout: (m + 2.1 * thickness) × (l + thickness)
+        casing_outer_width = m + 4.1 * thickness
+        casing_outer_height = l + 3 * thickness
         
-        # Left/right casing pieces (blue in diagram) - extended by 2*thickness
-        panels['chimney_roof_casing_left'] = (thickness, casing_depth + 2 * thickness)
-        panels['chimney_roof_casing_right'] = (thickness, casing_depth + 2 * thickness)
-        panels['chimney_top_casing_left'] = (thickness, footprint_depth + 2 * thickness)
-        panels['chimney_top_casing_right'] = (thickness, footprint_depth + 2 * thickness)
+        panels['chimney_casing'] = (casing_outer_width, casing_outer_height)
+        
+        # Store cutout dimensions for later use
+        self.casing_cutout_width = m + 2.1 * thickness
+        self.casing_cutout_height = l + thickness
         
         return panels
     
     def get_panel_dimensions(self) -> Dict[str, Tuple[float, float]]:
         """Get dimensions for all chimney wall panels"""
         return self.wall_panels
+    
+    def get_casing_cutout_dimensions(self) -> Tuple[float, float]:
+        """Get inner cutout dimensions for the casing piece"""
+        return (self.casing_cutout_width, self.casing_cutout_height)
 
 
 class Door:
