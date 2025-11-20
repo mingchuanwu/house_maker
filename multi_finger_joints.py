@@ -1052,9 +1052,9 @@ class EnhancedHousePanelGenerator:
         inner_width = door.position.width
         inner_height = door.position.height
         
-        # Casing dimensions based on material thickness
-        casing_width = self.geometry.thickness  # Frame width = 1 * thickness
-        extension = 0.4 * self.geometry.thickness  # Horizontal extension = 0.4 * thickness per side
+        # Casing dimensions based on material thickness (increased by 1.5x)
+        casing_width = 1.5 * self.geometry.thickness  # Frame width = 1.5 * thickness
+        extension = 0.6 * self.geometry.thickness  # Horizontal extension = 0.6 * thickness per side
         
         # Generate casing based on door type
         if door.type == DoorType.ARCHED:
