@@ -391,7 +391,7 @@ house_maker/
 
 ```bash
 cd /Users/mingchuanwu/src/oss/house_maker
-make setup      # uv creates .venv (Python 3.12) and installs the dev dependency (pytest); installs jsdom if npm exists
+make setup      # uv creates .venv (Python 3.12) and installs the dev dependencies; if npm exists it also runs `npm ci` (jsdom, for the review-page tests)
 make test       # full suite
 make review     # tests + SVGs + review.html in /tmp/house_gallery, then opens the review page
 make feedback   # collect exported review feedback from /tmp/house_review_inbox
