@@ -1,0 +1,8 @@
+{
+  "name": "house-maker-review-tests",
+  "private": true,
+  "description": "Node-side dev dependencies, used only by the optional review-page tests (tests/test_review_tool.py)",
+  "devDependencies": {
+    "jsdom": "^26.0.0"
+  }
+}

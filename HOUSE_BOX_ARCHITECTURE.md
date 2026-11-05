@@ -1,3 +1,7 @@
+> **Note (2026-10-31):** this document describes the original design and is partly outdated
+> (rotated layout, `get_finger_joint_configuration`, single-module generator). For the current
+> structure see the README "Project Structure" and `docs/ARCHITECTURE_REVIEW.md`.
+
 # HouseMaker Architecture Documentation
 
 ## Overview

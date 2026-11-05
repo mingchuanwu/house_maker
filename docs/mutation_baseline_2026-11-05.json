@@ -1,0 +1,9770 @@
+[
+ {
+  "file": "joints.py",
+  "line": 29,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 65,
+  "kind": "binop",
+  "before": "finger_length * 2.5",
+  "after": "finger_length / 2.5",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 76,
+  "kind": "cmp",
+  "before": "fit >= n",
+  "after": "fit > n",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 87,
+  "kind": "binop",
+  "before": "count * f",
+  "after": "count / f",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 108,
+  "kind": "binop",
+  "before": "edge_length - 2 * inset",
+  "after": "edge_length + 2 * inset",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 127,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 153,
+  "kind": "binop",
+  "before": "slot.thickness / 2",
+  "after": "slot.thickness * 2",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 70,
+  "kind": "binop",
+  "before": "self.y_kerf + 2 * t",
+  "after": "self.y_kerf - 2 * t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 78,
+  "kind": "binop",
+  "before": "self.base_roof_width + 4 * t",
+  "after": "self.base_roof_width - 4 * t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "(t - k) / 2",
+  "after": "(t - k) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "self.roof_panel_length - 2.5 * t",
+  "after": "self.roof_panel_length + 2.5 * t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 137,
+  "kind": "num",
+  "before": "5",
+  "after": "10",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 101,
+  "kind": "cmp",
+  "before": "self.position.height < 5.0",
+  "after": "self.position.height <= 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 143,
+  "kind": "cmp",
+  "before": "d < 8.0",
+  "after": "d <= 8.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "x + t",
+  "after": "x - t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 190,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 270,
+  "kind": "cmp",
+  "before": "self.position.width < 8.0",
+  "after": "self.position.width <= 8.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 64,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 98,
+  "kind": "binop",
+  "before": "2 * phi_deg",
+  "after": "2 / phi_deg",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 87,
+  "kind": "boolop",
+  "before": "features or PanelFeatures()",
+  "after": "features and PanelFeatures()",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 29,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 47,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 59,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 91,
+  "kind": "binop",
+  "before": "chimney.rise / chimney.plan_depth",
+  "after": "chimney.rise * chimney.plan_depth",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 116,
+  "kind": "boolop",
+  "before": "joint_engine(chimney, engine) or engine",
+  "after": "joint_engine(chimney, engine) and engine",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "y0 + in_h",
+  "after": "y0 - in_h",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 45,
+  "kind": "binop",
+  "before": "g.rafter / 2",
+  "after": "g.rafter * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "binop",
+  "before": "slot.thickness / 2",
+  "after": "slot.thickness * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "cmp",
+  "before": "right > g.rafter - margin",
+  "after": "right >= g.rafter - margin",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "binop",
+  "before": "(b.x - a.x) ** 2 + (b.y - a.y) ** 2",
+  "after": "(b.x - a.x) ** 2 - (b.y - a.y) ** 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 85,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "not",
+  "before": "not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or (b[3] <= a[1]))",
+  "after": "not (a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or (b[3] <= a[1]))",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 123,
+  "kind": "not",
+  "before": "not self._positioner.validate_component_placement(position, panel_dims)",
+  "after": "not self._positioner.validate_component_placement(position, panel_dims)",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 136,
+  "kind": "boolop",
+  "before": "other is ignore or other.position.panel != position.panel",
+  "after": "other is ignore and other.position.panel != position.panel",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 166,
+  "kind": "cmp",
+  "before": "w.position.panel == panel_name",
+  "after": "w.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "boolop",
+  "before": "x0 < m or y0 < m or x1 > width - m or (y1 > height - m)",
+  "after": "x0 < m and y0 < m and (x1 > width - m) and (y1 > height - m)",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 208,
+  "kind": "num",
+  "before": "20.0",
+  "after": "40.0",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 267,
+  "kind": "cmp",
+  "before": "g.position.panel == panel_name",
+  "after": "g.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "cmp",
+  "before": "ay + ah + spacing <= by",
+  "after": "ay + ah + spacing < by",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "y + ph + spacing",
+  "after": "y + ph - spacing",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "(q.x - p.x) ** 2 + (q.y - p.y) ** 2",
+  "after": "(q.x - p.x) ** 2 - (q.y - p.y) ** 2",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 80,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 34,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "binop",
+  "before": "max_x + 2 * MARGIN",
+  "after": "max_x - 2 * MARGIN",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 85,
+  "kind": "boolop",
+  "before": "p.pattern and p.pattern.strip()",
+  "after": "p.pattern or p.pattern.strip()",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "self.min_x - margin",
+  "after": "self.min_x + margin",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 44,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 63,
+  "kind": "boolop",
+  "before": "cmd in _ARITY and len(nums) == _ARITY[cmd]",
+  "after": "cmd in _ARITY or len(nums) == _ARITY[cmd]",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 82,
+  "kind": "boolop",
+  "before": "letter == 'Z' and current",
+  "after": "letter == 'Z' or current",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "width / 2",
+  "after": "width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 69,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 87,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 102,
+  "kind": "binop",
+  "before": "y + pane_height - mullion_width / 2",
+  "after": "y + pane_height + mullion_width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 116,
+  "kind": "binop",
+  "before": "x + i * window_width + spacing / 2",
+  "after": "x + i * window_width - spacing / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 138,
+  "kind": "binop",
+  "before": "left + ' ' + center + ' ' + right",
+  "after": "left + ' ' + center + ' ' - right",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 152,
+  "kind": "binop",
+  "before": "left + ' '",
+  "after": "left - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 187,
+  "kind": "binop",
+  "before": "main + ' ' + divider",
+  "after": "main + ' ' - divider",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 213,
+  "kind": "binop",
+  "before": "half_width - 0.5",
+  "after": "half_width + 0.5",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 221,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 21,
+  "kind": "binop",
+  "before": "2 * extension",
+  "after": "2 / extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 86,
+  "kind": "binop",
+  "before": "inner_x - score_inset",
+  "after": "inner_x + score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "binop",
+  "before": "2 * extension",
+  "after": "2 / extension",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 171,
+  "kind": "binop",
+  "before": "outer_radius * 2",
+  "after": "outer_radius / 2",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 224,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width",
+  "after": "inner_width - 2 * casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 277,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 284,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 323,
+  "kind": "binop",
+  "before": "extension + casing_width",
+  "after": "extension - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 386,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 42,
+  "kind": "num",
+  "before": "30.0",
+  "after": "60.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 88,
+  "kind": "cmp",
+  "before": "window_type == WindowType.ATTIC",
+  "after": "window_type != WindowType.ATTIC",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 113,
+  "kind": "binop",
+  "before": "base_width * scale",
+  "after": "base_width / scale",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "panel_width * 0.8",
+  "after": "panel_width / 0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 163,
+  "kind": "num",
+  "before": "0.25",
+  "after": "0.5",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 191,
+  "kind": "binop",
+  "before": "standard_floor_height * 0.25",
+  "after": "standard_floor_height / 0.25",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 213,
+  "kind": "binop",
+  "before": "component.y + component.height",
+  "after": "component.y - component.height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 223,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 271,
+  "kind": "binop",
+  "before": "panel_height * 0.35",
+  "after": "panel_height / 0.35",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 279,
+  "kind": "binop",
+  "before": "panel_height * 0.45",
+  "after": "panel_height / 0.45",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 286,
+  "kind": "num",
+  "before": "30.0",
+  "after": "60.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 339,
+  "kind": "not",
+  "before": "not panel_dims",
+  "after": "not panel_dims",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 370,
+  "kind": "binop",
+  "before": "window_y + comp_height",
+  "after": "window_y - comp_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 389,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 391,
+  "kind": "binop",
+  "before": "panel_width - margin",
+  "after": "panel_width + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 430,
+  "kind": "cmp",
+  "before": "window_y + comp_height > self.house_geometry.z - margin",
+  "after": "window_y + comp_height >= self.house_geometry.z - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 442,
+  "kind": "not",
+  "before": "not self._has_collision(main_window_pos, existing_components)",
+  "after": "not self._has_collision(main_window_pos, existing_components)",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 456,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 466,
+  "kind": "cmp",
+  "before": "right_x >= margin",
+  "after": "right_x > margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 482,
+  "kind": "binop",
+  "before": "self.house_geometry.z + self.house_geometry.gable_peak_height * 0.382",
+  "after": "self.house_geometry.z - self.house_geometry.gable_peak_height * 0.382",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 493,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 518,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 530,
+  "kind": "binop",
+  "before": "comp2.y + comp2.height / 2",
+  "after": "comp2.y - comp2.height / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 535,
+  "kind": "cmp",
+  "before": "distance < min_center_distance",
+  "after": "distance <= min_center_distance",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 32,
+  "kind": "cmp",
+  "before": "style == HouseStyle.WALLS_ONLY",
+  "after": "style != HouseStyle.WALLS_ONLY",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 47,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "binop",
+  "before": "pts[1:] + pts[:1]",
+  "after": "pts[1:] - pts[:1]",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 37,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 65,
+  "kind": "num",
+  "before": "2.5",
+  "after": "5.0",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 78,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 87,
+  "kind": "binop",
+  "before": "count + 1",
+  "after": "count - 1",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 108,
+  "kind": "binop",
+  "before": "2 * inset",
+  "after": "2 / inset",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 127,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 153,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 70,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 78,
+  "kind": "binop",
+  "before": "4 * t",
+  "after": "4 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "t - k",
+  "after": "t + k",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "2.5 * t",
+  "after": "2.5 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 140,
+  "kind": "cmp",
+  "before": "self.finger_length > min_edge / 3",
+  "after": "self.finger_length >= min_edge / 3",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 101,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 143,
+  "kind": "num",
+  "before": "8.0",
+  "after": "16.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "y + t",
+  "after": "y - t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 193,
+  "kind": "binop",
+  "before": "self.CASING_CLEARANCE * self.thickness",
+  "after": "self.CASING_CLEARANCE / self.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 225,
+  "kind": "num",
+  "before": "3.0",
+  "after": "6.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 270,
+  "kind": "num",
+  "before": "8.0",
+  "after": "16.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 70,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "num",
+  "before": "90",
+  "after": "180",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 98,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 76,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 94,
+  "kind": "binop",
+  "before": "i + 1",
+  "after": "i - 1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 29,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 54,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 65,
+  "kind": "binop",
+  "before": "shortest / 3",
+  "after": "shortest * 3",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 92,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 126,
+  "kind": "boolop",
+  "before": "joints or {}",
+  "after": "joints and {}",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "x0 + in_w",
+  "after": "x0 - in_w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 45,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "binop",
+  "before": "g.rafter - margin",
+  "after": "g.rafter + margin",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "binop",
+  "before": "b.x - a.x",
+  "after": "b.x + a.x",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 85,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "boolop",
+  "before": "a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or (b[3] <= a[1])",
+  "after": "a[2] <= b[0] and b[2] <= a[0] and (a[3] <= b[1]) and (b[3] <= a[1])",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "position.y + position.height",
+  "after": "position.y - position.height",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 136,
+  "kind": "cmp",
+  "before": "other.position.panel != position.panel",
+  "after": "other.position.panel == position.panel",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 169,
+  "kind": "cmp",
+  "before": "d.position.panel == panel_name",
+  "after": "d.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 183,
+  "kind": "cmp",
+  "before": "g.position.panel == panel_name",
+  "after": "g.position.panel != panel_name",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "cmp",
+  "before": "x0 < m",
+  "after": "x0 <= m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 219,
+  "kind": "num",
+  "before": "8.0",
+  "after": "16.0",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 299,
+  "kind": "cmp",
+  "before": "self.architectural_style != ArchitecturalStyle.BASIC",
+  "after": "self.architectural_style == ArchitecturalStyle.BASIC",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "binop",
+  "before": "ay + ah + spacing",
+  "after": "ay + ah - spacing",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "y + ph",
+  "after": "y - ph",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "q.x - p.x",
+  "after": "q.x + p.x",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "(la - lb) / 2",
+  "after": "(la - lb) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 88,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 38,
+  "kind": "binop",
+  "before": "LABEL_OFFSET + LABEL_HEIGHT",
+  "after": "LABEL_OFFSET - LABEL_HEIGHT",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "binop",
+  "before": "2 * MARGIN",
+  "after": "2 / MARGIN",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "p.bbox.min_x + p.bbox.width / 2",
+  "after": "p.bbox.min_x - p.bbox.width / 2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "self.min_y - margin",
+  "after": "self.min_y + margin",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 45,
+  "kind": "binop",
+  "before": "i / samples",
+  "after": "i * samples",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 63,
+  "kind": "cmp",
+  "before": "len(nums) == _ARITY[cmd]",
+  "after": "len(nums) != _ARITY[cmd]",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 82,
+  "kind": "cmp",
+  "before": "letter == 'Z'",
+  "after": "letter != 'Z'",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 43,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 70,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "width / 3",
+  "after": "width * 3",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 102,
+  "kind": "binop",
+  "before": "y + pane_height",
+  "after": "y - pane_height",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 116,
+  "kind": "binop",
+  "before": "x + i * window_width",
+  "after": "x - i * window_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 138,
+  "kind": "binop",
+  "before": "left + ' ' + center + ' '",
+  "after": "left + ' ' + center - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 157,
+  "kind": "binop",
+  "before": "height * 0.7",
+  "after": "height / 0.7",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 187,
+  "kind": "binop",
+  "before": "main + ' '",
+  "after": "main - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 213,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 222,
+  "kind": "binop",
+  "before": "top + ' ' + bottom",
+  "after": "top + ' ' - bottom",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 21,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 87,
+  "kind": "binop",
+  "before": "inner_y - score_inset",
+  "after": "inner_y + score_inset",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 171,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 224,
+  "kind": "binop",
+  "before": "2 * casing_width",
+  "after": "2 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 277,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 284,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 324,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 387,
+  "kind": "binop",
+  "before": "0.6 * thickness",
+  "after": "0.6 / thickness",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 56,
+  "kind": "binop",
+  "before": "usable_height * self.DOOR_HEIGHT_RATIO",
+  "after": "usable_height / self.DOOR_HEIGHT_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 90,
+  "kind": "binop",
+  "before": "self.house_geometry.gable_peak_height * 0.4",
+  "after": "self.house_geometry.gable_peak_height / 0.4",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 116,
+  "kind": "cmp",
+  "before": "window_type == WindowType.CIRCULAR",
+  "after": "window_type != WindowType.CIRCULAR",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 129,
+  "kind": "num",
+  "before": "0.8",
+  "after": "1.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 164,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 191,
+  "kind": "num",
+  "before": "0.25",
+  "after": "0.5",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 214,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 228,
+  "kind": "num",
+  "before": "60.0",
+  "after": "120.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 271,
+  "kind": "num",
+  "before": "0.35",
+  "after": "0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 279,
+  "kind": "num",
+  "before": "0.45",
+  "after": "0.9",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 287,
+  "kind": "binop",
+  "before": "panel_height * 0.4",
+  "after": "panel_height / 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 344,
+  "kind": "boolop",
+  "before": "existing_components or []",
+  "after": "existing_components and []",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 370,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height - margin",
+  "after": "floor_y_start + floor_height + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 389,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 393,
+  "kind": "not",
+  "before": "not self._has_collision(candidate_pos, existing_components)",
+  "after": "not self._has_collision(candidate_pos, existing_components)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 430,
+  "kind": "binop",
+  "before": "window_y + comp_height",
+  "after": "window_y - comp_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 446,
+  "kind": "cmp",
+  "before": "comp.panel == panel_name",
+  "after": "comp.panel != panel_name",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 459,
+  "kind": "boolop",
+  "before": "left_x >= margin and left_x + side_comp_width <= panel_width - margin and (side_comp_width",
+  "after": "left_x >= margin or left_x + side_comp_width <= panel_width - margin or side_comp_width >=",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 467,
+  "kind": "cmp",
+  "before": "right_x + side_comp_width <= panel_width - margin",
+  "after": "right_x + side_comp_width < panel_width - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 482,
+  "kind": "binop",
+  "before": "self.house_geometry.gable_peak_height * 0.382",
+  "after": "self.house_geometry.gable_peak_height / 0.382",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 508,
+  "kind": "cmp",
+  "before": "existing.panel != component.panel",
+  "after": "existing.panel == component.panel",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 523,
+  "kind": "cmp",
+  "before": "comp1.panel != comp2.panel",
+  "after": "comp1.panel == comp2.panel",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 530,
+  "kind": "binop",
+  "before": "comp2.height / 2",
+  "after": "comp2.height * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 539,
+  "kind": "cmp",
+  "before": "height <= self.house_geometry.z",
+  "after": "height < self.house_geometry.z",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 33,
+  "kind": "cmp",
+  "before": "n != 'floor'",
+  "after": "n == 'floor'",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "(a.x - b.x) ** 2 + (a.y - b.y) ** 2",
+  "after": "(a.x - b.x) ** 2 - (a.y - b.y) ** 2",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 50,
+  "kind": "num",
+  "before": "7",
+  "after": "14",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 70,
+  "kind": "boolop",
+  "before": "self.single_joints or edge_length < self._min_edge_for_multiple",
+  "after": "self.single_joints and edge_length < self._min_edge_for_multiple",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 81,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 87,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 108,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 139,
+  "kind": "cmp",
+  "before": "role == MALE",
+  "after": "role != MALE",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 153,
+  "kind": "binop",
+  "before": "slot.length / 2",
+  "after": "slot.length * 2",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 70,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 78,
+  "kind": "num",
+  "before": "4",
+  "after": "8",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 129,
+  "kind": "num",
+  "before": "2.5",
+  "after": "5.0",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 140,
+  "kind": "binop",
+  "before": "min_edge / 3",
+  "after": "min_edge * 3",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 128,
+  "kind": "num",
+  "before": "0.1",
+  "after": "0.2",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 145,
+  "kind": "cmp",
+  "before": "d <= 2 * t",
+  "after": "d < 2 * t",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "w - 2 * t",
+  "after": "w + 2 * t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 194,
+  "kind": "binop",
+  "before": "self.outer_width + c",
+  "after": "self.outer_width - c",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 235,
+  "kind": "cmp",
+  "before": "self.position.width < 15.0",
+  "after": "self.position.width <= 15.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 270,
+  "kind": "cmp",
+  "before": "self.position.height < 15.0",
+  "after": "self.position.height <= 15.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 70,
+  "kind": "binop",
+  "before": "W / 2",
+  "after": "W * 2",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 86,
+  "kind": "cmp",
+  "before": "width <= 0",
+  "after": "width < 0",
+  "status": "survived"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 24,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 76,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 94,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 30,
+  "kind": "num",
+  "before": "2.0",
+  "after": "4.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 54,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 65,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 95,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "binop",
+  "before": "(outer_w - in_w) / 2",
+  "after": "(outer_w - in_w) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "y0 + in_h",
+  "after": "y0 - in_h",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 45,
+  "kind": "binop",
+  "before": "dormer.thickness / 2",
+  "after": "dormer.thickness * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "binop",
+  "before": "slot.cy + slot.thickness / 2",
+  "after": "slot.cy - slot.thickness / 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 87,
+  "kind": "cmp",
+  "before": "name == 'ridge'",
+  "after": "name != 'ridge'",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "cmp",
+  "before": "a[2] <= b[0]",
+  "after": "a[2] < b[0]",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 43,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "position.x + position.width",
+  "after": "position.x - position.width",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "rect[0] - gap",
+  "after": "rect[0] + gap",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 175,
+  "kind": "binop",
+  "before": "x0 - t",
+  "after": "x0 + t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "x - t",
+  "after": "x + t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "cmp",
+  "before": "y0 < m",
+  "after": "y0 <= m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 220,
+  "kind": "num",
+  "before": "12.0",
+  "after": "24.0",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 346,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "binop",
+  "before": "ay + ah",
+  "after": "ay - ah",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "binop",
+  "before": "max((y + ph for _, y, _, ph in placed), default=0.0) + (spacing if placed else 0.0)",
+  "after": "max((y + ph for _, y, _, ph in placed), default=0.0) - (spacing if placed else 0.0)",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 46,
+  "kind": "boolop",
+  "before": "x + w <= sheet_width and (not any((_overlaps((x, y, w, h), r, spacing) for r in placed)))",
+  "after": "x + w <= sheet_width or not any((_overlaps((x, y, w, h), r, spacing) for r in placed))",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "la - lb",
+  "after": "la + lb",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 88,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 38,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "p.bbox.width / 2",
+  "after": "p.bbox.width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "self.max_x + margin",
+  "after": "self.max_x - margin",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 47,
+  "kind": "cmp",
+  "before": "len(pts) > 1",
+  "after": "len(pts) >= 1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 64,
+  "kind": "binop",
+  "before": "i + 1",
+  "after": "i - 1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 87,
+  "kind": "boolop",
+  "before": "cmd in _ARITY and len(nums) == _ARITY[cmd]",
+  "after": "cmd in _ARITY or len(nums) == _ARITY[cmd]",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "y + height / 2",
+  "after": "y - height / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "center_x - mullion_width / 2",
+  "after": "center_x + mullion_width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 88,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 102,
+  "kind": "binop",
+  "before": "mullion_width / 2",
+  "after": "mullion_width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 116,
+  "kind": "binop",
+  "before": "i * window_width",
+  "after": "i / window_width",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 138,
+  "kind": "binop",
+  "before": "left + ' ' + center",
+  "after": "left + ' ' - center",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 157,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 191,
+  "kind": "binop",
+  "before": "height * 0.2",
+  "after": "height / 0.2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 214,
+  "kind": "binop",
+  "before": "left + ' ' + right",
+  "after": "left + ' ' - right",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 222,
+  "kind": "binop",
+  "before": "top + ' '",
+  "after": "top - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 28,
+  "kind": "binop",
+  "before": "extension + casing_width",
+  "after": "extension - casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "inner_width + 2 * score_inset",
+  "after": "inner_width - 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 126,
+  "kind": "binop",
+  "before": "inner_height + 2 * casing_width",
+  "after": "inner_height - 2 * casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 175,
+  "kind": "binop",
+  "before": "outer_size / 2",
+  "after": "outer_size * 2",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 224,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 278,
+  "kind": "binop",
+  "before": "frame_height + top_bar_height - 2 * score_inset",
+  "after": "frame_height + top_bar_height + 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 285,
+  "kind": "binop",
+  "before": "casing_width - 2 * score_inset",
+  "after": "casing_width + 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 325,
+  "kind": "binop",
+  "before": "inner_x + inner_width",
+  "after": "inner_x - inner_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 387,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 57,
+  "kind": "num",
+  "before": "15.0",
+  "after": "30.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 90,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 119,
+  "kind": "cmp",
+  "before": "window_type == WindowType.BAY",
+  "after": "window_type != WindowType.BAY",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 153,
+  "kind": "binop",
+  "before": "(self.house_geometry.x + self.house_geometry.y) / 2",
+  "after": "(self.house_geometry.x + self.house_geometry.y) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 166,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 195,
+  "kind": "cmp",
+  "before": "floor_index == total_floors - 1",
+  "after": "floor_index != total_floors - 1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 218,
+  "kind": "boolop",
+  "before": "component.x < margin or component.y < margin or component.x + component.width > panel_widt",
+  "after": "component.x < margin and component.y < margin and (component.x + component.width > panel_w",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 229,
+  "kind": "num",
+  "before": "30.0",
+  "after": "60.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 272,
+  "kind": "cmp",
+  "before": "window_type == WindowType.PALLADIAN",
+  "after": "window_type != WindowType.PALLADIAN",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 280,
+  "kind": "cmp",
+  "before": "window_type == WindowType.CROSS_PANE",
+  "after": "window_type != WindowType.CROSS_PANE",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 287,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 347,
+  "kind": "binop",
+  "before": "self.house_geometry.thickness * 2",
+  "after": "self.house_geometry.thickness / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 370,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height",
+  "after": "floor_y_start - floor_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 389,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 398,
+  "kind": "not",
+  "before": "not any((self._components_too_close(pos, existing, min_spacing) for existing in positions)",
+  "after": "not any((self._components_too_close(pos, existing, min_spacing) for existing in positions)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 430,
+  "kind": "binop",
+  "before": "self.house_geometry.z - margin",
+  "after": "self.house_geometry.z + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 448,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 459,
+  "kind": "cmp",
+  "before": "left_x >= margin",
+  "after": "left_x > margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 467,
+  "kind": "binop",
+  "before": "right_x + side_comp_width",
+  "after": "right_x - side_comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 482,
+  "kind": "num",
+  "before": "0.382",
+  "after": "0.764",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 512,
+  "kind": "boolop",
+  "before": "component.x < existing.x + existing.width and component.x + component.width > existing.x a",
+  "after": "component.x < existing.x + existing.width or component.x + component.width > existing.x or",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 524,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 530,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 544,
+  "kind": "binop",
+  "before": "height - self.house_geometry.z",
+  "after": "height + self.house_geometry.z",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "_BASE + _ROOF",
+  "after": "_BASE - _ROOF",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "a.x - b.x",
+  "after": "a.x + b.x",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 51,
+  "kind": "num",
+  "before": "0.3",
+  "after": "0.6",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 70,
+  "kind": "cmp",
+  "before": "edge_length < self._min_edge_for_multiple",
+  "after": "edge_length <= self._min_edge_for_multiple",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 84,
+  "kind": "cmp",
+  "before": "count == 1",
+  "after": "count != 1",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 88,
+  "kind": "cmp",
+  "before": "gap < f * self.MIN_GAP_RATIO",
+  "after": "gap <= f * self.MIN_GAP_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 109,
+  "kind": "cmp",
+  "before": "usable < self.finger_length * 1.5",
+  "after": "usable <= self.finger_length * 1.5",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 145,
+  "kind": "binop",
+  "before": "' ' + self.trace_edge(corners[i], corners[(i + 1) % len(corners)], spec)",
+  "after": "' ' - self.trace_edge(corners[i], corners[(i + 1) % len(corners)], spec)",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 153,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 71,
+  "kind": "binop",
+  "before": "self.gable_wall_width / 2",
+  "after": "self.gable_wall_width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 79,
+  "kind": "binop",
+  "before": "self.base_roof_width + 3 * t + k",
+  "after": "self.base_roof_width + 3 * t - k",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "(f - k) / 2",
+  "after": "(f - k) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 133,
+  "kind": "cmp",
+  "before": "self.gable_peak_height <= 0",
+  "after": "self.gable_peak_height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 140,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 131,
+  "kind": "num",
+  "before": "20.0",
+  "after": "40.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 145,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 194,
+  "kind": "binop",
+  "before": "self.slope_depth + c",
+  "after": "self.slope_depth - c",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 235,
+  "kind": "num",
+  "before": "15.0",
+  "after": "30.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 270,
+  "kind": "num",
+  "before": "15.0",
+  "after": "30.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 70,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 86,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 20,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 76,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "binop",
+  "before": "(b.x - a.x) ** 2 + (b.y - a.y) ** 2",
+  "after": "(b.x - a.x) ** 2 - (b.y - a.y) ** 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points)) + ' Z'",
+  "after": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points)) - ' Z'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 54,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 66,
+  "kind": "cmp",
+  "before": "f < MIN_FINGER_IN_THICKNESSES * engine.thickness",
+  "after": "f <= MIN_FINGER_IN_THICKNESSES * engine.thickness",
+  "status": "survived"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 95,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "binop",
+  "before": "outer_w - in_w",
+  "after": "outer_w + in_w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "x0 + in_w",
+  "after": "x0 - in_w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 45,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "binop",
+  "before": "slot.thickness / 2",
+  "after": "slot.thickness * 2",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "binop",
+  "before": "b.y - a.y",
+  "after": "b.y + a.y",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "(b.x - a.x) ** 2 + (b.y - a.y) ** 2",
+  "after": "(b.x - a.x) ** 2 - (b.y - a.y) ** 2",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 61,
+  "kind": "cmp",
+  "before": "roof_type != RoofType.GABLE",
+  "after": "roof_type == RoofType.GABLE",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 130,
+  "kind": "binop",
+  "before": "g.z_kerf + min(cx, width - cx) * math.tan(g.theta_rad)",
+  "after": "g.z_kerf - min(cx, width - cx) * math.tan(g.theta_rad)",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 175,
+  "kind": "binop",
+  "before": "y0 - t",
+  "after": "y0 + t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "y - t",
+  "after": "y + t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "cmp",
+  "before": "x1 > width - m",
+  "after": "x1 >= width - m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 228,
+  "kind": "binop",
+  "before": "fx + fw",
+  "after": "fx - fw",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 346,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "cmp",
+  "before": "by + bh + spacing <= ay",
+  "after": "by + bh + spacing < ay",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "binop",
+  "before": "y + ph",
+  "after": "y - ph",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 46,
+  "kind": "cmp",
+  "before": "x + w <= sheet_width",
+  "after": "x + w < sheet_width",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "q.y - p.y",
+  "after": "q.y + p.y",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 43,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 90,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 45,
+  "kind": "binop",
+  "before": "len(panel.label) * CHAR_WIDTH",
+  "after": "len(panel.label) / CHAR_WIDTH",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "binop",
+  "before": "max_y + 2 * MARGIN",
+  "after": "max_y - 2 * MARGIN",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 88,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "self.max_y + margin",
+  "after": "self.max_y - margin",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 47,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 64,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 87,
+  "kind": "cmp",
+  "before": "len(nums) == _ARITY[cmd]",
+  "after": "len(nums) != _ARITY[cmd]",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "height / 2",
+  "after": "height * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "mullion_width / 2",
+  "after": "mullion_width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "height / 2",
+  "after": "height * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 102,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 116,
+  "kind": "binop",
+  "before": "spacing / 2",
+  "after": "spacing * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 138,
+  "kind": "binop",
+  "before": "left + ' '",
+  "after": "left - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 158,
+  "kind": "binop",
+  "before": "height * 0.3",
+  "after": "height / 0.3",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 191,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 214,
+  "kind": "binop",
+  "before": "left + ' '",
+  "after": "left - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 15,
+  "kind": "binop",
+  "before": "casing_width * 1.5",
+  "after": "casing_width / 1.5",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 75,
+  "kind": "binop",
+  "before": "0.2 * casing_width",
+  "after": "0.2 / casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 126,
+  "kind": "binop",
+  "before": "2 * casing_width",
+  "after": "2 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 175,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 228,
+  "kind": "binop",
+  "before": "frame_width + 2 * extension",
+  "after": "frame_width - 2 * extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 278,
+  "kind": "binop",
+  "before": "frame_height + top_bar_height",
+  "after": "frame_height - top_bar_height",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 285,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 328,
+  "kind": "binop",
+  "before": "inner_height * 0.7",
+  "after": "inner_height / 0.7",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 388,
+  "kind": "cmp",
+  "before": "door.type == DoorType.ARCHED",
+  "after": "door.type != DoorType.ARCHED",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 57,
+  "kind": "binop",
+  "before": "usable_height - 10",
+  "after": "usable_height + 10",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 91,
+  "kind": "binop",
+  "before": "base_height * self.GOLDEN_RATIO",
+  "after": "base_height / self.GOLDEN_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 121,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 153,
+  "kind": "binop",
+  "before": "self.house_geometry.x + self.house_geometry.y",
+  "after": "self.house_geometry.x - self.house_geometry.y",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 168,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 195,
+  "kind": "binop",
+  "before": "total_floors - 1",
+  "after": "total_floors + 1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 218,
+  "kind": "cmp",
+  "before": "component.x < margin",
+  "after": "component.x <= margin",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 231,
+  "kind": "boolop",
+  "before": "gable_height >= min_height_for_attic or gable_angle >= min_angle_for_attic",
+  "after": "gable_height >= min_height_for_attic and gable_angle >= min_angle_for_attic",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 274,
+  "kind": "binop",
+  "before": "panel_width * 0.6",
+  "after": "panel_width / 0.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 282,
+  "kind": "binop",
+  "before": "panel_width * 0.35",
+  "after": "panel_width / 0.35",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 287,
+  "kind": "num",
+  "before": "25.0",
+  "after": "50.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 347,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 373,
+  "kind": "cmp",
+  "before": "window_y + comp_height > panel_height - margin",
+  "after": "window_y + comp_height >= panel_height - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 389,
+  "kind": "num",
+  "before": "0.8",
+  "after": "1.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 405,
+  "kind": "cmp",
+  "before": "component_type == 'door'",
+  "after": "component_type != 'door'",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 432,
+  "kind": "cmp",
+  "before": "window_y + comp_height > floor_y_start + floor_height - margin",
+  "after": "window_y + comp_height >= floor_y_start + floor_height - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 451,
+  "kind": "binop",
+  "before": "door.x - comp_width - min_spacing",
+  "after": "door.x - comp_width + min_spacing",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 460,
+  "kind": "cmp",
+  "before": "left_x + side_comp_width <= panel_width - margin",
+  "after": "left_x + side_comp_width < panel_width - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 467,
+  "kind": "binop",
+  "before": "panel_width - margin",
+  "after": "panel_width + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 484,
+  "kind": "binop",
+  "before": "attic_y + attic_height",
+  "after": "attic_y - attic_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 512,
+  "kind": "cmp",
+  "before": "component.x < existing.x + existing.width",
+  "after": "component.x <= existing.x + existing.width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 527,
+  "kind": "binop",
+  "before": "comp1.x + comp1.width / 2",
+  "after": "comp1.x - comp1.width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 532,
+  "kind": "binop",
+  "before": "(center1_x - center2_x) ** 2 + (center1_y - center2_y) ** 2",
+  "after": "(center1_x - center2_x) ** 2 - (center1_y - center2_y) ** 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 547,
+  "kind": "cmp",
+  "before": "triangle_height >= max_triangle_height",
+  "after": "triangle_height > max_triangle_height",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 62,
+  "kind": "binop",
+  "before": "pattern + ' ' + tiles",
+  "after": "pattern + ' ' - tiles",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 53,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 71,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 84,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "f * self.MIN_GAP_RATIO",
+  "after": "f / self.MIN_GAP_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 109,
+  "kind": "binop",
+  "before": "self.finger_length * 1.5",
+  "after": "self.finger_length / 1.5",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 145,
+  "kind": "binop",
+  "before": "i + 1",
+  "after": "i - 1",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 154,
+  "kind": "binop",
+  "before": "slot.cx - hx",
+  "after": "slot.cx + hx",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 71,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 79,
+  "kind": "binop",
+  "before": "self.base_roof_width + 3 * t",
+  "after": "self.base_roof_width - 3 * t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "f - k",
+  "after": "f + k",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 133,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 97,
+  "kind": "boolop",
+  "before": "self.position.width <= 0 or self.position.height <= 0",
+  "after": "self.position.width <= 0 and self.position.height <= 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 141,
+  "kind": "boolop",
+  "before": "w <= 0 or d <= 0",
+  "after": "w <= 0 and d <= 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 145,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 203,
+  "kind": "binop",
+  "before": "self.chimney_height + (self.plan_depth - t) * tan",
+  "after": "self.chimney_height - (self.plan_depth - t) * tan",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 237,
+  "kind": "cmp",
+  "before": "self.roof_overhang < 0",
+  "after": "self.roof_overhang <= 0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 53,
+  "kind": "binop",
+  "before": "self.ridge + self.overhang",
+  "after": "self.ridge - self.overhang",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 70,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "width / 2",
+  "after": "width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 44,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 76,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "binop",
+  "before": "b.x - a.x",
+  "after": "b.x + a.x",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points))",
+  "after": "'M ' - ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points))",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 54,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 66,
+  "kind": "binop",
+  "before": "MIN_FINGER_IN_THICKNESSES * engine.thickness",
+  "after": "MIN_FINGER_IN_THICKNESSES / engine.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 96,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 26,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 46,
+  "kind": "binop",
+  "before": "_SLOT_EDGE_MARGIN * dormer.thickness",
+  "after": "_SLOT_EDGE_MARGIN / dormer.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "b.x - a.x",
+  "after": "b.x + a.x",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 63,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 130,
+  "kind": "binop",
+  "before": "min(cx, width - cx) * math.tan(g.theta_rad)",
+  "after": "min(cx, width - cx) / math.tan(g.theta_rad)",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "rect[1] - gap",
+  "after": "rect[1] + gap",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 175,
+  "kind": "binop",
+  "before": "x1 + t",
+  "after": "x1 - t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "x + w + t",
+  "after": "x + w - t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "binop",
+  "before": "width - m",
+  "after": "width + m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 228,
+  "kind": "binop",
+  "before": "fy + fd",
+  "after": "fy - fd",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "not",
+  "before": "not (ax + aw + spacing <= bx or bx + bw + spacing <= ax or ay + ah + spacing <= by or (by ",
+  "after": "not (ax + aw + spacing <= bx or bx + bw + spacing <= ax or ay + ah + spacing <= by or (by ",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "binop",
+  "before": "by + bh + spacing",
+  "after": "by + bh - spacing",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 46,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 47,
+  "kind": "boolop",
+  "before": "name in panels and edge in panels[name].edge_names",
+  "after": "name in panels or edge in panels[name].edge_names",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 91,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 46,
+  "kind": "binop",
+  "before": "panel.bbox.height + label_reserve(include_labels)",
+  "after": "panel.bbox.height - label_reserve(include_labels)",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "binop",
+  "before": "2 * MARGIN",
+  "after": "2 / MARGIN",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "p.bbox.max_y + LABEL_OFFSET",
+  "after": "p.bbox.max_y - LABEL_OFFSET",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 37,
+  "kind": "not",
+  "before": "not (self.max_x <= other.min_x or other.max_x <= self.min_x or self.max_y <= other.min_y o",
+  "after": "not (self.max_x <= other.min_x or other.max_x <= self.min_x or self.max_y <= other.min_y o",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "a.x + (b.x - a.x) * t",
+  "after": "a.x - (b.x - a.x) * t",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 64,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 89,
+  "kind": "cmp",
+  "before": "cmd == 'M'",
+  "after": "cmd != 'M'",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 44,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 77,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 89,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 106,
+  "kind": "binop",
+  "before": "main + ' ' + ' '.join(mullions)",
+  "after": "main + ' ' - ' '.join(mullions)",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 116,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 142,
+  "kind": "binop",
+  "before": "(width - 3) / 2",
+  "after": "(width - 3) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 158,
+  "kind": "num",
+  "before": "0.3",
+  "after": "0.6",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 192,
+  "kind": "binop",
+  "before": "height - peak_height",
+  "after": "height + peak_height",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 219,
+  "kind": "binop",
+  "before": "height / 2",
+  "after": "height * 2",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 15,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 75,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 88,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 126,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 176,
+  "kind": "binop",
+  "before": "outer_size / 2",
+  "after": "outer_size * 2",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 228,
+  "kind": "binop",
+  "before": "2 * extension",
+  "after": "2 / extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 278,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 285,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 328,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 18,
+  "kind": "num",
+  "before": "1.618",
+  "after": "3.236",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 57,
+  "kind": "num",
+  "before": "10",
+  "after": "20",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 99,
+  "kind": "binop",
+  "before": "usable_height * self.WINDOW_HEIGHT_RATIO",
+  "after": "usable_height / self.WINDOW_HEIGHT_RATIO",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 122,
+  "kind": "cmp",
+  "before": "window_type == WindowType.ARCHED",
+  "after": "window_type != WindowType.ARCHED",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 153,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 180,
+  "kind": "binop",
+  "before": "(self.house_geometry.x + self.house_geometry.y) / 2",
+  "after": "(self.house_geometry.x + self.house_geometry.y) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 195,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 218,
+  "kind": "cmp",
+  "before": "component.y < margin",
+  "after": "component.y <= margin",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 231,
+  "kind": "cmp",
+  "before": "gable_height >= min_height_for_attic",
+  "after": "gable_height > min_height_for_attic",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 274,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 282,
+  "kind": "num",
+  "before": "0.35",
+  "after": "0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 290,
+  "kind": "binop",
+  "before": "panel_width * 0.4",
+  "after": "panel_width / 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 348,
+  "kind": "binop",
+  "before": "comp_width * 0.2",
+  "after": "comp_width / 0.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 373,
+  "kind": "binop",
+  "before": "window_y + comp_height",
+  "after": "window_y - comp_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 390,
+  "kind": "binop",
+  "before": "panel_width * fraction - comp_width / 2",
+  "after": "panel_width * fraction + comp_width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 407,
+  "kind": "binop",
+  "before": "(panel_width - comp_width) / 2",
+  "after": "(panel_width - comp_width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 432,
+  "kind": "binop",
+  "before": "window_y + comp_height",
+  "after": "window_y - comp_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 451,
+  "kind": "binop",
+  "before": "door.x - comp_width",
+  "after": "door.x + comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 460,
+  "kind": "binop",
+  "before": "left_x + side_comp_width",
+  "after": "left_x - side_comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 468,
+  "kind": "cmp",
+  "before": "side_comp_width >= 5.0",
+  "after": "side_comp_width > 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 485,
+  "kind": "cmp",
+  "before": "attic_width <= gable_width_at_y - margin * 2",
+  "after": "attic_width < gable_width_at_y - margin * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 512,
+  "kind": "binop",
+  "before": "existing.x + existing.width",
+  "after": "existing.x - existing.width",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 527,
+  "kind": "binop",
+  "before": "comp1.width / 2",
+  "after": "comp1.width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 532,
+  "kind": "binop",
+  "before": "center1_x - center2_x",
+  "after": "center1_x + center2_x",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 548,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 62,
+  "kind": "binop",
+  "before": "pattern + ' '",
+  "after": "pattern - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "a.y - b.y",
+  "after": "a.y + b.y",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 56,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 54,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 72,
+  "kind": "binop",
+  "before": "edge_length - self.finger_length",
+  "after": "edge_length + self.finger_length",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 85,
+  "kind": "binop",
+  "before": "(edge_length - f) / 2 + offset",
+  "after": "(edge_length - f) / 2 - offset",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 89,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 109,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 145,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 154,
+  "kind": "binop",
+  "before": "slot.cx + hx",
+  "after": "slot.cx - hx",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 72,
+  "kind": "binop",
+  "before": "half * math.tan(self.theta_rad)",
+  "after": "half / math.tan(self.theta_rad)",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 79,
+  "kind": "binop",
+  "before": "3 * t",
+  "after": "3 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 127,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 135,
+  "kind": "boolop",
+  "before": "self.roof_panel_left_width <= 0 or self.roof_panel_right_width <= 0",
+  "after": "self.roof_panel_left_width <= 0 and self.roof_panel_right_width <= 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 97,
+  "kind": "cmp",
+  "before": "self.position.width <= 0",
+  "after": "self.position.width < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 141,
+  "kind": "cmp",
+  "before": "w <= 0",
+  "after": "w < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 148,
+  "kind": "cmp",
+  "before": "self.chimney_height <= 0",
+  "after": "self.chimney_height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "d - 2 * t",
+  "after": "d + 2 * t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 203,
+  "kind": "binop",
+  "before": "(self.plan_depth - t) * tan",
+  "after": "(self.plan_depth - t) / tan",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 237,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 55,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 37,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 89,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 45,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 80,
+  "kind": "not",
+  "before": "not name.startswith('roof_panel')",
+  "after": "not name.startswith('roof_panel')",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 40,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 56,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 76,
+  "kind": "binop",
+  "before": "base_z + a",
+  "after": "base_z - a",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 96,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "binop",
+  "before": "(outer_h - in_h) / 2",
+  "after": "(outer_h - in_h) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 30,
+  "kind": "binop",
+  "before": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points)) + ' Z'",
+  "after": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points)) - ' Z'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "slot.cx - slot.length / 2",
+  "after": "slot.cx + slot.length / 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 50,
+  "kind": "binop",
+  "before": "top / g.ridge * g.rafter",
+  "after": "top / g.ridge / g.rafter",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 63,
+  "kind": "binop",
+  "before": "g.width / 2",
+  "after": "g.width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "cmp",
+  "before": "b[2] <= a[0]",
+  "after": "b[2] < a[0]",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 66,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 130,
+  "kind": "binop",
+  "before": "width - cx",
+  "after": "width + cx",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 175,
+  "kind": "binop",
+  "before": "y1 + t",
+  "after": "y1 - t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "cmp",
+  "before": "y1 > height - m",
+  "after": "y1 >= height - m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 235,
+  "kind": "num",
+  "before": "3.0",
+  "after": "6.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "boolop",
+  "before": "ax + aw + spacing <= bx or bx + bw + spacing <= ax or ay + ah + spacing <= by or (by + bh ",
+  "after": "ax + aw + spacing <= bx and bx + bw + spacing <= ax and (ay + ah + spacing <= by) and (by ",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 19,
+  "kind": "binop",
+  "before": "by + bh",
+  "after": "by - bh",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 46,
+  "kind": "not",
+  "before": "not any((_overlaps((x, y, w, h), r, spacing) for r in placed))",
+  "after": "not any((_overlaps((x, y, w, h), r, spacing) for r in placed))",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 34,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 55,
+  "kind": "boolop",
+  "before": "_has_edge(panels, a, ae) and _has_edge(panels, b, be)",
+  "after": "_has_edge(panels, a, ae) or _has_edge(panels, b, be)",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 8,
+  "kind": "num",
+  "before": "0.0254",
+  "after": "0.0508",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 50,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 59,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 15,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 37,
+  "kind": "boolop",
+  "before": "self.max_x <= other.min_x or other.max_x <= self.min_x or self.max_y <= other.min_y or (ot",
+  "after": "self.max_x <= other.min_x and other.max_x <= self.min_x and (self.max_y <= other.min_y) an",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "(b.x - a.x) * t",
+  "after": "(b.x - a.x) / t",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 64,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 98,
+  "kind": "not",
+  "before": "not points",
+  "after": "not points",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "radius * 0.552284749831",
+  "after": "radius / 0.552284749831",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 81,
+  "kind": "binop",
+  "before": "center_y - mullion_width / 2",
+  "after": "center_y + mullion_width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 96,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 106,
+  "kind": "binop",
+  "before": "main + ' '",
+  "after": "main - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 124,
+  "kind": "binop",
+  "before": "width * 0.6",
+  "after": "width / 0.6",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 142,
+  "kind": "binop",
+  "before": "width - 3",
+  "after": "width + 3",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 177,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 211,
+  "kind": "binop",
+  "before": "width / 2",
+  "after": "width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 219,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 16,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width",
+  "after": "inner_width - 2 * casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 79,
+  "kind": "binop",
+  "before": "extension + score_inset",
+  "after": "extension - score_inset",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "inner_height + 2 * score_inset",
+  "after": "inner_height - 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "extension + casing_width",
+  "after": "extension - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 176,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 228,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 278,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width + 2 * extension",
+  "after": "inner_width + 2 * casing_width - 2 * extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 331,
+  "kind": "binop",
+  "before": "inner_arch_start + casing_width",
+  "after": "inner_arch_start - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 19,
+  "kind": "num",
+  "before": "0.8",
+  "after": "1.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 60,
+  "kind": "binop",
+  "before": "door_height * self.DOOR_WIDTH_RATIO",
+  "after": "door_height / self.DOOR_WIDTH_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 100,
+  "kind": "binop",
+  "before": "base_height * self.WINDOW_WIDTH_RATIO",
+  "after": "base_height / self.WINDOW_WIDTH_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 124,
+  "kind": "num",
+  "before": "1.2",
+  "after": "2.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 156,
+  "kind": "cmp",
+  "before": "floor_height <= 0",
+  "after": "floor_height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 180,
+  "kind": "binop",
+  "before": "self.house_geometry.x + self.house_geometry.y",
+  "after": "self.house_geometry.x - self.house_geometry.y",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 201,
+  "kind": "cmp",
+  "before": "floor_index == 0",
+  "after": "floor_index != 0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 219,
+  "kind": "cmp",
+  "before": "component.x + component.width > panel_width - margin",
+  "after": "component.x + component.width >= panel_width - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 231,
+  "kind": "cmp",
+  "before": "gable_angle >= min_angle_for_attic",
+  "after": "gable_angle > min_angle_for_attic",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 274,
+  "kind": "num",
+  "before": "45.0",
+  "after": "90.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 282,
+  "kind": "num",
+  "before": "20.0",
+  "after": "40.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 290,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 348,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 373,
+  "kind": "binop",
+  "before": "panel_height - margin",
+  "after": "panel_height + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 390,
+  "kind": "binop",
+  "before": "panel_width * fraction",
+  "after": "panel_width / fraction",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 407,
+  "kind": "binop",
+  "before": "panel_width - comp_width",
+  "after": "panel_width + comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 432,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height - margin",
+  "after": "floor_y_start + floor_height + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 452,
+  "kind": "binop",
+  "before": "door.x + door.width + min_spacing",
+  "after": "door.x + door.width - min_spacing",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 460,
+  "kind": "binop",
+  "before": "panel_width - margin",
+  "after": "panel_width + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 468,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 485,
+  "kind": "binop",
+  "before": "gable_width_at_y - margin * 2",
+  "after": "gable_width_at_y + margin * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 513,
+  "kind": "cmp",
+  "before": "component.x + component.width > existing.x",
+  "after": "component.x + component.width >= existing.x",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 527,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 532,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 552,
+  "kind": "binop",
+  "before": "width_at_base * (1 - triangle_height / max_triangle_height)",
+  "after": "width_at_base / (1 - triangle_height / max_triangle_height)",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 69,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 57,
+  "kind": "binop",
+  "before": "areas[0] - sum(areas[1:])",
+  "after": "areas[0] + sum(areas[1:])",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 60,
+  "kind": "binop",
+  "before": "thickness + kerf",
+  "after": "thickness - kerf",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 73,
+  "kind": "binop",
+  "before": "(available + self._min_spacing) / (self.finger_length + self._min_spacing)",
+  "after": "(available + self._min_spacing) * (self.finger_length + self._min_spacing)",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 85,
+  "kind": "binop",
+  "before": "(edge_length - f) / 2",
+  "after": "(edge_length - f) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "count - 2",
+  "after": "count + 2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 113,
+  "kind": "cmp",
+  "before": "role == MALE",
+  "after": "role != MALE",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 146,
+  "kind": "binop",
+  "before": "path + ' Z'",
+  "after": "path - ' Z'",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 154,
+  "kind": "binop",
+  "before": "slot.cy - hy",
+  "after": "slot.cy + hy",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 73,
+  "kind": "binop",
+  "before": "self.z_kerf + self.gable_peak_height",
+  "after": "self.z_kerf - self.gable_peak_height",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 79,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "cx - half_x",
+  "after": "cx + half_x",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 135,
+  "kind": "cmp",
+  "before": "self.roof_panel_left_width <= 0",
+  "after": "self.roof_panel_left_width < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 97,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 141,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 148,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 203,
+  "kind": "binop",
+  "before": "self.plan_depth - t",
+  "after": "self.plan_depth + t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 266,
+  "kind": "boolop",
+  "before": "self.position.width <= 0 or self.position.height <= 0",
+  "after": "self.position.width <= 0 and self.position.height <= 0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 62,
+  "kind": "not",
+  "before": "not mirrored",
+  "after": "not mirrored",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 74,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 90,
+  "kind": "binop",
+  "before": "half * math.tan(phi)",
+  "after": "half / math.tan(phi)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 45,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "(x0 + x1) / 2",
+  "after": "(x0 + x1) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "binop",
+  "before": "b.y - a.y",
+  "after": "b.y + a.y",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 40,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 57,
+  "kind": "cmp",
+  "before": "wall == 'chimney_left'",
+  "after": "wall != 'chimney_left'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 76,
+  "kind": "binop",
+  "before": "base_z + b",
+  "after": "base_z - b",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 98,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "binop",
+  "before": "outer_h - in_h",
+  "after": "outer_h + in_h",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 30,
+  "kind": "binop",
+  "before": "'M ' + ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points))",
+  "after": "'M ' - ' L '.join((f'{p.x:.{_P}f},{p.y:.{_P}f}' for p in points))",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "slot.length / 2",
+  "after": "slot.length * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 50,
+  "kind": "binop",
+  "before": "top / g.ridge",
+  "after": "top * g.ridge",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 63,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 69,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "binop",
+  "before": "b.y - a.y",
+  "after": "b.y + a.y",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 80,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 131,
+  "kind": "cmp",
+  "before": "top > limit - g.thickness / math.cos(g.theta_rad)",
+  "after": "top >= limit - g.thickness / math.cos(g.theta_rad)",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "rect[2] + gap",
+  "after": "rect[2] - gap",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 178,
+  "kind": "cmp",
+  "before": "c.position.panel == panel_name",
+  "after": "c.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "y + d + g.roof_overhang + t",
+  "after": "y + d + g.roof_overhang - t",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 198,
+  "kind": "binop",
+  "before": "height - m",
+  "after": "height + m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 249,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "cmp",
+  "before": "ax + aw + spacing <= bx",
+  "after": "ax + aw + spacing < bx",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 31,
+  "kind": "cmp",
+  "before": "w > sheet_width",
+  "after": "w >= sheet_width",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "x + pw + spacing",
+  "after": "x + pw - spacing",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 47,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 41,
+  "kind": "boolop",
+  "before": "ja and jb",
+  "after": "ja or jb",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 59,
+  "kind": "boolop",
+  "before": "_has_edge(panels, a, ae) and ae in panels[a].joints and (b in panels) and (slot < len(pane",
+  "after": "_has_edge(panels, a, ae) or ae in panels[a].joints or b in panels or (slot < len(panels[b]",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 9,
+  "kind": "binop",
+  "before": "LASER_LINE_WIDTH * 3",
+  "after": "LASER_LINE_WIDTH / 3",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 57,
+  "kind": "binop",
+  "before": "positions[p.name][0] + sizes[p.name][0]",
+  "after": "positions[p.name][0] - sizes[p.name][0]",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "(sizes[p.name][0] - p.bbox.width) / 2",
+  "after": "(sizes[p.name][0] - p.bbox.width) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 15,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 37,
+  "kind": "cmp",
+  "before": "self.max_x <= other.min_x",
+  "after": "self.max_x < other.min_x",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "b.x - a.x",
+  "after": "b.x + a.x",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 65,
+  "kind": "cmp",
+  "before": "cmd == 'M'",
+  "after": "cmd != 'M'",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 21,
+  "kind": "binop",
+  "before": "height * 0.3",
+  "after": "height / 0.3",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 48,
+  "kind": "num",
+  "before": "0.552284749831",
+  "after": "1.104569499662",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 81,
+  "kind": "binop",
+  "before": "mullion_width / 2",
+  "after": "mullion_width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 96,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 110,
+  "kind": "binop",
+  "before": "width / 3",
+  "after": "width * 3",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 124,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 142,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 178,
+  "kind": "binop",
+  "before": "y + height / 2",
+  "after": "y - height / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 211,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 220,
+  "kind": "binop",
+  "before": "y + half_height + 0.5",
+  "after": "y + half_height - 0.5",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 16,
+  "kind": "binop",
+  "before": "2 * casing_width",
+  "after": "2 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 81,
+  "kind": "binop",
+  "before": "frame_width - 2 * score_inset",
+  "after": "frame_width + 2 * score_inset",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 89,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 133,
+  "kind": "binop",
+  "before": "inner_height * 0.7",
+  "after": "inner_height / 0.7",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 179,
+  "kind": "binop",
+  "before": "inner_radius * 0.552284749831",
+  "after": "inner_radius / 0.552284749831",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 232,
+  "kind": "binop",
+  "before": "frame_height + top_bar_height",
+  "after": "frame_height - top_bar_height",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 281,
+  "kind": "binop",
+  "before": "inner_x - score_inset",
+  "after": "inner_x + score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width",
+  "after": "inner_width - 2 * casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 369,
+  "kind": "cmp",
+  "before": "window.type == WindowType.ATTIC",
+  "after": "window.type != WindowType.ATTIC",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 20,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 61,
+  "kind": "num",
+  "before": "8.0",
+  "after": "16.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 101,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "floor_height * 0.6",
+  "after": "floor_height / 0.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 156,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 180,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 201,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 219,
+  "kind": "binop",
+  "before": "component.x + component.width",
+  "after": "component.x - component.width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 261,
+  "kind": "not",
+  "before": "not panel_dims",
+  "after": "not panel_dims",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 275,
+  "kind": "binop",
+  "before": "panel_height * 0.5",
+  "after": "panel_height / 0.5",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 283,
+  "kind": "binop",
+  "before": "panel_height * 0.35",
+  "after": "panel_height / 0.35",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 290,
+  "kind": "num",
+  "before": "25.0",
+  "after": "50.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 352,
+  "kind": "cmp",
+  "before": "component_type == 'window'",
+  "after": "component_type != 'window'",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 376,
+  "kind": "binop",
+  "before": "comp_width * 0.2",
+  "after": "comp_width / 0.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 390,
+  "kind": "binop",
+  "before": "comp_width / 2",
+  "after": "comp_width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 407,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 432,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height",
+  "after": "floor_y_start - floor_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 452,
+  "kind": "binop",
+  "before": "door.x + door.width",
+  "after": "door.x - door.width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 461,
+  "kind": "cmp",
+  "before": "side_comp_width >= 5.0",
+  "after": "side_comp_width > 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 468,
+  "kind": "cmp",
+  "before": "side_comp_height >= 5.0",
+  "after": "side_comp_height > 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 485,
+  "kind": "binop",
+  "before": "margin * 2",
+  "after": "margin / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 513,
+  "kind": "binop",
+  "before": "component.x + component.width",
+  "after": "component.x - component.width",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 528,
+  "kind": "binop",
+  "before": "comp1.y + comp1.height / 2",
+  "after": "comp1.y - comp1.height / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 532,
+  "kind": "binop",
+  "before": "center1_y - center2_y",
+  "after": "center1_y + center2_y",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 552,
+  "kind": "binop",
+  "before": "1 - triangle_height / max_triangle_height",
+  "after": "1 + triangle_height / max_triangle_height",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 81,
+  "kind": "boolop",
+  "before": "(config.chimneys or config.additional_gables) and (not has_roof)",
+  "after": "(config.chimneys or config.additional_gables) or not has_roof",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 57,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 61,
+  "kind": "binop",
+  "before": "thickness - kerf",
+  "after": "thickness + kerf",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 73,
+  "kind": "binop",
+  "before": "available + self._min_spacing",
+  "after": "available - self._min_spacing",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 85,
+  "kind": "binop",
+  "before": "edge_length - f",
+  "after": "edge_length + f",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 89,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 121,
+  "kind": "binop",
+  "before": "(end.x - start.x) / spec.length",
+  "after": "(end.x - start.x) * spec.length",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 150,
+  "kind": "cmp",
+  "before": "slot.orientation == 'horizontal'",
+  "after": "slot.orientation != 'horizontal'",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 154,
+  "kind": "binop",
+  "before": "slot.cy + hy",
+  "after": "slot.cy - hy",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 74,
+  "kind": "binop",
+  "before": "half / math.cos(self.theta_rad)",
+  "after": "half * math.cos(self.theta_rad)",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 126,
+  "kind": "binop",
+  "before": "self.base_roof_width / 2 + (t if panel_name == 'roof_panel_left' else 0.0)",
+  "after": "self.base_roof_width / 2 - (t if panel_name == 'roof_panel_left' else 0.0)",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "cy - half_y",
+  "after": "cy + half_y",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 135,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 97,
+  "kind": "cmp",
+  "before": "self.position.height <= 0",
+  "after": "self.position.height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 141,
+  "kind": "cmp",
+  "before": "d <= 0",
+  "after": "d < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 158,
+  "kind": "binop",
+  "before": "self.position.width + 2 * self.thickness",
+  "after": "self.position.width - 2 * self.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 181,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "binop",
+  "before": "opening_w + 2 * t",
+  "after": "opening_w - 2 * t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 266,
+  "kind": "cmp",
+  "before": "self.position.width <= 0",
+  "after": "self.position.width < 0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "boolop",
+  "before": "not 0 < theta_deg < 90 or not 0 < phi_deg < 90",
+  "after": "not 0 < theta_deg < 90 and (not 0 < phi_deg < 90)",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 91,
+  "kind": "binop",
+  "before": "half / math.cos(phi)",
+  "after": "half * math.cos(phi)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "x0 + x1",
+  "after": "x0 - x1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 40,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 58,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "z0 - start_z",
+  "after": "z0 + start_z",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 99,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 137,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 36,
+  "kind": "binop",
+  "before": "x + px",
+  "after": "x - px",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "boolop",
+  "before": "bottom < -g.overhang + margin or left < valley_u_at_top + margin or right > g.rafter - mar",
+  "after": "bottom < -g.overhang + margin and left < valley_u_at_top + margin and (right > g.rafter - ",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 66,
+  "kind": "binop",
+  "before": "corners[1:] + corners[:1]",
+  "after": "corners[1:] - corners[:1]",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 72,
+  "kind": "binop",
+  "before": "' ' + engine.trace_edge(a, b, spec)",
+  "after": "' ' - engine.trace_edge(a, b, spec)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 80,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 131,
+  "kind": "binop",
+  "before": "limit - g.thickness / math.cos(g.theta_rad)",
+  "after": "limit + g.thickness / math.cos(g.theta_rad)",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "x - m",
+  "after": "x + m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "y + d + g.roof_overhang",
+  "after": "y + d - g.roof_overhang",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 201,
+  "kind": "binop",
+  "before": "x0 - m",
+  "after": "x0 + m",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 250,
+  "kind": "num",
+  "before": "25.0",
+  "after": "50.0",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "binop",
+  "before": "ax + aw + spacing",
+  "after": "ax + aw - spacing",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 35,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "x + pw",
+  "after": "x - pw",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 47,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "binop",
+  "before": "ja.fingers[0][0] - lb + jb.fingers[-1][1]",
+  "after": "ja.fingers[0][0] - lb - jb.fingers[-1][1]",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 60,
+  "kind": "cmp",
+  "before": "slot < len(panels[b].slots)",
+  "after": "slot <= len(panels[b].slots)",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 9,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 57,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "sizes[p.name][0] - p.bbox.width",
+  "after": "sizes[p.name][0] + p.bbox.width",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 15,
+  "kind": "num",
+  "before": "6",
+  "after": "12",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 37,
+  "kind": "cmp",
+  "before": "other.max_x <= self.min_x",
+  "after": "other.max_x < self.min_x",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "a.y + (b.y - a.y) * t",
+  "after": "a.y - (b.y - a.y) * t",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 69,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 21,
+  "kind": "num",
+  "before": "0.3",
+  "after": "0.6",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 68,
+  "kind": "binop",
+  "before": "x + width / 2",
+  "after": "x - width / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 81,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 97,
+  "kind": "binop",
+  "before": "x + i * pane_width - mullion_width / 2",
+  "after": "x + i * pane_width + mullion_width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 110,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 125,
+  "kind": "binop",
+  "before": "width * 0.2",
+  "after": "width / 0.2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 142,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 178,
+  "kind": "binop",
+  "before": "height / 2",
+  "after": "height * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 212,
+  "kind": "binop",
+  "before": "half_width - 0.5",
+  "after": "half_width + 0.5",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 220,
+  "kind": "binop",
+  "before": "y + half_height",
+  "after": "y - half_height",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 16,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 81,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 89,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 133,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 179,
+  "kind": "num",
+  "before": "0.552284749831",
+  "after": "1.104569499662",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 235,
+  "kind": "binop",
+  "before": "extension + casing_width",
+  "after": "extension - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 282,
+  "kind": "binop",
+  "before": "inner_y - score_inset",
+  "after": "inner_y + score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "binop",
+  "before": "2 * casing_width",
+  "after": "2 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 374,
+  "kind": "binop",
+  "before": "0.4 * thickness",
+  "after": "0.4 / thickness",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 21,
+  "kind": "num",
+  "before": "0.3",
+  "after": "0.6",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 61,
+  "kind": "binop",
+  "before": "panel_width - 20",
+  "after": "panel_width + 20",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 105,
+  "kind": "binop",
+  "before": "floor_height * self.WINDOW_HEIGHT_RATIO",
+  "after": "floor_height / self.WINDOW_HEIGHT_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 127,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 157,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 183,
+  "kind": "cmp",
+  "before": "standard_floor_height <= 0",
+  "after": "standard_floor_height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 202,
+  "kind": "binop",
+  "before": "standard_floor_height + remaining_height",
+  "after": "standard_floor_height - remaining_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 219,
+  "kind": "binop",
+  "before": "panel_width - margin",
+  "after": "panel_width + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 265,
+  "kind": "boolop",
+  "before": "existing_components or []",
+  "after": "existing_components and []",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 275,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 283,
+  "kind": "num",
+  "before": "0.35",
+  "after": "0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 291,
+  "kind": "binop",
+  "before": "panel_height * 0.35",
+  "after": "panel_height / 0.35",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 357,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 376,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 390,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 413,
+  "kind": "cmp",
+  "before": "component_type == 'window'",
+  "after": "component_type != 'window'",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 436,
+  "kind": "binop",
+  "before": "comp_width * 0.2",
+  "after": "comp_width / 0.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 455,
+  "kind": "binop",
+  "before": "comp_width * 0.7",
+  "after": "comp_width / 0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 461,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 468,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 485,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 514,
+  "kind": "cmp",
+  "before": "component.y < existing.y + existing.height",
+  "after": "component.y <= existing.y + existing.height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 528,
+  "kind": "binop",
+  "before": "comp1.height / 2",
+  "after": "comp1.height * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 532,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 552,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 81,
+  "kind": "boolop",
+  "before": "config.chimneys or config.additional_gables",
+  "after": "config.chimneys and config.additional_gables",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 48,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 57,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 62,
+  "kind": "binop",
+  "before": "thickness - kerf",
+  "after": "thickness + kerf",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 73,
+  "kind": "binop",
+  "before": "self.finger_length + self._min_spacing",
+  "after": "self.finger_length - self._min_spacing",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 85,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 90,
+  "kind": "binop",
+  "before": "gap + offset",
+  "after": "gap - offset",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 121,
+  "kind": "binop",
+  "before": "end.x - start.x",
+  "after": "end.x + start.x",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 151,
+  "kind": "binop",
+  "before": "slot.length / 2",
+  "after": "slot.length * 2",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 59,
+  "kind": "binop",
+  "before": "theta * DEGREES_TO_RADIANS",
+  "after": "theta / DEGREES_TO_RADIANS",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "self.x_kerf + 6 * t",
+  "after": "self.x_kerf - 6 * t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 126,
+  "kind": "binop",
+  "before": "self.base_roof_width / 2",
+  "after": "self.base_roof_width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "cx + half_x",
+  "after": "cx - half_x",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 135,
+  "kind": "cmp",
+  "before": "self.roof_panel_right_width <= 0",
+  "after": "self.roof_panel_right_width < 0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 97,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 141,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 158,
+  "kind": "binop",
+  "before": "2 * self.thickness",
+  "after": "2 / self.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "self.chimney_height + self.rise",
+  "after": "self.chimney_height - self.rise",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 266,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "not",
+  "before": "not 0 < theta_deg < 90",
+  "after": "not 0 < theta_deg < 90",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 92,
+  "kind": "binop",
+  "before": "height / math.tan(theta)",
+  "after": "height * math.tan(theta)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 95,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 40,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 58,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "z1 - start_z",
+  "after": "z1 + start_z",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 102,
+  "kind": "cmp",
+  "before": "side == 'chimney_right'",
+  "after": "side != 'chimney_right'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 138,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 36,
+  "kind": "binop",
+  "before": "y + py",
+  "after": "y - py",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "slot.cx + slot.length / 2",
+  "after": "slot.cx - slot.length / 2",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "cmp",
+  "before": "bottom < -g.overhang + margin",
+  "after": "bottom <= -g.overhang + margin",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 66,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 75,
+  "kind": "binop",
+  "before": "path + ' Z'",
+  "after": "path - ' Z'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 88,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "cmp",
+  "before": "a[3] <= b[1]",
+  "after": "a[3] < b[1]",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 89,
+  "kind": "boolop",
+  "before": "add_doors and door_panel in panel_names",
+  "after": "add_doors or door_panel in panel_names",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 131,
+  "kind": "binop",
+  "before": "g.thickness / math.cos(g.theta_rad)",
+  "after": "g.thickness * math.cos(g.theta_rad)",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "binop",
+  "before": "rect[3] + gap",
+  "after": "rect[3] - gap",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "y - m",
+  "after": "y + m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 201,
+  "kind": "binop",
+  "before": "y0 - m",
+  "after": "y0 + m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 253,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "binop",
+  "before": "ax + aw",
+  "after": "ax - aw",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 35,
+  "kind": "binop",
+  "before": "-items[i][1] * items[i][2]",
+  "after": "-items[i][1] / items[i][2]",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "y + ph + spacing",
+  "after": "y + ph - spacing",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 27,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "binop",
+  "before": "ja.fingers[0][0] - lb",
+  "after": "ja.fingers[0][0] + lb",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 61,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 10,
+  "kind": "num",
+  "before": "2.5",
+  "after": "5.0",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 57,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 77,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 15,
+  "kind": "num",
+  "before": "4",
+  "after": "8",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 38,
+  "kind": "cmp",
+  "before": "self.max_y <= other.min_y",
+  "after": "self.max_y < other.min_y",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "(b.y - a.y) * t",
+  "after": "(b.y - a.y) / t",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 70,
+  "kind": "cmp",
+  "before": "cmd == 'L'",
+  "after": "cmd != 'L'",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 22,
+  "kind": "binop",
+  "before": "height - arch_height",
+  "after": "height + arch_height",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 68,
+  "kind": "binop",
+  "before": "width / 2",
+  "after": "width * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 83,
+  "kind": "binop",
+  "before": "main + ' ' + vert_mullion + ' ' + horiz_mullion",
+  "after": "main + ' ' + vert_mullion + ' ' - horiz_mullion",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 97,
+  "kind": "binop",
+  "before": "x + i * pane_width",
+  "after": "x - i * pane_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 111,
+  "kind": "binop",
+  "before": "window_width * 0.1",
+  "after": "window_width / 0.1",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 125,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 143,
+  "kind": "num",
+  "before": "3.0",
+  "after": "6.0",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 178,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 212,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 220,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 17,
+  "kind": "binop",
+  "before": "inner_height + 2 * tab_height",
+  "after": "inner_height - 2 * tab_height",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 81,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width + 2 * extension",
+  "after": "inner_width + 2 * casing_width - 2 * extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 136,
+  "kind": "binop",
+  "before": "inner_arch_start + casing_width",
+  "after": "inner_arch_start - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 180,
+  "kind": "binop",
+  "before": "outer_radius * 0.552284749831",
+  "after": "outer_radius / 0.552284749831",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 272,
+  "kind": "binop",
+  "before": "extension / 2",
+  "after": "extension * 2",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 283,
+  "kind": "binop",
+  "before": "inner_width + 2 * score_inset",
+  "after": "inner_width - 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 374,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 22,
+  "kind": "num",
+  "before": "1.2",
+  "after": "2.4",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 61,
+  "kind": "num",
+  "before": "20",
+  "after": "40",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 107,
+  "kind": "binop",
+  "before": "panel_height * self.WINDOW_HEIGHT_RATIO",
+  "after": "panel_height / self.WINDOW_HEIGHT_RATIO",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 127,
+  "kind": "binop",
+  "before": "panel_height * 0.6",
+  "after": "panel_height / 0.6",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 160,
+  "kind": "binop",
+  "before": "self.house_geometry.z - num_floors * floor_height",
+  "after": "self.house_geometry.z + num_floors * floor_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 183,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 212,
+  "kind": "boolop",
+  "before": "component.x + component.width > panel_width or component.y + component.height > panel_heig",
+  "after": "component.x + component.width > panel_width and component.y + component.height > panel_hei",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 220,
+  "kind": "cmp",
+  "before": "component.y + component.height > panel_height - margin",
+  "after": "component.y + component.height >= panel_height - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 268,
+  "kind": "cmp",
+  "before": "window_type == WindowType.COLONIAL_SET",
+  "after": "window_type != WindowType.COLONIAL_SET",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 276,
+  "kind": "cmp",
+  "before": "window_type == WindowType.GOTHIC_PAIR",
+  "after": "window_type != WindowType.GOTHIC_PAIR",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 283,
+  "kind": "num",
+  "before": "20.0",
+  "after": "40.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 291,
+  "kind": "num",
+  "before": "0.35",
+  "after": "0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 367,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height * 0.4",
+  "after": "floor_y_start - floor_height * 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 379,
+  "kind": "binop",
+  "before": "(panel_width - comp_width) / 2",
+  "after": "(panel_width - comp_width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 391,
+  "kind": "boolop",
+  "before": "x >= margin and x + comp_width <= panel_width - margin",
+  "after": "x >= margin or x + comp_width <= panel_width - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 418,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 436,
+  "kind": "num",
+  "before": "0.2",
+  "after": "0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 455,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 461,
+  "kind": "cmp",
+  "before": "side_comp_height >= 5.0",
+  "after": "side_comp_height > 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 470,
+  "kind": "not",
+  "before": "not self._has_collision(right_pos, existing_components)",
+  "after": "not self._has_collision(right_pos, existing_components)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 488,
+  "kind": "not",
+  "before": "not self._has_collision(attic_pos, existing_components)",
+  "after": "not self._has_collision(attic_pos, existing_components)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 514,
+  "kind": "binop",
+  "before": "existing.y + existing.height",
+  "after": "existing.y - existing.height",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 528,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 533,
+  "kind": "binop",
+  "before": "(comp1.width + comp2.width) / 2 + min_spacing",
+  "after": "(comp1.width + comp2.width) / 2 - min_spacing",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 552,
+  "kind": "binop",
+  "before": "triangle_height / max_triangle_height",
+  "after": "triangle_height * max_triangle_height",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 81,
+  "kind": "not",
+  "before": "not has_roof",
+  "after": "not has_roof",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "binop",
+  "before": "abs(sum((a.x * b.y - b.x * a.y for a, b in zip(pts, pts[1:] + pts[:1])))) / 2",
+  "after": "abs(sum((a.x * b.y - b.x * a.y for a, b in zip(pts, pts[1:] + pts[:1])))) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 57,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 63,
+  "kind": "binop",
+  "before": "finger_length - kerf",
+  "after": "finger_length + kerf",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 75,
+  "kind": "num",
+  "before": "7",
+  "after": "14",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 86,
+  "kind": "binop",
+  "before": "start + f",
+  "after": "start - f",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 92,
+  "kind": "binop",
+  "before": "pos + f",
+  "after": "pos - f",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 121,
+  "kind": "binop",
+  "before": "(end.y - start.y) / spec.length",
+  "after": "(end.y - start.y) * spec.length",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 151,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 64,
+  "kind": "binop",
+  "before": "self.x + k",
+  "after": "self.x - k",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "6 * t",
+  "after": "6 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 126,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "cy + half_y",
+  "after": "cy - half_y",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 135,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 101,
+  "kind": "boolop",
+  "before": "self.position.width < 5.0 or self.position.height < 5.0",
+  "after": "self.position.width < 5.0 and self.position.height < 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 143,
+  "kind": "boolop",
+  "before": "w < 5.0 or d < 8.0",
+  "after": "w < 5.0 and d < 8.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 158,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 190,
+  "kind": "binop",
+  "before": "self.thickness + self.CASING_CLEARANCE * self.thickness / 2",
+  "after": "self.thickness - self.CASING_CLEARANCE * self.thickness / 2",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 266,
+  "kind": "cmp",
+  "before": "self.position.height <= 0",
+  "after": "self.position.height < 0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 63,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 97,
+  "kind": "binop",
+  "before": "plan_depth / math.cos(theta)",
+  "after": "plan_depth * math.cos(theta)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "(y0 + y1) / 2",
+  "after": "(y0 + y1) * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 96,
+  "kind": "binop",
+  "before": "plan.inset * t",
+  "after": "plan.inset / t",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 47,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 58,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "start_z - z1",
+  "after": "start_z + z1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 103,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 138,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 43,
+  "kind": "cmp",
+  "before": "g.rafter < 1.5 * engine.finger_length",
+  "after": "g.rafter <= 1.5 * engine.finger_length",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "slot.length / 2",
+  "after": "slot.length * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "binop",
+  "before": "-g.overhang + margin",
+  "after": "-g.overhang - margin",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 66,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 79,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 91,
+  "kind": "binop",
+  "before": "' ' + engine.trace_edge(a, b, spec)",
+  "after": "' ' - engine.trace_edge(a, b, spec)",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 97,
+  "kind": "cmp",
+  "before": "d.position.panel == panel_name",
+  "after": "d.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 133,
+  "kind": "binop",
+  "before": "position.x + position.width",
+  "after": "position.x - position.width",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 139,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "x + w + m",
+  "after": "x + w - m",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 188,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 201,
+  "kind": "binop",
+  "before": "x1 + m",
+  "after": "x1 - m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 258,
+  "kind": "binop",
+  "before": "fx + fw",
+  "after": "fx - fw",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "cmp",
+  "before": "bx + bw + spacing <= ax",
+  "after": "bx + bw + spacing < ax",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 35,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "y + ph",
+  "after": "y - ph",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 22,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 73,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 11,
+  "kind": "num",
+  "before": "3.0",
+  "after": "6.0",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 58,
+  "kind": "binop",
+  "before": "positions[p.name][1] + sizes[p.name][1]",
+  "after": "positions[p.name][1] - sizes[p.name][1]",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 77,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 16,
+  "kind": "num",
+  "before": "12",
+  "after": "24",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 38,
+  "kind": "cmp",
+  "before": "other.max_y <= self.min_y",
+  "after": "other.max_y < self.min_y",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 48,
+  "kind": "binop",
+  "before": "b.y - a.y",
+  "after": "b.y + a.y",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 71,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 42,
+  "kind": "binop",
+  "before": "diameter / 2",
+  "after": "diameter * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 68,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 83,
+  "kind": "binop",
+  "before": "main + ' ' + vert_mullion + ' '",
+  "after": "main + ' ' + vert_mullion - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 97,
+  "kind": "binop",
+  "before": "i * pane_width",
+  "after": "i / pane_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 111,
+  "kind": "num",
+  "before": "0.1",
+  "after": "0.2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 128,
+  "kind": "binop",
+  "before": "x + side_width",
+  "after": "x - side_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 149,
+  "kind": "binop",
+  "before": "x + window_width + spacing",
+  "after": "x + window_width - spacing",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "mid_y - divider_height / 2",
+  "after": "mid_y + divider_height / 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 213,
+  "kind": "binop",
+  "before": "x + half_width + 0.5",
+  "after": "x + half_width - 0.5",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 220,
+  "kind": "binop",
+  "before": "half_height - 0.5",
+  "after": "half_height + 0.5",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 17,
+  "kind": "binop",
+  "before": "2 * tab_height",
+  "after": "2 / tab_height",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "outer_height - 2 * score_inset",
+  "after": "outer_height + 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "binop",
+  "before": "inner_width + 2 * casing_width",
+  "after": "inner_width - 2 * casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 167,
+  "kind": "binop",
+  "before": "inner_diameter / 2",
+  "after": "inner_diameter * 2",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 180,
+  "kind": "num",
+  "before": "0.552284749831",
+  "after": "1.104569499662",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 272,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 283,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "binop",
+  "before": "2 * extension",
+  "after": "2 / extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 375,
+  "kind": "cmp",
+  "before": "window.type == WindowType.ARCHED",
+  "after": "window.type != WindowType.ARCHED",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 23,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 80,
+  "kind": "not",
+  "before": "not panel_dims",
+  "after": "not panel_dims",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 108,
+  "kind": "binop",
+  "before": "base_height * self.WINDOW_WIDTH_RATIO",
+  "after": "base_height / self.WINDOW_WIDTH_RATIO",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 127,
+  "kind": "num",
+  "before": "0.6",
+  "after": "1.2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 160,
+  "kind": "binop",
+  "before": "num_floors * floor_height",
+  "after": "num_floors / floor_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 187,
+  "kind": "binop",
+  "before": "self.house_geometry.z - num_standard_floors * standard_floor_height",
+  "after": "self.house_geometry.z + num_standard_floors * standard_floor_height",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 212,
+  "kind": "cmp",
+  "before": "component.x + component.width > panel_width",
+  "after": "component.x + component.width >= panel_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 220,
+  "kind": "binop",
+  "before": "component.y + component.height",
+  "after": "component.y - component.height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 270,
+  "kind": "binop",
+  "before": "panel_width * 0.7",
+  "after": "panel_width / 0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 278,
+  "kind": "binop",
+  "before": "panel_width * 0.5",
+  "after": "panel_width / 0.5",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 284,
+  "kind": "cmp",
+  "before": "window_type == WindowType.MULTI_PANE",
+  "after": "window_type != WindowType.MULTI_PANE",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 294,
+  "kind": "num",
+  "before": "10.0",
+  "after": "20.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 367,
+  "kind": "binop",
+  "before": "floor_height * 0.4",
+  "after": "floor_height / 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 379,
+  "kind": "binop",
+  "before": "panel_width - comp_width",
+  "after": "panel_width + comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 391,
+  "kind": "cmp",
+  "before": "x >= margin",
+  "after": "x > margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 427,
+  "kind": "binop",
+  "before": "floor_y_start + floor_height * 0.4",
+  "after": "floor_y_start - floor_height * 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 439,
+  "kind": "binop",
+  "before": "(panel_width - comp_width) / 2",
+  "after": "(panel_width - comp_width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 455,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 461,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 481,
+  "kind": "binop",
+  "before": "(panel_width - attic_width) / 2",
+  "after": "(panel_width - attic_width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 491,
+  "kind": "cmp",
+  "before": "component_type == 'door'",
+  "after": "component_type != 'door'",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 515,
+  "kind": "cmp",
+  "before": "component.y + component.height > existing.y",
+  "after": "component.y + component.height >= existing.y",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 529,
+  "kind": "binop",
+  "before": "comp2.x + comp2.width / 2",
+  "after": "comp2.x - comp2.width / 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 533,
+  "kind": "binop",
+  "before": "(comp1.width + comp2.width) / 2",
+  "after": "(comp1.width + comp2.width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 23,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 101,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "binop",
+  "before": "a.x * b.y - b.x * a.y",
+  "after": "a.x * b.y + b.x * a.y",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 64,
+  "kind": "binop",
+  "before": "finger_length * 0.8",
+  "after": "finger_length / 0.8",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 75,
+  "kind": "num",
+  "before": "5",
+  "after": "10",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 87,
+  "kind": "binop",
+  "before": "(edge_length - count * f) / (count + 1)",
+  "after": "(edge_length - count * f) * (count + 1)",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 93,
+  "kind": "binop",
+  "before": "f + gap",
+  "after": "f - gap",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 121,
+  "kind": "binop",
+  "before": "end.y - start.y",
+  "after": "end.y + start.y",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 151,
+  "kind": "binop",
+  "before": "slot.thickness / 2",
+  "after": "slot.thickness * 2",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 65,
+  "kind": "binop",
+  "before": "self.y + k",
+  "after": "self.y - k",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 77,
+  "kind": "num",
+  "before": "6",
+  "after": "12",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 126,
+  "kind": "cmp",
+  "before": "panel_name == 'roof_panel_left'",
+  "after": "panel_name != 'roof_panel_left'",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 129,
+  "kind": "binop",
+  "before": "2.5 * t",
+  "after": "2.5 / t",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 137,
+  "kind": "cmp",
+  "before": "self.total_gable_height > 5 * max(self.x, self.y, self.z)",
+  "after": "self.total_gable_height >= 5 * max(self.x, self.y, self.z)",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 101,
+  "kind": "cmp",
+  "before": "self.position.width < 5.0",
+  "after": "self.position.width <= 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 143,
+  "kind": "cmp",
+  "before": "w < 5.0",
+  "after": "w <= 5.0",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 163,
+  "kind": "binop",
+  "before": "self.plan_depth / math.cos(math.radians(self.roof_angle))",
+  "after": "self.plan_depth * math.cos(math.radians(self.roof_angle))",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 190,
+  "kind": "binop",
+  "before": "self.CASING_CLEARANCE * self.thickness / 2",
+  "after": "self.CASING_CLEARANCE * self.thickness * 2",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "binop",
+  "before": "opening_h + 2 * t",
+  "after": "opening_h - 2 * t",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 266,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 64,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "num",
+  "before": "90",
+  "after": "180",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 98,
+  "kind": "binop",
+  "before": "180.0 - 2 * phi_deg",
+  "after": "180.0 + 2 * phi_deg",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "binop",
+  "before": "w / 2",
+  "after": "w * 2",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "y0 + y1",
+  "after": "y0 - y1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 102,
+  "kind": "binop",
+  "before": "[path] + [self.engine.slot_path(s) for s in slots] + list(features.cutouts)",
+  "after": "[path] + [self.engine.slot_path(s) for s in slots] - list(features.cutouts)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 47,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 59,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 77,
+  "kind": "binop",
+  "before": "start_z - z0",
+  "after": "start_z + z0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 105,
+  "kind": "cmp",
+  "before": "side == 'chimney_left'",
+  "after": "side != 'chimney_left'",
+  "status": "survived"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 138,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "1.5 * engine.finger_length",
+  "after": "1.5 / engine.finger_length",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 48,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "cmp",
+  "before": "left < valley_u_at_top + margin",
+  "after": "left <= valley_u_at_top + margin",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 68,
+  "kind": "boolop",
+  "before": "use_tabs and name != 'base'",
+  "after": "use_tabs or name != 'base'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 79,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 93,
+  "kind": "binop",
+  "before": "[path + ' Z'] + [engine.slot_path(s) for s in slots]",
+  "after": "[path + ' Z'] - [engine.slot_path(s) for s in slots]",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 103,
+  "kind": "boolop",
+  "before": "panel_name.startswith('gable_wall') and self._positioner.can_add_attic_window(self.house_g",
+  "after": "panel_name.startswith('gable_wall') or self._positioner.can_add_attic_window(self.house_ge",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 133,
+  "kind": "binop",
+  "before": "position.y + position.height",
+  "after": "position.y - position.height",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 140,
+  "kind": "binop",
+  "before": "o.x + o.width",
+  "after": "o.x - o.width",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "x + w",
+  "after": "x - w",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 195,
+  "kind": "boolop",
+  "before": "margin or 0.0",
+  "after": "margin and 0.0",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 201,
+  "kind": "binop",
+  "before": "y1 + reach + m",
+  "after": "y1 + reach - m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 258,
+  "kind": "binop",
+  "before": "fy + fd",
+  "after": "fy - fd",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "binop",
+  "before": "bx + bw + spacing",
+  "after": "bx + bw - spacing",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 35,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "x + pw + spacing",
+  "after": "x + pw - spacing",
+  "status": "survived"
+ },
+ {
+  "file": "mates.py",
+  "line": 33,
+  "kind": "binop",
+  "before": "i + 1",
+  "after": "i - 1",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 73,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 13,
+  "kind": "num",
+  "before": "10.0",
+  "after": "20.0",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 58,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 78,
+  "kind": "binop",
+  "before": "px - p.bbox.min_x",
+  "after": "px + p.bbox.min_x",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 27,
+  "kind": "binop",
+  "before": "self.max_x - self.min_x",
+  "after": "self.max_x + self.min_x",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 44,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 49,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 73,
+  "kind": "binop",
+  "before": "[current[-1]] + pts",
+  "after": "[current[-1]] - pts",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 42,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 69,
+  "kind": "binop",
+  "before": "y + height / 2",
+  "after": "y - height / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 83,
+  "kind": "binop",
+  "before": "main + ' ' + vert_mullion",
+  "after": "main + ' ' - vert_mullion",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 97,
+  "kind": "binop",
+  "before": "mullion_width / 2",
+  "after": "mullion_width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 112,
+  "kind": "binop",
+  "before": "window_width - spacing",
+  "after": "window_width + spacing",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 135,
+  "kind": "binop",
+  "before": "x + side_width + central_width",
+  "after": "x + side_width - central_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 149,
+  "kind": "binop",
+  "before": "x + window_width",
+  "after": "x - window_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 185,
+  "kind": "binop",
+  "before": "divider_height / 2",
+  "after": "divider_height * 2",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 213,
+  "kind": "binop",
+  "before": "x + half_width",
+  "after": "x - half_width",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 220,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 17,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 82,
+  "kind": "binop",
+  "before": "2 * score_inset",
+  "after": "2 / score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "binop",
+  "before": "2 * casing_width",
+  "after": "2 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 167,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 223,
+  "kind": "binop",
+  "before": "1.5 * casing_width",
+  "after": "1.5 / casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 275,
+  "kind": "binop",
+  "before": "extension + score_inset",
+  "after": "extension - score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 283,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 319,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 377,
+  "kind": "cmp",
+  "before": "window.type == WindowType.CIRCULAR",
+  "after": "window.type != WindowType.CIRCULAR",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 41,
+  "kind": "not",
+  "before": "not panel_dims",
+  "after": "not panel_dims",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 81,
+  "kind": "num",
+  "before": "12.0",
+  "after": "24.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 109,
+  "kind": "num",
+  "before": "1.0",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 128,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 163,
+  "kind": "cmp",
+  "before": "remaining_height > floor_height * 0.25",
+  "after": "remaining_height >= floor_height * 0.25",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 187,
+  "kind": "binop",
+  "before": "num_standard_floors * standard_floor_height",
+  "after": "num_standard_floors / standard_floor_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 212,
+  "kind": "binop",
+  "before": "component.x + component.width",
+  "after": "component.x - component.width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 220,
+  "kind": "binop",
+  "before": "panel_height - margin",
+  "after": "panel_height + margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 270,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 278,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 286,
+  "kind": "binop",
+  "before": "panel_width * 0.45",
+  "after": "panel_width / 0.45",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 295,
+  "kind": "num",
+  "before": "8.0",
+  "after": "16.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 367,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 379,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 391,
+  "kind": "cmp",
+  "before": "x + comp_width <= panel_width - margin",
+  "after": "x + comp_width < panel_width - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 427,
+  "kind": "binop",
+  "before": "floor_height * 0.4",
+  "after": "floor_height / 0.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 439,
+  "kind": "binop",
+  "before": "panel_width - comp_width",
+  "after": "panel_width + comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 456,
+  "kind": "binop",
+  "before": "comp_height * 0.7",
+  "after": "comp_height / 0.7",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 463,
+  "kind": "not",
+  "before": "not self._has_collision(left_pos, existing_components)",
+  "after": "not self._has_collision(left_pos, existing_components)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 481,
+  "kind": "binop",
+  "before": "panel_width - attic_width",
+  "after": "panel_width + attic_width",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 493,
+  "kind": "binop",
+  "before": "(panel_width - comp_width) / 2",
+  "after": "(panel_width - comp_width) * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 515,
+  "kind": "binop",
+  "before": "component.y + component.height",
+  "after": "component.y - component.height",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 529,
+  "kind": "binop",
+  "before": "comp2.width / 2",
+  "after": "comp2.width * 2",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 533,
+  "kind": "binop",
+  "before": "comp1.width + comp2.width",
+  "after": "comp1.width - comp2.width",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 23,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 44,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "binop",
+  "before": "a.x * b.y",
+  "after": "a.x / b.y",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 64,
+  "kind": "num",
+  "before": "0.8",
+  "after": "1.6",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 75,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 87,
+  "kind": "binop",
+  "before": "edge_length - count * f",
+  "after": "edge_length + count * f",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 96,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "joints.py",
+  "line": 123,
+  "kind": "cmp",
+  "before": "spec.role == MALE",
+  "after": "spec.role != MALE",
+  "status": "killed"
+ },
+ {
+  "file": "joints.py",
+  "line": 151,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 66,
+  "kind": "binop",
+  "before": "self.z + k",
+  "after": "self.z - k",
+  "status": "survived"
+ },
+ {
+  "file": "geometry.py",
+  "line": 78,
+  "kind": "binop",
+  "before": "self.base_roof_width + 4 * t + k",
+  "after": "self.base_roof_width + 4 * t - k",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 126,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 129,
+  "kind": "num",
+  "before": "2.5",
+  "after": "5.0",
+  "status": "killed"
+ },
+ {
+  "file": "geometry.py",
+  "line": 137,
+  "kind": "binop",
+  "before": "5 * max(self.x, self.y, self.z)",
+  "after": "5 / max(self.x, self.y, self.z)",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 101,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 143,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 168,
+  "kind": "binop",
+  "before": "self.plan_depth * math.tan(math.radians(self.roof_angle))",
+  "after": "self.plan_depth / math.tan(math.radians(self.roof_angle))",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 190,
+  "kind": "binop",
+  "before": "self.CASING_CLEARANCE * self.thickness",
+  "after": "self.CASING_CLEARANCE / self.thickness",
+  "status": "killed"
+ },
+ {
+  "file": "components.py",
+  "line": 209,
+  "kind": "binop",
+  "before": "2 * t",
+  "after": "2 / t",
+  "status": "survived"
+ },
+ {
+  "file": "components.py",
+  "line": 270,
+  "kind": "boolop",
+  "before": "self.position.width < 8.0 or self.position.height < 15.0",
+  "after": "self.position.width < 8.0 and self.position.height < 15.0",
+  "status": "survived"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 64,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 84,
+  "kind": "not",
+  "before": "not 0 < phi_deg < 90",
+  "after": "not 0 < phi_deg < 90",
+  "status": "killed"
+ },
+ {
+  "file": "dormer_geometry.py",
+  "line": 98,
+  "kind": "num",
+  "before": "180.0",
+  "after": "360.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 75,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 82,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "builders/box.py",
+  "line": 102,
+  "kind": "binop",
+  "before": "[path] + [self.engine.slot_path(s) for s in slots]",
+  "after": "[path] - [self.engine.slot_path(s) for s in slots]",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 47,
+  "kind": "binop",
+  "before": "y + d",
+  "after": "y - d",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 59,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 91,
+  "kind": "binop",
+  "before": "chimney.thickness * (chimney.rise / chimney.plan_depth)",
+  "after": "chimney.thickness / (chimney.rise / chimney.plan_depth)",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 106,
+  "kind": "binop",
+  "before": "top - chimney.rise",
+  "after": "top + chimney.rise",
+  "status": "killed"
+ },
+ {
+  "file": "builders/chimney.py",
+  "line": 138,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 43,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 49,
+  "kind": "binop",
+  "before": "slot.cy - slot.thickness / 2",
+  "after": "slot.cy + slot.thickness / 2",
+  "status": "survived"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 51,
+  "kind": "binop",
+  "before": "valley_u_at_top + margin",
+  "after": "valley_u_at_top - margin",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 68,
+  "kind": "cmp",
+  "before": "name != 'base'",
+  "after": "name == 'base'",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 85,
+  "kind": "binop",
+  "before": "pts[1:] + pts[:1]",
+  "after": "pts[1:] - pts[:1]",
+  "status": "killed"
+ },
+ {
+  "file": "builders/dormer.py",
+  "line": 93,
+  "kind": "binop",
+  "before": "path + ' Z'",
+  "after": "path - ' Z'",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 28,
+  "kind": "cmp",
+  "before": "b[3] <= a[1]",
+  "after": "b[3] < a[1]",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 113,
+  "kind": "boolop",
+  "before": "width is None or height is None",
+  "after": "width is None and height is None",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 135,
+  "kind": "binop",
+  "before": "self.windows + self.doors",
+  "after": "self.windows - self.doors",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 140,
+  "kind": "binop",
+  "before": "o.y + o.height",
+  "after": "o.y - o.height",
+  "status": "killed"
+ },
+ {
+  "file": "config.py",
+  "line": 181,
+  "kind": "binop",
+  "before": "y + d + m",
+  "after": "y + d - m",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 195,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 201,
+  "kind": "binop",
+  "before": "y1 + reach",
+  "after": "y1 - reach",
+  "status": "survived"
+ },
+ {
+  "file": "config.py",
+  "line": 264,
+  "kind": "cmp",
+  "before": "c.position.panel == panel_name",
+  "after": "c.position.panel != panel_name",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 18,
+  "kind": "binop",
+  "before": "bx + bw",
+  "after": "bx - bw",
+  "status": "killed"
+ },
+ {
+  "file": "layout.py",
+  "line": 41,
+  "kind": "num",
+  "before": "0.0",
+  "after": "1.0",
+  "status": "survived"
+ },
+ {
+  "file": "layout.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "x + pw",
+  "after": "x - pw",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 33,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 42,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "mates.py",
+  "line": 80,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 34,
+  "kind": "binop",
+  "before": "0.6 * FONT_SIZE",
+  "after": "0.6 / FONT_SIZE",
+  "status": "survived"
+ },
+ {
+  "file": "render.py",
+  "line": 58,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "render.py",
+  "line": 78,
+  "kind": "binop",
+  "before": "py - p.bbox.min_y",
+  "after": "py + p.bbox.min_y",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 31,
+  "kind": "binop",
+  "before": "self.max_y - self.min_y",
+  "after": "self.max_y + self.min_y",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 44,
+  "kind": "binop",
+  "before": "samples + 1",
+  "after": "samples - 1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 50,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "killed"
+ },
+ {
+  "file": "svgpath.py",
+  "line": 73,
+  "kind": "num",
+  "before": "1",
+  "after": "2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 43,
+  "kind": "binop",
+  "before": "x + width / 2",
+  "after": "x - width / 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 69,
+  "kind": "binop",
+  "before": "height / 2",
+  "after": "height * 2",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 83,
+  "kind": "binop",
+  "before": "main + ' '",
+  "after": "main - ' '",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 97,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 115,
+  "kind": "num",
+  "before": "3",
+  "after": "6",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 135,
+  "kind": "binop",
+  "before": "x + side_width",
+  "after": "x - side_width",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 152,
+  "kind": "binop",
+  "before": "left + ' ' + right",
+  "after": "left + ' ' - right",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 185,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 213,
+  "kind": "num",
+  "before": "0.5",
+  "after": "1.0",
+  "status": "killed"
+ },
+ {
+  "file": "cutouts.py",
+  "line": 221,
+  "kind": "binop",
+  "before": "half_height - 0.5",
+  "after": "half_height + 0.5",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 21,
+  "kind": "binop",
+  "before": "frame_width + 2 * extension",
+  "after": "frame_width - 2 * extension",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 82,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 125,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 170,
+  "kind": "binop",
+  "before": "inner_radius + casing_width",
+  "after": "inner_radius - casing_width",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 223,
+  "kind": "num",
+  "before": "1.5",
+  "after": "3.0",
+  "status": "killed"
+ },
+ {
+  "file": "casings.py",
+  "line": 277,
+  "kind": "binop",
+  "before": "frame_width - 2 * score_inset",
+  "after": "frame_width + 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 284,
+  "kind": "binop",
+  "before": "inner_height - 2 * score_inset",
+  "after": "inner_height + 2 * score_inset",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 320,
+  "kind": "binop",
+  "before": "inner_height + casing_width",
+  "after": "inner_height - casing_width",
+  "status": "survived"
+ },
+ {
+  "file": "casings.py",
+  "line": 386,
+  "kind": "binop",
+  "before": "1.5 * thickness",
+  "after": "1.5 / thickness",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 42,
+  "kind": "num",
+  "before": "15.0",
+  "after": "30.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 81,
+  "kind": "num",
+  "before": "10.0",
+  "after": "20.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 112,
+  "kind": "binop",
+  "before": "base_height * scale",
+  "after": "base_height / scale",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 129,
+  "kind": "num",
+  "before": "5.0",
+  "after": "10.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 163,
+  "kind": "binop",
+  "before": "floor_height * 0.25",
+  "after": "floor_height / 0.25",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 191,
+  "kind": "cmp",
+  "before": "remaining_height > standard_floor_height * 0.25",
+  "after": "remaining_height >= standard_floor_height * 0.25",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 213,
+  "kind": "cmp",
+  "before": "component.y + component.height > panel_height",
+  "after": "component.y + component.height >= panel_height",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 221,
+  "kind": "bool",
+  "before": "False",
+  "after": "True",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 270,
+  "kind": "num",
+  "before": "60.0",
+  "after": "120.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 278,
+  "kind": "num",
+  "before": "35.0",
+  "after": "70.0",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 286,
+  "kind": "num",
+  "before": "0.45",
+  "after": "0.9",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 318,
+  "kind": "num",
+  "before": "0",
+  "after": "1",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 370,
+  "kind": "cmp",
+  "before": "window_y + comp_height > floor_y_start + floor_height - margin",
+  "after": "window_y + comp_height >= floor_y_start + floor_height - margin",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 382,
+  "kind": "not",
+  "before": "not self._has_collision(center_pos, existing_components)",
+  "after": "not self._has_collision(center_pos, existing_components)",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 391,
+  "kind": "binop",
+  "before": "x + comp_width",
+  "after": "x - comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 427,
+  "kind": "num",
+  "before": "0.4",
+  "after": "0.8",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 439,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 456,
+  "kind": "num",
+  "before": "0.7",
+  "after": "1.4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 466,
+  "kind": "boolop",
+  "before": "right_x >= margin and right_x + side_comp_width <= panel_width - margin and (side_comp_wid",
+  "after": "right_x >= margin or right_x + side_comp_width <= panel_width - margin or side_comp_width ",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 481,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 493,
+  "kind": "binop",
+  "before": "panel_width - comp_width",
+  "after": "panel_width + comp_width",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 516,
+  "kind": "bool",
+  "before": "True",
+  "after": "False",
+  "status": "killed"
+ },
+ {
+  "file": "placement.py",
+  "line": 529,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "placement.py",
+  "line": 533,
+  "kind": "num",
+  "before": "2",
+  "after": "4",
+  "status": "survived"
+ },
+ {
+  "file": "assembly.py",
+  "line": 30,
+  "kind": "cmp",
+  "before": "style == HouseStyle.HOUSE_NO_ROOF",
+  "after": "style != HouseStyle.HOUSE_NO_ROOF",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 47,
+  "kind": "binop",
+  "before": "sub + sub[:1]",
+  "after": "sub - sub[:1]",
+  "status": "killed"
+ },
+ {
+  "file": "panel.py",
+  "line": 55,
+  "kind": "binop",
+  "before": "b.x * a.y",
+  "after": "b.x / a.y",
+  "status": "killed"
+ }
+]

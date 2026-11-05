@@ -9,11 +9,12 @@ A standalone Python library for generating precise laser-cut house boxes with so
 - **Material Optimization**: Configurable material sheet dimensions with efficient panel layout and multi-row support
 - **Manufacturing Ready**: Professional SVG output optimized for laser cutting with 0.0254mm line width precision
 - **Comprehensive Architectural System**: Complete system for creating architecturally accurate house designs
-  - **6 Roof Types**: Gable, flat, hip, gambrel, shed, and mansard roofs with automatic panel calculation
+  - **Roof**: Gable roofs are generated. Other roof types (flat, hip, gambrel, shed, mansard) are accepted but not implemented yet and fall back to gable with a warning
   - **8 Architectural Styles**: Basic, fachwerkhaus, farmhouse, colonial, brick, Tudor, Victorian, and Craftsman with decorative patterns
   - **13 Window Types**: Rectangular, arched, circular, attic, bay, dormer, double_hung, casement, palladian, gothic_pair, colonial_set, cross_pane, multi_pane
   - **4 Door Types**: Rectangular, double, arched, and Dutch doors with proportional sizing
-  - **Chimney System**: Complete 12-component chimney (4 walls, 8 casing pieces) with slope-coordinated geometry and finger joint connections
+  - **Chimney**: vertical chimney with a level top on the sloped roof (4 walls + casing; the downslope wall is taller). Footprint is scored on the roof panel; walls and casing are derived from one geometric model
+  - **Dormers** (`--add-additional-gable`): gable dormer with horizontal ridge; its depth follows from width and pitch (default pitch = main roof pitch). Ridge fingers and face tabs/slots are generated when the dormer is large enough
   - **Attic Window Support**: Automatic detection for tall houses and steep gables (>30° and sufficient height)
   - **Proportional Sizing**: All components automatically sized using golden ratio (1.618) and architectural best practices
 - **10 Preset Configurations**: Pre-configured architectural combinations (farmhouse, colonial, Tudor, German, modern, etc.)
@@ -51,7 +52,7 @@ python3 generate_house.py --roof-type hip --architectural-style tudor \
     --window-type arched --door-type double --length 120 --width 100 --height 80 \
     --output tudor_hip_house.svg --verbose
 
-# House with chimney (12 components: 4 walls, 2 casings × 4 pieces, 2 finger joints)
+# House with chimney (4 walls + casing; chimney width is the interior width, depth is the plan depth)
 python3 generate_house.py --width 90 --length 90 --height 180 --angle 45 \
     --thickness 3 --kerf 0.2 \
     --add-chimney --chimney-panel roof_panel_right \
@@ -73,7 +74,7 @@ Dimensions:
 Material:
   --thickness, -t           Material thickness in mm (default: 3)
   --finger-length, -f       Finger joint length in mm (default: 10)
-  --kerf, -k               Laser kerf compensation in mm (default: 0)
+  --kerf, -k               Laser kerf compensation in mm (default: 0.1)
   --material-width         Material sheet width in mm (default: 457.2 = 18 inches)
   --material-height        Material sheet height in mm (default: 304.8 = 12 inches)
 
@@ -360,20 +361,109 @@ The system includes two layout modes with configurable material constraints:
 
 ```
 house_maker/
-├── generate_house.py          # Main CLI script
-├── constants.py               # Configuration and enums
-├── exceptions.py              # Custom exceptions
-├── geometry.py                # Geometric calculations
-├── multi_finger_joints.py     # Enhanced multi-finger joint system (1-7 joints per edge)
-├── svg_generator.py           # SVG output with precision
-├── architectural_components.py # Windows, doors, chimneys, styles
-├── architectural_config.py    # Component positioning and configuration
-├── template/                  # Example SVG files
-│   ├── example_house.svg
-│   ├── house_template.svg
-│   └── small-house.svg
-└── README.md                 # This documentation
+├── generate_house.py     # CLI
+├── __init__.py, maker.py # public API: HouseMaker facade
+├── constants.py, exceptions.py
+├── geometry.py           # HouseGeometry: all panel dimensions (kerf-compensated, pure math)
+├── components.py         # enums, Window, Door, Chimney, AdditionalGable (own geometry, no SVG)
+├── dormer_geometry.py    # pure 3D dormer maths
+├── placement.py          # sizing + automatic placement of windows/doors
+├── config.py             # ArchitecturalConfiguration: component registry + placement validation
+├── joints.py             # finger-joint engine (plan -> JointSpec, trace -> path)
+├── builders/             # box.py, chimney.py, dormer.py: geometry -> Panel
+├── cutouts.py, casings.py, patterns.py   # window/door cutouts, trim, engraving patterns
+├── panel.py              # Panel: the contract between builders, layout and render
+├── assembly.py           # which panels exist (reads the config, calls builders)
+├── layout.py, render.py  # packing on the sheet; SVG output
+├── svg_generator.py      # build -> layout -> render facade
+├── svgpath.py            # small SVG path reader (extents, tests)
+├── mates.py              # declared mating edges / tab↔slot pairs (used by the review page and tests)
+├── review/               # human review page (viewer_*.js/html/css), builder, feedback collector
+├── kerf.py               # kerf offset of arbitrary cut paths (cut-outs, trim frames)
+├── warnings_util.py      # warnings attributed to the caller's code
+├── tools/mutate.py       # mutation-testing runner (off by default; ≤ 3 workers, checks free memory)
+├── tests/                # pytest suite (run `make test`)
+├── docs/ARCHITECTURE_REVIEW.md   # findings and progress tracker
+└── template/             # example SVG files
 ```
+
+## Setup and common tasks
+
+```bash
+cd /Users/mingchuanwu/src/oss/house_maker
+make setup      # uv creates .venv (Python 3.12) and installs the dev dependency (pytest); installs jsdom if npm exists
+make test       # full suite
+make review     # tests + SVGs + review.html in /tmp/house_gallery, then opens the review page
+make feedback   # collect exported review feedback from /tmp/house_review_inbox
+make house ARGS="--add-chimney --angle 40"
+```
+
+The library itself has **no Python dependencies** (standard library only). Dev dependency: `pytest`
+(declared in `pyproject.toml`, locked in `uv.lock`). Optional: `jsdom` (npm, `package.json`) enables the
+browser-logic tests of the review page; without it that one test is skipped. `uv sync` also installs the
+package in editable mode, so `import house_maker` and the `house-maker` command work from anywhere in the venv.
+
+## Roof ridge
+
+A laser cuts square to the plate, so the two roof panels cannot be bevelled: the ridge fits exactly only at a **45°** roof angle. At other
+angles the panels overlap along the ridge (shallower roofs, by up to `t·|cos 2θ|`) or leave a small wedge gap (steeper roofs, up to
+`t·|tan(90°−2θ)|`). Finish it by hand; the generated assembly instructions tell you how much for your angle.
+
+## Testing
+
+```bash
+cd /Users/mingchuanwu/src/oss
+python3 -m pytest house_maker -q                                   # ~2 s
+python3 -m pytest house_maker -q --svg-dir /tmp/gallery            # also write SVGs for inspection
+open /tmp/gallery/index.html                                       # browse them by component
+```
+
+Tests are organised per component (`tests/components/`): each builds the minimal assembly of that
+component, checks it numerically, and writes an SVG of just those panels.
+
+| Component | Assembly under test | Checked |
+|-----------|--------------------|---------|
+| `window` (13 types × side/gable wall), `door` (4 types) | wall + cut-out + casing | cut-out inside wall and window/door rectangle; casing opening = window; score lines inside frame |
+| `chimney` (angles 20–60°, both roof panels) | roof panel + footprint score + roof hole + 4 walls + casing | roof slope vs angle; footprint = plan depth / cos θ; hole = footprint − 2t − kerf; walls vs an independent 3D construction (level top, taller down-slope); casing frame; corner joints mate in 3D height; tiny chimney glued consistently |
+| `chimney_3d` | the chimney placed on the roof by an independent 3D model | no interpenetration, tabs flush in notches, level top, side walls rest on the roof, wedge gap under front/back walls, casing clear of the walls |
+| `dormer` (angles × pitch, large dormers with fingers) | roof panel + face + 2 roof panels | pitch and right angle at the apex; true 3D edge lengths (nominal); lifted face; ridge fingers; face tabs ↔ roof slots (mirrored per panel); notches never reach the valley |
+| `dormer_3d` | the dormer on the roof, independent 3D model | ridge ends exactly on the roof, valley on the roof, no interpenetration (ridge limit bounded), tabs flush |
+| `box_seams` (24 box configs) | floor/side/gable/roof seams | as-cut finger position/width/depth, shared edge lengths, tab ↔ roof slot, gable slope = angle |
+| `assembly_3d` | the whole box in 3D | panels as kerf-eroded slabs never interpenetrate; tabs flush; extents = specification; ridge limit (exact at 45° only) |
+| `dimensions`, `panel_invariants` | every panel | absolute sizes vs an independent closed form; drawn outline/fingers/slots/area = plan |
+| `wall_style`, `roof_tiles` | panel + engraving | engraving inside the panel for every style and tile type |
+
+Cross-cutting tests (`test_kerf_compensation.py`, `test_finger_layout.py`, `test_boundaries.py`, `test_contracts.py`, `test_auto_placement.py`, `test_mates.py`,
+`test_random_sweep.py` - set `HOUSE_SWEEP_N=300` for a bigger randomized run - plus `test_output_invariants.py`, `test_layout.py`,
+`test_placement.py`, `test_architecture.py`, `test_facade.py`, `test_review_regressions.py`, `test_visual_gallery.py`): determinism,
+panels inside the viewBox and not overlapping, labels, sheet width, placement rules, dependency direction, CLI.
+
+## Human review page (move panels, check fit, annotate)
+
+```bash
+cd /Users/mingchuanwu/src/oss
+python3 -m pytest house_maker -q --svg-dir /tmp/house_gallery     # writes SVGs + panel metadata + review.html
+open /tmp/house_gallery/review.html                                # one self-contained file, works offline
+```
+
+* **Move** (V): drag panels, `R`/`Shift+R` rotate 90°, `X` flip, arrows nudge (Shift = 1 mm, Alt = 0.01 mm), `G` grid snap.
+* **Fit view** (F): panels become translucent; overlapping material is drawn red. A snapped finger pair shows
+  the small overlap that the kerf compensation predicts (`kerf-expected`); anything marked `← unexpected` is a real clash.
+* **Snap to mate**: select a panel and press one of its *Mates* buttons; it aligns exactly to the mating edge
+  (fingers interlocked). Tab-through-slot mates show the tab cross-section (green) in its slot with the clearance.
+* **Note** (P): click anywhere; the note attaches to the panel / edge / finger / slot under the cursor, with type
+  (bug · improve · question · good), severity and text. **Measure** (M): click two points.
+* **Export feedback** downloads `house_review_<run>_<time>.json`. Put it in the inbox
+  (`/tmp/house_review_inbox`, or set the browser's download folder to it) and run:
+
+```bash
+python3 -m house_maker.review collect        # moves the files into house_maker/review/feedback/ and prints every note
+python3 -m house_maker.review summary        # print collected feedback again
+```
+
+Every note records the case, panel, edge/finger/slot, the component parameters and your panel arrangement
+(plus an SVG snapshot of the case you were viewing), so each one can become a regression test.
+Notes and layouts are kept in the browser (localStorage) between runs of the same page; **Import** merges an exported file.
 
 ## Example Usage Scenarios
 

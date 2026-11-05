@@ -208,3 +208,6 @@ __marimo__/
 
 **/.DS_Store
 *.svg
+
+# Node dev dependencies (review-page tests)
+node_modules/

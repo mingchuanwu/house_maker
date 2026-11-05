@@ -9,6 +9,7 @@ Usage:
     python generate_house.py --output my_house.svg --length 100 --width 80 --height 90
     python generate_house.py --architectural-preset farmhouse --length 120 --width 100
     python generate_house.py --roof-type hip --architectural-style tudor --window-type arched
+    python generate_house.py --add-additional-gable --additional-gable-width 30
 
 Examples:
     # Basic house (80x60x70mm, 35° gable, 3mm material)
@@ -35,7 +36,9 @@ parent_dir = current_dir.parent
 sys.path.insert(0, str(parent_dir))
 
 try:
-    from house_maker import HouseMaker, RoofType, ArchitecturalStyle, WindowType, DoorType, ShingleType
+    from house_maker.constants import DEFAULT_KERF
+    from house_maker import (HouseMaker, RoofType, ArchitecturalStyle, WindowType, DoorType, ShingleType,
+                             PlacementError)
 except ImportError as e:
     print(f"Error importing house_maker modules: {e}")
     print("Make sure all required modules are available in the house_maker directory")
@@ -63,10 +66,10 @@ House dimensions:
 
 Architectural options:
   roof-type:         gable, flat, hip, gambrel, shed, mansard
-  architectural-style: basic, fachwerkhaus, farmhouse, colonial, brick, tudor, victorian, craftsman, gingerbread
+  architectural-style: basic, fachwerkhaus, farmhouse, colonial, brick, stone, tudor, victorian, craftsman, gingerbread
   window-type:       rectangular, arched, circular, attic, bay, dormer, double_hung, casement, palladian, gothic_pair, colonial_set, cross_pane, multi_pane
   door-type:         rectangular, double, arched, dutch
-  architectural-preset: Pre-configured combinations (basic, farmhouse, colonial, tudor, etc.)
+  architectural-preset: Pre-configured combinations (basic, farmhouse, colonial, tudor, stone, etc.)
         """)
     
     # House dimensions
@@ -86,8 +89,8 @@ Architectural options:
                        help='Finger joint length in mm (default: 10)')
     parser.add_argument('--single-joints', action='store_true',
                        help='Force single finger joint per edge (default: multiple joints for long edges)')
-    parser.add_argument('--kerf', '-k', type=float, default=0.0,
-                       help='Laser kerf compensation in mm (default: 0)')
+    parser.add_argument('--kerf', '-k', type=float, default=DEFAULT_KERF,
+                       help=f'Laser kerf compensation in mm (default: {DEFAULT_KERF})')
     
     # Material sheet dimensions
     parser.add_argument('--material-width', type=float, default=457.2,
@@ -100,7 +103,7 @@ Architectural options:
                        choices=['gable', 'flat', 'hip', 'gambrel', 'shed', 'mansard'],
                        help='Roof type (default: gable)')
     parser.add_argument('--architectural-style', type=str, default=None,
-                       choices=['basic', 'fachwerkhaus', 'farmhouse', 'colonial', 'brick', 'tudor', 'victorian', 'craftsman', 'gingerbread'],
+                       choices=['basic', 'fachwerkhaus', 'farmhouse', 'colonial', 'brick', 'stone', 'tudor', 'victorian', 'craftsman', 'gingerbread'],
                        help='Architectural style (default: basic)')
     
     parser.add_argument('--shingle-type', type=str, default='shingles',
@@ -113,10 +116,14 @@ Architectural options:
                        choices=['rectangular', 'double', 'arched', 'dutch'],
                        help='Door type (default: rectangular)')
     parser.add_argument('--architectural-preset', type=str, default=None,
-                       choices=['basic', 'farmhouse', 'colonial', 'tudor', 'german', 'victorian', 'craftsman', 'brick', 'modern_flat', 'barn_gambrel'],
+                       choices=['basic', 'farmhouse', 'colonial', 'tudor', 'german', 'victorian', 'craftsman', 'brick', 'stone', 'modern_flat', 'barn_gambrel'],
                        help='Pre-configured architectural style preset')
     parser.add_argument('--no-auto-components', action='store_true',
                        help='Disable automatic door/window placement')
+    parser.add_argument('--stone-jitter', action='store_true', default=True,
+                       help='Enable subtle jitter in stone wall patterns for natural look (default: enabled)')
+    parser.add_argument('--no-stone-jitter', dest='stone_jitter', action='store_false',
+                       help='Disable jitter in stone wall patterns for clean straight lines')
     
     # Chimney options
     parser.add_argument('--add-chimney', action='store_true',
@@ -129,11 +136,29 @@ Architectural options:
     parser.add_argument('--chimney-y', type=float, default=20.0,
                        help='Chimney Y position on roof panel in mm (default: 20)')
     parser.add_argument('--chimney-width', type=float, default=10.0,
-                       help='Chimney footprint width perpendicular to roof in mm (default: 10)')
+                       help='Chimney interior width between the side walls in mm (default: 10)')
     parser.add_argument('--chimney-depth', type=float, default=15.0,
-                       help='Chimney footprint depth along roof slope in mm (default: 15)')
+                       help='Chimney plan (horizontal) depth in mm (default: 15)')
     parser.add_argument('--chimney-height', type=float, default=20.0,
-                       help='Chimney height extending above roof in mm (default: 20)')
+                       help='Minimum chimney exposure above the roof (up-slope wall) in mm (default: 20)')
+    
+    # Additional gable options
+    parser.add_argument('--add-additional-gable', action='store_true',
+                       help='Add an additional gable (dormer) to the roof panel')
+    parser.add_argument('--additional-gable-panel', type=str, default='roof_panel_right',
+                       choices=['roof_panel_left', 'roof_panel_right'],
+                       help='Which roof panel to add additional gable to (default: roof_panel_right)')
+    parser.add_argument('--additional-gable-x', type=float, default=30.0,
+                       help='Additional gable X position on roof panel in mm (default: 30)')
+    parser.add_argument('--additional-gable-y', type=float, default=15.0,
+                       help='Additional gable Y position on roof panel in mm (default: 15)')
+    parser.add_argument('--additional-gable-width', type=float, default=25.0,
+                       help='Additional gable width in mm (default: 25)')
+    parser.add_argument('--additional-gable-pitch', type=float, default=None,
+                       help='Additional gable roof pitch in degrees (default: same as the main roof). '
+                            'The depth follows from the width and pitch (horizontal ridge).')
+    parser.add_argument('--additional-gable-overhang', type=float, default=3.0,
+                       help='Additional gable roof overhang in mm (default: 3)')
     
     # Output options
     parser.add_argument('--output', '-o', type=str, default='house_box.svg',
@@ -180,85 +205,27 @@ def validate_dimensions(args):
     return True
 
 
+def _enum(enum_cls, value):
+    """Look up an enum member by its value ('s-tile', 'double_hung', ...)."""
+    return enum_cls(value)
+
+
 def convert_architectural_options(args):
     """Convert string arguments to enum types"""
-    architectural_options = {}
-    
-    # Convert roof type
-    if args.roof_type:
-        roof_map = {
-            'gable': RoofType.GABLE,
-            'flat': RoofType.FLAT,
-            'hip': RoofType.HIP,
-            'gambrel': RoofType.GAMBREL,
-            'shed': RoofType.SHED,
-            'mansard': RoofType.MANSARD
-        }
-        architectural_options['roof_type'] = roof_map[args.roof_type]
-    
-    # Convert architectural style
-    if args.architectural_style:
-        style_map = {
-            'basic': ArchitecturalStyle.BASIC,
-            'fachwerkhaus': ArchitecturalStyle.FACHWERKHAUS,
-            'farmhouse': ArchitecturalStyle.FARMHOUSE,
-            'colonial': ArchitecturalStyle.COLONIAL,
-            'brick': ArchitecturalStyle.BRICK,
-            'tudor': ArchitecturalStyle.TUDOR,
-            'victorian': ArchitecturalStyle.VICTORIAN,
-            'craftsman': ArchitecturalStyle.CRAFTSMAN,
-            'gingerbread': ArchitecturalStyle.GINGERBREAD
-        }
-        architectural_options['architectural_style'] = style_map[args.architectural_style]
-    
-    # Convert shingle type
-    if args.shingle_type:
-        shingle_map = {
-            'spantile': ShingleType.SPANTILE,
-            'spanish': ShingleType.SPANISH,
-            'shingles': ShingleType.SHINGLES,
-            'scallops': ShingleType.SCALLOPS,
-            's-tile': ShingleType.S_TILE
-        }
-        architectural_options['shingle_type'] = shingle_map[args.shingle_type]
-    
-    # Convert window type
-    if args.window_type:
-        window_map = {
-            'rectangular': WindowType.RECTANGULAR,
-            'arched': WindowType.ARCHED,
-            'circular': WindowType.CIRCULAR,
-            'attic': WindowType.ATTIC,
-            'bay': WindowType.BAY,
-            'dormer': WindowType.DORMER,
-            'double_hung': WindowType.DOUBLE_HUNG,
-            'casement': WindowType.CASEMENT,
-            'palladian': WindowType.PALLADIAN,
-            'gothic_pair': WindowType.GOTHIC_PAIR,
-            'colonial_set': WindowType.COLONIAL_SET,
-            'cross_pane': WindowType.CROSS_PANE,
-            'multi_pane': WindowType.MULTI_PANE
-        }
-        architectural_options['window_type'] = window_map[args.window_type]
-    
-    # Convert door type
-    if args.door_type:
-        door_map = {
-            'rectangular': DoorType.RECTANGULAR,
-            'double': DoorType.DOUBLE,
-            'arched': DoorType.ARCHED,
-            'dutch': DoorType.DUTCH
-        }
-        architectural_options['door_type'] = door_map[args.door_type]
-    
-    # Add preset if specified
+    options = {}
+    for attr, key, enum_cls in (('roof_type', 'roof_type', RoofType),
+                                ('architectural_style', 'architectural_style', ArchitecturalStyle),
+                                ('shingle_type', 'shingle_type', ShingleType),
+                                ('window_type', 'window_type', WindowType),
+                                ('door_type', 'door_type', DoorType)):
+        value = getattr(args, attr)
+        if value:
+            options[key] = _enum(enum_cls, value)
     if args.architectural_preset:
-        architectural_options['architectural_preset'] = args.architectural_preset
-    
-    # Add automatic components setting
-    architectural_options['auto_add_components'] = not args.no_auto_components
-    
-    return architectural_options
+        options['architectural_preset'] = args.architectural_preset
+    options['auto_add_components'] = not args.no_auto_components
+    options['stone_jitter'] = args.stone_jitter
+    return options
 
 
 def main():
@@ -300,27 +267,31 @@ def main():
             **architectural_options
         )
         
-        # Add chimney if requested
+        # Add roof features if requested (PlacementError explains what is wrong)
         if args.add_chimney:
-            chimney_added = house.add_chimney(
-                panel_name=args.chimney_panel,
-                x=args.chimney_x,
-                y=args.chimney_y,
-                width=args.chimney_width,
-                height=args.chimney_depth,
-                chimney_height=args.chimney_height
-            )
-            if chimney_added:
-                if args.verbose:
-                    print(f"\n🏭 Chimney added:")
-                    print(f"   Panel: {args.chimney_panel}")
-                    print(f"   Footprint: {args.chimney_width}×{args.chimney_depth}mm at ({args.chimney_x}, {args.chimney_y})")
-                    print(f"   Height above roof: {args.chimney_height}mm")
-                    print(f"   Cutout inset: {args.thickness}mm (provides structural lip)")
-                    print(f"   4 wall panels generated with angled base matching {house.geometry.theta}° roof angle")
-            else:
-                print(f"⚠️  Warning: Could not add chimney (check position and dimensions)")
-        
+            chimney = house.add_chimney(
+                panel_name=args.chimney_panel, x=args.chimney_x, y=args.chimney_y,
+                width=args.chimney_width, height=args.chimney_depth,
+                chimney_height=args.chimney_height)
+            if args.verbose:
+                x, y, w, d = chimney.footprint()
+                print(f"\n🏭 Chimney added on {args.chimney_panel}")
+                print(f"   Outer footprint on roof: {w:.1f}×{d:.1f}mm at ({x}, {y})")
+                print(f"   Exposure above roof: {chimney.chimney_height}mm up-slope, "
+                      f"{chimney.side_wall_heights()[0]:.1f}mm down-slope (level top)")
+
+        if args.add_additional_gable:
+            dormer = house.add_additional_gable(
+                panel_name=args.additional_gable_panel, x=args.additional_gable_x,
+                y=args.additional_gable_y, width=args.additional_gable_width,
+                roof_overhang=args.additional_gable_overhang, pitch=args.additional_gable_pitch)
+            if args.verbose:
+                g = dormer.geometry
+                print(f"\n🏠 Additional gable (dormer) added on {args.additional_gable_panel}")
+                print(f"   Width {g.width}mm, pitch {g.phi_deg:.1f}°, apex angle {g.apex_angle_deg:.1f}°")
+                print(f"   Depth on roof (from horizontal ridge): {dormer.position.height:.1f}mm, "
+                      f"face height {g.gable_height:.1f}mm, rafter {g.rafter:.1f}mm, ridge {g.ridge:.1f}mm")
+
         if args.verbose:
             # Get architectural summary
             arch_summary = house.get_architectural_summary()
@@ -360,6 +331,9 @@ def main():
             print(f"   Material dimensions: {summary['material_dimensions']['length']}×{summary['material_dimensions']['width']}×{summary['material_dimensions']['height']}mm")
             print(f"   Kerf compensation: {house.geometry.kerf}mm")
     
+    except PlacementError as e:
+        print(f"❌ {e}")
+        sys.exit(1)
     except Exception as e:
         print(f"❌ Error generating house box: {e}")
         if args.verbose:

@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>House review</title>
+<style>/*__CSS__*/</style>
+<header>
+  <b>House review</b>
+  <button data-tool="select" title="V">Move</button>
+  <button data-tool="pin" title="P">📌 Note</button>
+  <button data-tool="measure" title="M">📏 Measure</button>
+  <button id="fit" title="F">Fit view</button>
+  <button id="grid" title="G">Grid 0.5</button>
+  <button id="zoomfit">Fit window</button>
+  <button id="resetlayout">Reset layout</button>
+  <span class="sp"></span>
+  <small>run <span id="run"></span></small>
+  <label style="cursor:pointer"><button onclick="this.nextElementSibling.click()">Import</button><input id="import" type="file" accept=".json" hidden></label>
+  <button id="export" class="primary">⬇ Export feedback</button>
+</header>
+<nav id="cases"></nav>
+<main>
+  <div id="stage"></div>
+  <div id="form" hidden></div>
+</main>
+<aside>
+  <div><b id="caseName"></b></div>
+  <div class="hint" id="title"></div>
+  <div id="info"></div>
+  <h4>Notes on this case</h4>
+  <div id="pinlist"></div>
+  <h4>General note</h4>
+  <textarea id="notes" rows="3" placeholder="Anything about this whole case…"></textarea>
+  <p class="hint">Keys: V move · P note · M measure · F fit view · G grid · R/Shift+R rotate · X flip · arrows nudge · Esc deselect.
+  Drag empty space (or Alt/right-drag) to pan, wheel to zoom, double-click to reset the view.
+  Red = overlapping material (a snapped finger pair shows the small kerf-expected overlap), green = tab cross-section in its slot.</p>
+</aside>
+<footer><span id="coords"></span><span id="status"></span></footer>
+<script id="review-data" type="application/json">/*__DATA__*/</script>
+<script>/*__CORE__*/</script>
+<script>/*__APP__*/</script>

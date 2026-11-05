@@ -61,3 +61,11 @@ class SVGGenerationError(HouseMakerError):
         self.component = component
         self.message = f"SVG generation error for {component}: {message}"
         super().__init__(self.message)
+
+class PlacementError(HouseMakerError):
+    """Raised when a component cannot be placed where requested (bounds, overlap, bad panel)"""
+
+    def __init__(self, component: str, message: str):
+        self.component = component
+        self.message = f"Cannot place {component}: {message}"
+        super().__init__(self.message)

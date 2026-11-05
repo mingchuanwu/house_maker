@@ -1,0 +1,37 @@
+[project]
+name = "house-maker"
+version = "1.0.0"
+description = "Laser-cut house box generator: finger-jointed panels with windows, doors, chimneys and dormers, as cut-ready SVG"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+# The library uses only the Python standard library.
+dependencies = []
+
+[project.scripts]
+house-maker = "house_maker.generate_house:main"
+
+[dependency-groups]
+dev = [
+    "numpy>=2.2.6",
+    "pytest>=8",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[[tool.uv.index]]
+url = "https://pypi.apple.com/simple"
+default = true
+
+# The repository root *is* the `house_maker` package.
+[tool.setuptools]
+package-dir = { "house_maker" = "." }
+packages = ["house_maker", "house_maker.builders", "house_maker.review"]    # warnings_util etc. are top-level modules of house_maker
+
+[tool.setuptools.package-data]
+"house_maker.review" = ["viewer.html", "viewer.css", "viewer_core.js", "viewer_app.js"]
+
+[tool.uv]
+default-groups = ["dev"]
