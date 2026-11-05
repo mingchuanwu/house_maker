@@ -1,5 +1,6 @@
 # HouseMaker - Professional Laser-Cut House Box Generator
 
+
 A standalone Python library for generating precise laser-cut house boxes with sophisticated finger joint coordination. Built from scratch with professional-grade geometric calculations and SVG generation.
 
 ## Features
