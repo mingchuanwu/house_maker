@@ -18,7 +18,7 @@ setup: ## create .venv and install the Python dependencies (uv sync); also node-
 	@command -v npm >/dev/null && $(MAKE) --no-print-directory node-deps || echo "npm not found: skipping the optional node tests"
 
 node-deps: ## install jsdom (only needed for the review-page browser-logic tests)
-	npm install --no-audit --no-fund
+	npm ci --no-audit --no-fund
 
 test: ## run the whole test suite
 	$(UV) run pytest -q

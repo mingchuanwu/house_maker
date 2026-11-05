@@ -1,6 +1,6 @@
 [project]
 name = "house-maker"
-version = "1.0.0"
+dynamic = ["version"]          # from the latest git tag (setuptools-scm), e.g. v1.0.0
 description = "Laser-cut house box generator: finger-jointed panels with windows, doors, chimneys and dormers, as cut-ready SVG"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -18,7 +18,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [[tool.uv.index]]
@@ -32,6 +32,9 @@ packages = ["house_maker", "house_maker.builders", "house_maker.review"]    # wa
 
 [tool.setuptools.package-data]
 "house_maker.review" = ["viewer.html", "viewer.css", "viewer_core.js", "viewer_app.js"]
+
+[tool.setuptools_scm]
+# the repository root is the git root and the package root
 
 [tool.uv]
 default-groups = ["dev"]

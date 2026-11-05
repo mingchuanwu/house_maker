@@ -30,7 +30,6 @@ wheels = [
 
 [[package]]
 name = "house-maker"
-version = "1.0.0"
 source = { editable = "." }
 
 [package.dev-dependencies]

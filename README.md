@@ -531,3 +531,8 @@ The system provides comprehensive validation with clear error messages:
 
 Standalone implementation for educational and practical use in laser cutting and maker projects.
 
+
+### Versioning
+
+The version comes from the latest git tag (`setuptools-scm`): `git tag -a v1.1.0 -m "..."` then `make build`.
+Untagged commits get a dev version such as `1.1.1.dev3+g1a2b3c4`; `house_maker.__version__` reports it.
