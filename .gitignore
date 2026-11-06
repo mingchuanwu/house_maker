@@ -211,3 +211,8 @@ __marimo__/
 
 # Node dev dependencies (review-page tests)
 node_modules/
+
+# 3D models written next to generated SVGs
+*.3mf
+*.stl
+*.glb

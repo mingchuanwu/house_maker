@@ -391,3 +391,25 @@ def door_casing_pieces(door: Door, panel_name: str, thickness: float) -> Dict[st
     if door.type == DoorType.ARCHED:
         return _generate_arched_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
     return _generate_rectangular_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
+
+
+def casing_margins(kind: str, ctype, width: float, height: float, thickness: float) -> Tuple[float, float, float, float]:
+    """
+    How far the trim around a window ('window') or door ('door') of the given size reaches beyond the opening,
+    as (left, bottom, right, top) in wall coordinates (bottom = lowest edge on the wall). Zero where there is no
+    trim; negative where the trim ends inside the bounding box of the opening (circular windows).
+    Mirrors the constants used by the casing generators above.
+    """
+    t = thickness
+    if kind == 'door':
+        side = 1.5 * t + 0.6 * t
+        return (side, 0.0, side, 1.5 * t if ctype == DoorType.ARCHED else 2.25 * t)
+    if ctype == WindowType.ATTIC:
+        return (0.0, 0.0, 0.0, 0.0)
+    if ctype == WindowType.CIRCULAR:
+        d = min(width, height)
+        mx, my = t - (width - d) / 2, t - (height - d) / 2
+        return (mx, my, mx, my)
+    if ctype == WindowType.ARCHED:
+        return (1.4 * t, t, 1.4 * t, t)
+    return (1.4 * t, 1.5 * t, 1.4 * t, 1.5 * t)

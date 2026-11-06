@@ -89,6 +89,8 @@ Architectural Features:
 
 Output:
   --output, -o        Output SVG filename (default: house_box.svg)
+  --3d FORMAT         Also write the assembled house as a 3D model next to the SVG:
+                      3mf (default), stl, glb, all (all three) or none
   --no-labels         Disable panel labels in SVG
   --spacing, -s       Panel spacing in mm (default: 3)
   --rotated-layout    Use rotated layout pattern
@@ -352,6 +354,27 @@ The system includes two layout modes with configurable material constraints:
 - Optional panel labels for assembly
 - Professional cutting layers
 
+### 3D model (3MF, STL, GLB)
+Next to the SVG, `generate_house.py` writes the *assembled* house as a 3D model for viewing it, opening it in CAD
+and checking that the parts fit (`--3d 3mf|stl|glb|all|none`, default `3mf`). The cut panels stay the source of
+truth; the 3D file is built from them.
+
+| Format | Contents | Opens in |
+|--------|----------|----------|
+| `3mf` | one named, coloured solid per panel, millimetres | Fusion 360, PrusaSlicer/Cura, Windows 3D Viewer, Blender (add-on) |
+| `stl` | all panels merged into one triangle mesh (geometry only) | nearly everything, slicers, MeshLab |
+| `glb` | named, coloured nodes (glTF 2.0, Y-up, metres) | Blender, browsers/three.js, macOS Quick Look, Windows 3D Viewer |
+
+The model shows the **nominal** geometry (the kerf compensation of the cut paths is taken back out), with every
+panel extruded to the material thickness at its place in the house, including the chimney, dormers and the
+window/door trim. Decorative mullions inside window openings are not modelled.
+
+```python
+house.generate_3d("house.3mf")             # format from the extension
+data = house.generate_3d(fmt="glb")        # or get the bytes
+parts = house.build_model()                # list of Part(name, mesh, color) for your own processing
+```
+
 ### Cutting Summary
 - Material requirements and panel count
 - Cut length estimates (total perimeter)
@@ -377,6 +400,9 @@ house_maker/
 ├── assembly.py           # which panels exist (reads the config, calls builders)
 ├── layout.py, render.py  # packing on the sheet; SVG output
 ├── svg_generator.py      # build -> layout -> render facade
+├── placement3d.py        # where each panel sits in the assembled house (frames: box, chimney, dormer, trim)
+├── model3d.py            # panels -> nominal solids (kerf taken back out) -> list of Parts
+├── mesh.py, formats3d.py # triangulation/extrusion; STL, 3MF and GLB writers (standard library only)
 ├── svgpath.py            # small SVG path reader (extents, tests)
 ├── mates.py              # declared mating edges / tab↔slot pairs (used by the review page and tests)
 ├── review/               # human review page (viewer_*.js/html/css), builder, feedback collector
@@ -431,6 +457,7 @@ component, checks it numerically, and writes an SVG of just those panels.
 | `dormer_3d` | the dormer on the roof, independent 3D model | ridge ends exactly on the roof, valley on the roof, no interpenetration (ridge limit bounded), tabs flush |
 | `box_seams` (24 box configs) | floor/side/gable/roof seams | as-cut finger position/width/depth, shared edge lengths, tab ↔ roof slot, gable slope = angle |
 | `assembly_3d` | the whole box in 3D | panels as kerf-eroded slabs never interpenetrate; tabs flush; extents = specification; ridge limit (exact at 45° only) |
+| `test_model3d.py` | the exported 3D model | closed solids with positive volume = nominal area x t; placement equals the independent model; no interpenetration on the exported frames; trim frames the wall openings; files parse back (STL/3MF/GLB) |
 | `dimensions`, `panel_invariants` | every panel | absolute sizes vs an independent closed form; drawn outline/fingers/slots/area = plan |
 | `wall_style`, `roof_tiles` | panel + engraving | engraving inside the panel for every style and tile type |
 

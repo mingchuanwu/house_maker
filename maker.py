@@ -8,7 +8,9 @@ so adding components after a previous `generate_svg()` is always reflected in th
 from .components import ArchitecturalStyle, DoorType, RoofType, ShingleType, WindowType
 from .config import ArchitecturalConfiguration, create_preset_configuration
 from .constants import DEFAULT_KERF, HouseStyle
+from .formats3d import FORMATS, encode
 from .geometry import HouseGeometry
+from .model3d import build_model
 from .svg_generator import SVGGenerator
 
 
@@ -128,6 +130,30 @@ class HouseMaker:
         else:
             return svg_content
     
+    def build_model(self):
+        """The assembled house as 3D `Part`s (one closed solid per panel, nominal geometry, mm, Z up)."""
+        return build_model(self.geometry, self.style, self.architectural_config, self.build_panels())
+
+    def generate_3d(self, filename=None, fmt=None):
+        """
+        3D model of the assembled house, for viewing and checking the fit in CAD.
+
+        Args:
+            filename: if given, write to this file; the format follows the extension unless `fmt` is set
+            fmt: 'stl' (merged geometry), '3mf' (named, coloured parts) or 'glb' (glTF binary)
+
+        Returns the file content as bytes when no filename is given (then `fmt` is required).
+        """
+        if fmt is None:
+            if filename is None:
+                raise ValueError(f"fmt is required without a filename (one of {', '.join(FORMATS)})")
+            fmt = str(filename).rsplit('.', 1)[-1].lower()
+        data = encode(fmt.lower(), self.build_model())
+        if filename is None:
+            return data
+        with open(filename, 'wb') as f:
+            f.write(data)
+
     def save_design(self, base_name, include_summary=False):
         """
         Save complete design package

@@ -8,12 +8,12 @@ PKG = pathlib.Path(__file__).resolve().parent.parent
 # Lower layers must not import higher ones. Modules on the same level must not import each other.
 LEVELS = {
     'constants': 0, 'exceptions': 0, 'warnings_util': 0,
-    'geometry': 1, 'layout': 1, 'dormer_geometry': 1,
-    'svgpath': 2, 'components': 2, 'joints': 2,
+    'geometry': 1, 'layout': 1, 'dormer_geometry': 1, 'mesh': 1,
+    'svgpath': 2, 'components': 2, 'joints': 2, 'formats3d': 2,
     'panel': 3, 'kerf': 3, 'placement': 3, 'cutouts': 3, 'casings': 3, 'patterns': 3,
     'render': 4, 'config': 4, 'mates': 4, 'builders.box': 4, 'builders.chimney': 4, 'builders.dormer': 4,
-    'assembly': 5,
-    'svg_generator': 6,
+    'assembly': 5, 'placement3d': 5,
+    'svg_generator': 6, 'model3d': 6,
     'maker': 7,
     '__init__': 8,
 }

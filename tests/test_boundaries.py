@@ -138,27 +138,38 @@ def test_window_margins_are_exactly_one_thickness():
         h.add_window('side_wall_left', 80, ph - t - 10 + EPS, 10, 10)
 
 
-def test_windows_keep_one_thickness_apart():
+def test_windows_keep_their_trim_apart():
+    """The casings are separate parts: openings must be 2 x 1.4t apart sideways and 2 x 1.5t above each other."""
+    side, vert = 2 * 1.4 * T, 2 * 1.5 * T
     def fresh():
         h = wall_house()
         h.add_window('side_wall_left', 30, 30, 10, 10)
         return h
-    fresh().add_window('side_wall_left', 43, 30, 10, 10)                              # gap of exactly t to the right: ok
-    fresh().add_window('side_wall_left', 30, 43, 10, 10)                              # ... and above: ok
-    fresh().add_window('side_wall_left', 17, 30, 10, 10)                              # ... and to the left: ok
-    for x, y in ((43 - EPS, 30), (30, 43 - EPS), (17 + EPS, 30), (30, 17 + EPS)):
-        with pytest.raises(PlacementError, match='overlaps'):
+    fresh().add_window('side_wall_left', 40 + side, 30, 10, 10)                       # exactly enough room to the right
+    fresh().add_window('side_wall_left', 30, 40 + vert, 10, 10)                       # ... above
+    fresh().add_window('side_wall_left', 30 - side - 10, 30, 10, 10)                  # ... and to the left
+    for x, y in ((40 + side - EPS * 10, 30), (30, 40 + vert - EPS * 10), (20 - side + EPS * 10, 30), (30, 20 - vert + EPS * 10)):
+        with pytest.raises(PlacementError, match='trim|overlaps'):
             fresh().add_window('side_wall_left', x, y, 10, 10)
 
 
-def test_door_and_window_also_keep_apart():
+def test_windows_without_trim_only_keep_one_thickness_apart():
+    h = wall_house()
+    h.add_window("side_wall_left", 30, 30, 10, 10, window_type=WindowType.ATTIC)
+    h.add_window('side_wall_left', 40 + T, 30, 10, 10, window_type=WindowType.ATTIC)       # exactly t apart: ok
+    with pytest.raises(PlacementError, match='overlaps'):
+        h.add_window('side_wall_left', 50 + 2 * T - 1e-3, 30, 10, 10, window_type=WindowType.ATTIC)
+
+
+def test_door_and_window_trims_also_keep_apart():
+    gap = (2.1 + 1.4) * T                                                             # door trim + window trim
     h = wall_house()
     h.add_door('gable_wall_front', 40, 3, 12, 30)
-    h.add_window('gable_wall_front', 55, 20, 10, 10)                                  # exactly t right of the door
-    with pytest.raises(PlacementError, match='overlaps'):
+    h.add_window('gable_wall_front', 52 + gap, 20, 10, 10)
+    with pytest.raises(PlacementError, match='trim|overlaps'):
         wall_house_ = wall_house()
         wall_house_.add_door('gable_wall_front', 40, 3, 12, 30)
-        wall_house_.add_window('gable_wall_front', 55 - EPS, 20, 10, 10)
+        wall_house_.add_window('gable_wall_front', 52 + gap - 1e-6, 20, 10, 10)
 
 
 def test_gable_window_must_stay_t_below_the_slope():

@@ -15,6 +15,7 @@ from .components import (
     AdditionalGable, ArchitecturalStyle, Chimney, ComponentPosition, Door, DoorType,
     RoofType, ShingleType, Window, WindowType
 )
+from .casings import casing_margins
 from .exceptions import GeometryError, PlacementError
 from .geometry import HouseGeometry
 from .placement import ComponentPositioner, ProportionalSizer
@@ -93,7 +94,7 @@ class ArchitecturalConfiguration:
             """Keep a candidate only if a hand-placed one would be accepted too (margins, gable slope,
             clearance to what is already there): the placer must never produce a bad cut file."""
             for c in candidates:
-                if self._wall_problem(c.position, panel_dims[c.position.panel]) is None:
+                if self._wall_problem(c.position, panel_dims[c.position.panel], 'door' if isinstance(c, Door) else 'window', c.type) is None:
                     store.append(c)
 
         if add_doors and door_panel in panel_names:
@@ -116,7 +117,7 @@ class ArchitecturalConfiguration:
                         panel_name, WindowType.ATTIC, existing_components=existing), self.windows)
 
     # ------------------------------------------------------------------ wall components
-    def _wall_position(self, kind: str, panel_name: str, x, y, width, height, default_size):
+    def _wall_position(self, kind: str, ctype, panel_name: str, x, y, width, height, default_size):
         panel_dims = self.house_geometry.get_panel_dimensions().get(panel_name)
         if panel_dims is None:
             raise PlacementError(kind, f"unknown panel {panel_name!r}")
@@ -125,13 +126,13 @@ class ArchitecturalConfiguration:
             width = default_w if width is None else width
             height = default_h if height is None else height
         position = ComponentPosition(x, y, width, height, panel_name)
-        problem = self._wall_problem(position, panel_dims)
+        problem = self._wall_problem(position, panel_dims, kind, ctype)
         if problem:
             raise PlacementError(kind, f"({x}, {y}) {width}x{height} on {panel_name}: {problem}")
         return position
 
-    def _wall_problem(self, position: ComponentPosition, panel_dims, ignore=None) -> Optional[str]:
-        """Why a window/door position is invalid (margins, gable slope, overlap), or None."""
+    def _wall_problem(self, position: ComponentPosition, panel_dims, kind: str, ctype, ignore=None) -> Optional[str]:
+        """Why a window/door position is invalid (margins, gable slope, overlap, trim collision), or None."""
         if not self._positioner.validate_component_placement(position, panel_dims):
             return f"does not fit on the {panel_dims[0]:.1f}x{panel_dims[1]:.1f} panel with margins"
         g = self.house_geometry
@@ -151,14 +152,28 @@ class ArchitecturalConfiguration:
             if _overlap((rect[0] - gap, rect[1] - gap, rect[2] + gap, rect[3] + gap),
                         (o.x, o.y, o.x + o.width, o.y + o.height)):
                 return f"overlaps (or is closer than {gap}mm to) another window/door"
+        # the trim frames around the openings are separate parts and must not overlap either
+        t = g.thickness
+        trim = self._trim_rect(kind, ctype, position, t)
+        for other in self.windows + self.doors:
+            if other is ignore or other.position.panel != position.panel:
+                continue
+            o_kind = 'door' if isinstance(other, Door) else 'window'
+            if _overlap(trim, self._trim_rect(o_kind, other.type, other.position, t)):
+                return "its trim (casing) would overlap the trim of another window/door"
         return None
+
+    @staticmethod
+    def _trim_rect(kind: str, ctype, p: ComponentPosition, t: float) -> Rect:
+        left, bottom, right, top = casing_margins(kind, ctype, p.width, p.height, t)
+        return (p.x - left, p.y - bottom, p.x + p.width + right, p.y + p.height + top)
 
     def add_custom_window(self, panel_name: str, x: float, y: float,
                           width: Optional[float] = None, height: Optional[float] = None,
                           window_type: WindowType = WindowType.RECTANGULAR) -> Window:
         """Add a window at (x, y) on a wall panel; size defaults to the proportional size."""
         position = self._wall_position(
-            'window', panel_name, x, y, width, height,
+            'window', window_type, panel_name, x, y, width, height,
             lambda p: self._sizer.get_window_dimensions(p, window_type))
         window = Window(window_type, position)
         self.windows.append(window)
@@ -169,7 +184,7 @@ class ArchitecturalConfiguration:
                         door_type: DoorType = DoorType.RECTANGULAR) -> Door:
         """Add a door at (x, y) on a wall panel; size defaults to the proportional size."""
         position = self._wall_position(
-            'door', panel_name, x, y, width, height, self._sizer.get_door_dimensions)
+            'door', door_type, panel_name, x, y, width, height, self._sizer.get_door_dimensions)
         door = Door(door_type, position)
         self.doors.append(door)
         return door
@@ -322,7 +337,7 @@ class ArchitecturalConfiguration:
                 if p.panel not in panel_dims:
                     issues.append(f"{kind} references unknown panel: {p.panel}")
                 else:
-                    problem = self._wall_problem(p, panel_dims[p.panel], ignore=item)
+                    problem = self._wall_problem(p, panel_dims[p.panel], kind.lower(), item.type, ignore=item)
                     if problem:
                         issues.append(f"{kind} on {p.panel} at ({p.x}, {p.y}) "
                                       f"size {p.width}×{p.height}: {problem}")

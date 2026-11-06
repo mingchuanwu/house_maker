@@ -163,6 +163,9 @@ Architectural options:
     # Output options
     parser.add_argument('--output', '-o', type=str, default='house_box.svg',
                        help='Output SVG filename (default: house_box.svg)')
+    parser.add_argument('--3d', dest='model_3d', default='3mf', choices=['3mf', 'stl', 'glb', 'all', 'none'],
+                       help='Also write the assembled house as a 3D model next to the SVG '
+                            '(default: 3mf; "all" writes 3mf, stl and glb; "none" skips it)')
     parser.add_argument('--no-labels', action='store_true',
                        help='Disable panel labels in SVG')
     parser.add_argument('--verbose', '-v', action='store_true',
@@ -314,6 +317,12 @@ def main():
         print(f"✅ House box SVG generated successfully!")
         print(f"📁 Output: {output_path.absolute()}")
         
+        if args.model_3d != 'none':
+            for fmt in (('3mf', 'stl', 'glb') if args.model_3d == 'all' else (args.model_3d,)):
+                path = output_path.with_suffix(f'.{fmt}')
+                house.generate_3d(str(path), fmt)
+                print(f"🧊 3D model ({fmt}): {path.absolute()}")
+
         # Get cutting summary
         summary = house.get_cutting_summary()
         print(f"📐 SVG size: {summary['svg_dimensions_mm']}")
