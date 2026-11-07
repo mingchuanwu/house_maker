@@ -5,6 +5,8 @@ build model -> (SVGGenerator: build panels -> layout -> render). No generator st
 so adding components after a previous `generate_svg()` is always reflected in the next one.
 """
 
+import pathlib
+
 from .components import ArchitecturalStyle, DoorType, RoofType, ShingleType, WindowType
 from .config import ArchitecturalConfiguration, create_preset_configuration
 from .constants import DEFAULT_KERF, HouseStyle
@@ -12,6 +14,7 @@ from .formats3d import FORMATS, encode
 from .geometry import HouseGeometry
 from .model3d import build_model
 from .svg_generator import SVGGenerator
+from .viewer3d import build_page, build_payload
 
 
 class HouseMaker:
@@ -153,6 +156,24 @@ class HouseMaker:
             return data
         with open(filename, 'wb') as f:
             f.write(data)
+
+    def generate_view(self, filename=None, title=None):
+        """
+        Self-contained HTML 3D viewer of the assembled house (WebGL; orbit, outliner, exploded view, section plane).
+
+        Args:
+            filename: if given, write the page there; the title defaults to the file name without '.view.html'
+            title: page title (default: 'house')
+
+        Returns the page as a string when no filename is given.
+        """
+        if title is None:
+            title = 'house' if filename is None else pathlib.Path(filename).name.split('.')[0]
+        page = build_page(build_payload(self.geometry, self.architectural_config, self.build_panels(), title))
+        if filename is None:
+            return page
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(page)
 
     def save_design(self, base_name, include_summary=False):
         """

@@ -7,7 +7,7 @@ INBOX      ?= /tmp/house_review_inbox
 OPEN       := $(shell command -v open || command -v xdg-open || echo echo)
 
 .DEFAULT_GOAL := help
-.PHONY: help setup node-deps test test-fast build review collect feedback house clean distclean
+.PHONY: help setup node-deps test test-fast build review collect feedback house view clean distclean
 
 help: ## list the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-11s %s\n", $$1, $$2}'
@@ -46,6 +46,10 @@ feedback: collect ## alias of collect
 
 house: ## generate a sample house: make house ARGS="--add-chimney --angle 40"
 	$(UV) run house-maker --output house_box.svg $(ARGS)
+
+view: ## generate a sample house with the 3D viewer page and open it: make view ARGS="--add-chimney"
+	$(UV) run house-maker --output house_box.svg --3d view $(ARGS)
+	@$(OPEN) house_box.view.html
 
 clean: ## remove caches and generated reviews
 	rm -rf .pytest_cache build dist *.egg-info $(REVIEW_DIR)

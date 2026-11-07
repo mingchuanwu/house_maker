@@ -90,7 +90,8 @@ Architectural Features:
 Output:
   --output, -o        Output SVG filename (default: house_box.svg)
   --3d FORMAT         Also write the assembled house as a 3D model next to the SVG:
-                      3mf (default), stl, glb, all (all three) or none
+                      3mf (default), stl, glb, view (built-in 3D viewer page),
+                      all (3mf, stl, glb and view) or none
   --no-labels         Disable panel labels in SVG
   --spacing, -s       Panel spacing in mm (default: 3)
   --rotated-layout    Use rotated layout pattern
@@ -375,6 +376,24 @@ data = house.generate_3d(fmt="glb")        # or get the bytes
 parts = house.build_model()                # list of Part(name, mesh, color) for your own processing
 ```
 
+### Built-in 3D viewer (`--3d view`)
+`--3d view` (also part of `--3d all`; or `make view`) writes `house_box.view.html` next to the SVG: one
+self-contained page (WebGL, no install, no server, no network) for inspecting the assembled house in any browser.
+
+- **Navigate**: trackpad swipe orbits, Shift+swipe pans, pinch zooms; with a mouse, drag orbits, right/Shift-drag
+  pans, the wheel zooms (the *Scroll* menu forces trackpad or mouse behaviour if the guess is wrong). Double-click a
+  surface to orbit around that point; `F` frames the selection.
+- **Views**: Front/Back/Left/Right/Top/Bottom/Iso (keys 1, 3, 7 with Ctrl for the opposite side, 0 iso, 5
+  perspective/orthographic). The front of the house is the `gable_wall_front` (+X) face.
+- **Outliner**: every part grouped (floor, walls, roof, casings, chimney, dormer) with show/hide and isolate; click
+  a row or a part to select it (`H` hides it, Alt+H shows everything).
+- **Exploded view** (0-20 mm), **section plane** on X/Y/Z (cut material shows red), **X-ray**, edges, wireframe,
+  distinct or material colours.
+
+```python
+house.generate_view("house.view.html")     # or page = house.generate_view()
+```
+
 ### Cutting Summary
 - Material requirements and panel count
 - Cut length estimates (total perimeter)
@@ -406,6 +425,7 @@ house_maker/
 ├── svgpath.py            # small SVG path reader (extents, tests)
 ├── mates.py              # declared mating edges / tab↔slot pairs (used by the review page and tests)
 ├── review/               # human review page (viewer_*.js/html/css), builder, feedback collector
+├── viewer3d/             # built-in 3D viewer page (--3d view): payload.py, page.py, viewer_*.js/html/css
 ├── kerf.py               # kerf offset of arbitrary cut paths (cut-outs, trim frames)
 ├── warnings_util.py      # warnings attributed to the caller's code
 ├── tools/mutate.py       # mutation-testing runner (off by default; ≤ 3 workers, checks free memory)

@@ -216,3 +216,4 @@ node_modules/
 *.3mf
 *.stl
 *.glb
+*.view.html
