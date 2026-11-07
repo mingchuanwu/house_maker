@@ -177,15 +177,28 @@ def test_gable_window_must_stay_t_below_the_slope():
     x = 20.0
     # both top corners must lie at least t/cos(theta) (measured vertically) below the sloped edge
     below = lambda cx: g.z_kerf + min(cx, g.gable_wall_width - cx) * math.tan(g.theta_rad) - t / math.cos(g.theta_rad)
+    attic = WindowType.ATTIC                                                          # no trim: the opening counts
     top = min(below(x), below(x + width))
-    wall_house().add_window('gable_wall_front', x, top - 10, width, 10)               # touching the limit: ok
+    wall_house().add_window('gable_wall_front', x, top - 10, width, 10, attic)        # touching the limit: ok
     with pytest.raises(PlacementError, match='sloped'):
-        wall_house().add_window('gable_wall_front', x, top - 10 + EPS, width, 10)
+        wall_house().add_window('gable_wall_front', x, top - 10 + EPS, width, 10, attic)
     # mirror image on the other slope
     xr = g.gable_wall_width - x - width
-    wall_house().add_window('gable_wall_front', xr, top - 10, width, 10)
+    wall_house().add_window('gable_wall_front', xr, top - 10, width, 10, attic)
     with pytest.raises(PlacementError, match='sloped'):
-        wall_house().add_window('gable_wall_front', xr, top - 10 + EPS, width, 10)
+        wall_house().add_window('gable_wall_front', xr, top - 10 + EPS, width, 10, attic)
+
+
+def test_gable_window_trim_must_stay_under_the_slope():
+    """A rectangular window's casing (1.4t to the sides, 1.5t above) sits outside the wall: it must stay under the
+    sloped edge (the roof's underside), with no wall margin."""
+    g, t, width = wall_house().geometry, 3.0, 10
+    x = 20.0
+    edge = lambda cx: g.z_kerf + min(cx, g.gable_wall_width - cx) * math.tan(g.theta_rad)
+    top = min(edge(x - 1.4 * t), edge(x + width + 1.4 * t)) - 1.5 * t
+    wall_house().add_window('gable_wall_front', x, top - 10, width, 10)               # trim touching the edge: ok
+    with pytest.raises(PlacementError, match='trim'):
+        wall_house().add_window('gable_wall_front', x, top - 10 + EPS, width, 10)
 
 
 # ---------------------------------------------------------------- roof feature placement (margins, keep-outs)
@@ -455,6 +468,6 @@ def test_gable_slope_rule_at_any_angle(theta):
     below = lambda cx: g.z_kerf + min(cx, g.gable_wall_width - cx) * math.tan(g.theta_rad) - 3.0 / math.cos(g.theta_rad)
     for x in (15.0, g.gable_wall_width - 15.0 - width):
         top = min(below(x), below(x + width))
-        house().add_window('gable_wall_front', x, top - 10, width, 10)
+        house().add_window('gable_wall_front', x, top - 10, width, 10, WindowType.ATTIC)       # no trim
         with pytest.raises(PlacementError, match='sloped'):
-            house().add_window('gable_wall_front', x, top - 10 + EPS, width, 10)
+            house().add_window('gable_wall_front', x, top - 10 + EPS, width, 10, WindowType.ATTIC)

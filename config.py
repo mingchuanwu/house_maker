@@ -92,10 +92,17 @@ class ArchitecturalConfiguration:
 
         def accept(candidates, store):
             """Keep a candidate only if a hand-placed one would be accepted too (margins, gable slope,
-            clearance to what is already there): the placer must never produce a bad cut file."""
+            clearance to what is already there): the placer must never produce a bad cut file. A window in
+            the gable triangle that does not fit (its trim reaching into the roof) is lowered and shrunk instead."""
             for c in candidates:
-                if self._wall_problem(c.position, panel_dims[c.position.panel], 'door' if isinstance(c, Door) else 'window', c.type) is None:
+                kind = 'door' if isinstance(c, Door) else 'window'
+                dims = panel_dims[c.position.panel]
+                if self._wall_problem(c.position, dims, kind, c.type) is None:
                     store.append(c)
+                elif kind == 'window' and c.position.panel.startswith('gable_wall') and c.position.y >= self.house_geometry.z:
+                    fitted = self._fit_under_gable(c.position, dims, c.type)
+                    if fitted is not None:
+                        store.append(Window(c.type, fitted))
 
         if add_doors and door_panel in panel_names:
             accept(self._positioner.get_recommended_doors(door_panel, door_type, existing_components=[]),
@@ -117,6 +124,27 @@ class ArchitecturalConfiguration:
                         panel_name, WindowType.ATTIC, existing_components=existing), self.windows)
 
     # ------------------------------------------------------------------ wall components
+    GABLE_FIT_STEPS = 20        # sizes tried, each 5% smaller than the last
+    GABLE_FIT_DROP = 0.25       # mm per step when lowering
+    MIN_WINDOW = 5.0            # smallest window side the sizer makes
+
+    def _fit_under_gable(self, p: ComponentPosition, panel_dims, ctype) -> Optional[ComponentPosition]:
+        """The largest, then highest, centred copy of a gable-triangle window (no lower than the wall top) that
+        passes every placement rule, or None."""
+        g = self.house_geometry
+        for i in range(self.GABLE_FIT_STEPS):
+            s = 1 - 0.05 * i
+            w, h = p.width * s, p.height * s
+            if min(w, h) < self.MIN_WINDOW:
+                break
+            x, y = p.x + (p.width - w) / 2, p.y
+            while y >= g.z:
+                candidate = ComponentPosition(x, y, w, h, p.panel)
+                if self._wall_problem(candidate, panel_dims, 'window', ctype) is None:
+                    return candidate
+                y -= self.GABLE_FIT_DROP
+        return None
+
     def _wall_position(self, kind: str, ctype, panel_name: str, x, y, width, height, default_size):
         panel_dims = self.house_geometry.get_panel_dimensions().get(panel_name)
         if panel_dims is None:
@@ -136,13 +164,19 @@ class ArchitecturalConfiguration:
         if not self._positioner.validate_component_placement(position, panel_dims):
             return f"does not fit on the {panel_dims[0]:.1f}x{panel_dims[1]:.1f} panel with margins"
         g = self.house_geometry
+        t = g.thickness
+        trim = self._trim_rect(kind, ctype, position, t)
         if position.panel.startswith('gable_wall'):
-            # the top corners must stay under both sloped edges of the gable
-            width, top = g.gable_wall_width, position.y + position.height
-            for cx in (position.x, position.x + position.width):
-                limit = g.z_kerf + min(cx, width - cx) * math.tan(g.theta_rad)
-                if top > limit - g.thickness / math.cos(g.theta_rad):
-                    return "extends above the sloped gable edge"
+            # the opening's top corners must stay t/cos(theta) under both sloped edges of the gable (wall material
+            # around the hole); the trim sits on the outside of the wall and only has to stay under the roof
+            width = g.gable_wall_width
+            rise = lambda cx: g.z_kerf + min(cx, width - cx) * math.tan(g.theta_rad)
+            top = position.y + position.height
+            if any(top > rise(cx) - g.thickness / math.cos(g.theta_rad)
+                   for cx in (position.x, position.x + position.width)):
+                return "extends above the sloped gable edge"
+            if any(trim[3] > rise(cx) for cx in (trim[0], trim[2])):
+                return "its trim (casing) extends above the sloped gable edge"
         rect = (position.x, position.y, position.x + position.width, position.y + position.height)
         gap = g.thickness
         for other in self.windows + self.doors:
@@ -153,8 +187,6 @@ class ArchitecturalConfiguration:
                         (o.x, o.y, o.x + o.width, o.y + o.height)):
                 return f"overlaps (or is closer than {gap}mm to) another window/door"
         # the trim frames around the openings are separate parts and must not overlap either
-        t = g.thickness
-        trim = self._trim_rect(kind, ctype, position, t)
         for other in self.windows + self.doors:
             if other is ignore or other.position.panel != position.panel:
                 continue

@@ -28,6 +28,26 @@ def test_features_cannot_overlap_or_leave_panel():
     assert len(house.architectural_config.chimneys) == 2
 
 
+def test_window_trim_must_stay_under_the_gable_slope():
+    """The opening alone clears the sloped edge here, but a rectangular window's casing would reach into the roof."""
+    house = make_house(length=80, width=60, height=70, gable_angle=35, material_thickness=3)
+    with pytest.raises(PlacementError, match='sloped gable edge'):
+        house.add_window('gable_wall_front', 28.5, 78.8, 9, 5.5, WindowType.RECTANGULAR)
+    house.add_window('gable_wall_front', 28.5, 78.8, 9, 5.5, WindowType.ATTIC)    # no casing: fits
+
+
+def test_upper_gable_window_keeps_its_frame_under_the_roof():
+    """The small default house has room for a framed window in each gable triangle once it is lowered and shrunk."""
+    house = make_house(length=80, width=60, height=70, gable_angle=35, material_thickness=3, auto_add_components=True)
+    cfg, z = house.architectural_config, house.geometry.z
+    for panel in ('gable_wall_front', 'gable_wall_back'):
+        upper = [w for w in cfg.get_windows_for_panel(panel) if w.position.y >= z]
+        assert len(upper) == 1 and upper[0].type == WindowType.RECTANGULAR, panel
+    assert cfg.validate_all_components() == []
+    names = {p.name for p in house.build_panels()}
+    assert {'gable_wall_front_w0_window_casing', 'gable_wall_back_w1_window_casing'} <= names
+
+
 CASES = [dict(gable_angle=a, length=l, width=w, height=h)
          for a, (l, w, h) in itertools.product((30, 45, 60), [(100, 80, 70), (160, 120, 140)])]
 

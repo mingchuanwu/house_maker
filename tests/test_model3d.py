@@ -42,6 +42,7 @@ SCENES = {
     '45-arched': dict(angle=45, window=WindowType.ARCHED, door=DoorType.ARCHED),
     '60-circular': dict(angle=60, window=WindowType.CIRCULAR),
     '25-features': dict(angle=25),
+    'cli-default': dict(length=80, width=60, height=70, chimney=False, dormer=False),   # small gable: attic window
 }
 
 
@@ -69,7 +70,8 @@ def test_volume_is_nominal_area_times_thickness(scene):
 
 def test_nominal_geometry_not_drawn_geometry(scene):
     """The drawn outline carries kerf compensation; the model is back at the specified size."""
-    X, Y, Z = BASE['length'], BASE['width'], BASE['height']
+    g = scene['house'].geometry
+    X, Y = g.x, g.y
     if 'floor' in scene['parts']:                      # floor plus its tabs into the walls: exactly nominal
         lo, hi = scene['parts']['floor'].mesh.bounds()
         assert lo == pytest.approx((-T, -T, 0), abs=1e-6) and hi == pytest.approx((X + T, Y + T, T), abs=1e-6)
