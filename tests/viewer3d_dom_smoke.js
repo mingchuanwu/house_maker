@@ -16,6 +16,10 @@ assert.ok(v, 'the app started');
 assert.deepStrictEqual(errors, [], 'no script errors');
 
 assert.ok(!doc.querySelector('#msg').hidden && /WebGL/.test(doc.querySelector('#msg').textContent), 'no-WebGL message');
+// with WebGL the message is hidden - and must then not cover the canvas (it would swallow every pointer/wheel event)
+doc.querySelector('#msg').hidden = true;
+assert.strictEqual(window.getComputedStyle(doc.querySelector('#msg')).display, 'none', 'hidden message box is gone');
+doc.querySelector('#msg').hidden = false;
 
 const rows = doc.querySelectorAll('.row.part');
 assert.strictEqual(rows.length, v.parts.length, 'one outliner row per part');
