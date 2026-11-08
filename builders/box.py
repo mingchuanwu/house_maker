@@ -31,6 +31,7 @@ class PanelFeatures:
     cutouts: List[str] = field(default_factory=list)   # extra through-cuts (windows, doors), local coords
     score: List[str] = field(default_factory=list)     # engraved lines (e.g. chimney footprint)
     pattern: str = ''                                  # decorative engraving
+    slots: List[SlotSpec] = field(default_factory=list)  # extra internal slots for other panels' tabs (dormer faces)
 
 
 def _edges(*plans: EdgePlan) -> Tuple[EdgePlan, ...]:
@@ -98,7 +99,7 @@ class BoxPanelBuilder:
         joints = {plan.name: s for plan, s in zip(plans, specs) if s}
         path = self.engine.trace_outline(corners, specs)
 
-        slots = self._slots(name)
+        slots = self._slots(name) + list(features.slots)
         cut = [path] + [self.engine.slot_path(s) for s in slots] + list(features.cutouts)
         is_roof = name.startswith('roof_panel')
         return Panel(name=name, label=name.replace('_', ' ').title(), cut=cut,

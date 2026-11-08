@@ -9,7 +9,7 @@ from typing import List, Optional
 
 from .builders.box import BoxPanelBuilder, PanelFeatures
 from .builders.chimney import build_chimney_panels, footprint_score as chimney_footprint, roof_cutout as chimney_cutout
-from .builders.dormer import build_dormer_panels, footprint_score as dormer_footprint
+from .builders.dormer import build_dormer_panels, footprint_score as dormer_footprint, roof_slots as dormer_slots
 from .casings import door_casing_pieces, window_casing_pieces
 from .config import ArchitecturalConfiguration
 from .constants import HouseStyle
@@ -49,7 +49,7 @@ def _casing_label(name: str) -> str:
 
 
 def _box_features(name: str, geometry: HouseGeometry, config: ArchitecturalConfiguration,
-                  wall_patterns: ArchitecturalPatternGenerator) -> PanelFeatures:
+                  wall_patterns: ArchitecturalPatternGenerator, engine: FingerJointEngine) -> PanelFeatures:
     """Collect the decoration of one main panel from the configuration as plain data."""
     f = PanelFeatures()
     k = geometry.kerf                                          # cut-outs are holes: drawn kerf/2 smaller all round
@@ -58,6 +58,8 @@ def _box_features(name: str, geometry: HouseGeometry, config: ArchitecturalConfi
     f.score += [chimney_footprint(c) for c in config.get_chimneys_for_panel(name)]
     f.cutouts += [chimney_cutout(c, geometry.kerf) for c in config.get_chimneys_for_panel(name)]
     f.score += [dormer_footprint(g) for g in config.get_additional_gables_for_panel(name)]
+    f.slots += [sl for i, g in enumerate(config.additional_gables) if g.position.panel == name
+                for sl in dormer_slots(g, i, engine)]
     nominal = geometry.get_panel_dimensions()[name]
     pattern = wall_patterns.generate_pattern_for_panel(name, nominal)
     if name.startswith('roof_panel'):
@@ -77,7 +79,7 @@ def build_panels(geometry: HouseGeometry, style: HouseStyle,
         return [box.build(name) for name in box_panel_names(style)]
 
     wall_patterns = ArchitecturalPatternGenerator(config.architectural_style, geometry, config.stone_jitter)
-    panels: List[Panel] = [box.build(name, _box_features(name, geometry, config, wall_patterns))
+    panels: List[Panel] = [box.build(name, _box_features(name, geometry, config, wall_patterns, engine))
                            for name in box_panel_names(style)]
 
     has_roof = any(n.startswith('roof_panel') for n in box_panel_names(style))

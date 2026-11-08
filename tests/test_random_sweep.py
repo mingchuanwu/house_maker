@@ -95,11 +95,16 @@ def test_random_house_satisfies_every_invariant(seed):
                 assert len(ja.fingers) == len(jb.fingers) and {ja.role, jb.role} == {'male', 'female'}, f"{ctx}\n{m}"
         else:
             assert a.joints[m.a[1]].role == 'male' and m.b[1] < len(b.slots), f"{ctx}\n{m}"
-        # tab <-> slot consistency on dormers: a face tab exists exactly when its roof slot does
-    for i in range(len(house.architectural_config.additional_gables)):
+        # tab <-> slot consistency on dormers: a face tab exists exactly when its slot does - rake tabs in the dormer
+        # roof panels, the base tab in the main roof panel
+    for i, dormer in enumerate(house.architectural_config.additional_gables):
         face = by_name[f'additional_gable_front_{i}']
         left, right = by_name[f'additional_gable_roof_left_{i}'], by_name[f'additional_gable_roof_right_{i}']
-        assert bool(face.joints) == bool(left.slots) == bool(right.slots), f"{ctx}\ndormer {i}: tabs and slots disagree"
+        rakes = {'rake_left', 'rake_right'} & set(face.joints)
+        assert rakes in (set(), {'rake_left', 'rake_right'}), f"{ctx}\ndormer {i}: one rake tab only"
+        assert bool(rakes) == bool(left.slots) == bool(right.slots), f"{ctx}\ndormer {i}: tabs and slots disagree"
+        owned = [s for s in by_name[dormer.position.panel].slots if s.owner == face.name]
+        assert len(owned) == (1 if 'base' in face.joints else 0), f"{ctx}\ndormer {i}: base tab and roof slot disagree"
 
     # 4. 3D assembly of the main box: panels never interpenetrate (the ridge is exact only at 45 degrees)
     t, k, th = kw['material_thickness'], kw['kerf'], kw['gable_angle']

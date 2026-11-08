@@ -112,11 +112,15 @@ def test_dormer_wiring_depends_on_whether_tabs_exist():
     assert {x for x in slot_set(mates) if x[0].startswith('additional')} == {
         ('additional_gable_front_0', 'rake_left', 'additional_gable_roof_left_0', 0),
         ('additional_gable_front_0', 'rake_right', 'additional_gable_roof_right_0', 0),
+        ('additional_gable_front_0', 'base', 'roof_panel_right', 2),                     # after the 2 gable slots
     }
-    small = make_house(dormers=[('roof_panel_left', 30, 25, 25)])
-    mates = declared_mates({p.name: p for p in small.build_panels()})
-    assert not {x for x in slot_set(mates) if x[0].startswith('additional')}       # no tabs, so nothing to plug in
-    assert ('additional_gable_roof_right_0', 'ridge', 'additional_gable_roof_left_0', 'ridge') in edge_set(mates)
+    # a dormer too short for any rake tab still plugs its base tab into the main roof
+    small = make_house(length=160, width=140, height=90, gable_angle=30, material_thickness=4,
+                       dormers=[('roof_panel_left', 30, 25, 30)])
+    panels = {p.name: p for p in small.build_panels()}
+    assert 'rake_left' not in panels['additional_gable_front_0'].joints
+    assert {x for x in slot_set(declared_mates(panels)) if x[0].startswith('additional')} == {
+        ('additional_gable_front_0', 'base', 'roof_panel_left', 2)}
 
 
 def test_mates_only_for_panels_that_exist():

@@ -102,14 +102,17 @@ def test_dormer_parts_do_not_interpenetrate(scene):
             assert d.max() <= limit, f"{a} penetrates {b} by {d.max():.3f} mm (limit {limit:.3f})"
 
 
-def test_face_tabs_sit_flush_in_the_roof_panels_when_there_are_tabs(scene):
+def test_face_rake_tabs_sit_flush_in_the_roof_panels_when_there_are_tabs(scene):
     s = scene
     face = s['panels']['additional_gable_front_0']
     if not face.joints:
         pytest.skip('no tabs on this dormer')
     k = s['k']
+    if 'rake_left' not in face.joints:
+        pytest.skip('no rake tabs on this dormer')
     pts, _ = s['samples']['additional_gable_front_0']
     tabs = tab_points(face, s['solids']['additional_gable_front_0'], pts)
+    tabs = tabs[s['frames']['additional_gable_front_0'].to_local(tabs)[1] > 0]     # the base tab goes into the main roof
     assert len(tabs)
     left = np.zeros(len(tabs), dtype=bool)
     for side in ('left', 'right'):
@@ -126,3 +129,27 @@ def test_face_tabs_sit_flush_in_the_roof_panels_when_there_are_tabs(scene):
         assert engaged.any(), f"no tab reaches the {side} roof panel"
         assert w[engaged].max() >= T - (STEP / 2 + k + 0.05), f"{side}: tab is short"
     assert left.all(), f"{(~left).sum()} tab samples are not inside a roof panel"
+
+
+def test_face_base_tab_goes_through_the_main_roof(scene):
+    """The base tab runs from the lifted base (t * sin(theta) above the roof at the face's front, normal to the roof)
+    down through the main roof - its slot keeps it from penetrating, see above - and its bottom reaches the roof's
+    underside along the face's rear surface (within a sampling step)."""
+    s = scene
+    face = s['panels']['additional_gable_front_0']
+    if 'base' not in face.joints:
+        pytest.skip('face too narrow for a base tab')
+    k = s['k']
+    pts, _ = s['samples']['additional_gable_front_0']
+    tabs = tab_points(face, s['solids']['additional_gable_front_0'], pts)
+    tabs = tabs[s['frames']['additional_gable_front_0'].to_local(tabs)[1] < 0]
+    assert len(tabs)
+    _, _, w = s['roof'].to_local(tabs)
+    wedge = T * math.sin(math.radians(s['theta']))
+    assert w.min() >= -(k + 0.05) and w.max() <= T + wedge + k + 0.05, "base tab pokes out of the roof"
+    # exact: the tab's bottom edge along the face's rear surface lies on the roof's underside
+    (a, b), = face.joints['base'].nominal
+    fr = s['frames']['additional_gable_front_0']
+    bottom = fr.to_world(np.array([a, b]), np.full(2, -face.joints['base'].depth), np.full(2, T))
+    under = s['roof'].to_local(bottom)[2]
+    assert np.abs(under).max() <= k + 1e-6, f"base tab bottom is {under} mm off the roof's underside"

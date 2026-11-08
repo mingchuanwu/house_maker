@@ -90,4 +90,8 @@ def declared_mates(panels: Dict[str, Panel]) -> List[Mate]:
             edge(f'additional_gable_roof_right_{i}', 'ridge', f'additional_gable_roof_left_{i}', 'ridge', 'dormer ridge')
             tab_slot(name, 'rake_left', f'additional_gable_roof_left_{i}', 0, 'dormer face tab → roof slot')
             tab_slot(name, 'rake_right', f'additional_gable_roof_right_{i}', 0, 'dormer face tab → roof slot')
+    for roof in ('roof_panel_left', 'roof_panel_right'):
+        for idx, slot in enumerate(panels[roof].slots if roof in panels else []):
+            if slot.owner:
+                tab_slot(slot.owner, 'base', roof, idx, 'dormer face base tab → main roof slot')
     return out

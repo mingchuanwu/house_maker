@@ -30,9 +30,9 @@ BASE = dict(length=150, width=120, height=90, material_thickness=T, kerf=K)
 def full_house(angle=35, window=WindowType.RECTANGULAR, door=DoorType.RECTANGULAR, chimney=True, dormer=True, **kw):
     h = HouseMaker(**{**BASE, 'gable_angle': angle, 'window_type': window, 'door_type': door, **kw})
     if chimney:
-        h.add_chimney('roof_panel_left', 25, 30, 10, 12, 30)
+        h.add_chimney(*(chimney if isinstance(chimney, tuple) else ('roof_panel_left', 25, 30, 10, 12, 30)))
     if dormer:
-        h.add_additional_gable('roof_panel_right', 20, 20, 40)
+        h.add_additional_gable(*(dormer if isinstance(dormer, tuple) else ('roof_panel_right', 20, 20, 40)))
     return h
 
 
@@ -43,6 +43,9 @@ SCENES = {
     '60-circular': dict(angle=60, window=WindowType.CIRCULAR),
     '25-features': dict(angle=25),
     'cli-default': dict(length=80, width=60, height=70, chimney=False, dormer=False),   # small gable: attic window
+    # `house-maker --add-chimney --add-additional-gable` with every default: a small dormer with its own small fingers
+    'cli-features': dict(length=80, width=60, height=70, finger_length=10,
+                         chimney=('roof_panel_left', 50, 20, 10, 15, 20), dormer=('roof_panel_right', 30, 15, 25)),
 }
 
 

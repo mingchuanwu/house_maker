@@ -87,10 +87,51 @@ def test_footprint_on_the_main_roof_panel(scene):
 
 
 def test_no_orphan_tabs_or_slots(scene):
-    """A face tab exists exactly when both roof panels have a slot for it (they would not mate otherwise)."""
+    """A rake tab exists exactly when both roof panels have a slot for it, the base tab exactly when the main roof
+    panel has one (they would not mate otherwise)."""
     p = scene['p']
-    has_tabs = bool(p['additional_gable_front_0'].joints)
+    face = p['additional_gable_front_0']
+    has_tabs = 'rake_left' in face.joints
+    assert has_tabs == ('rake_right' in face.joints)
     assert has_tabs == bool(p['additional_gable_roof_left_0'].slots) == bool(p['additional_gable_roof_right_0'].slots)
+    owned = [s for s in p['roof_panel_left'].slots if s.owner == face.name]
+    assert len(owned) == (1 if 'base' in face.joints else 0)
+
+
+def test_base_tab_goes_through_the_main_roof(scene):
+    """The base tab hangs t / cos(theta) below the face (the roof's vertical thickness) and its slot in the main roof
+    spans, along the slope, from t / cos(theta) up-slope of the sill to t sin(1 - sin) / cos down-slope of it: the
+    shadow of the vertical tab on both faces of the sloped roof."""
+    face, roof, d = scene['p']['additional_gable_front_0'], scene['p']['roof_panel_left'], scene['dormer']
+    t, th = 3.0, math.radians(scene['theta'])
+    s, c = math.sin(th), math.cos(th)
+    if 'base' not in face.joints:
+        pytest.skip('face too narrow for a base tab')
+    (slot,) = [q for q in roof.slots if q.owner == face.name]
+    tab = face.joints['base']
+    assert tab.depth == pytest.approx(t / c)
+    (a, b), = tab.nominal
+    assert slot.length == pytest.approx(b - a, abs=TOL)                                 # kerf 0 in this scene
+    sill = d.position.y + d.position.height
+    assert slot.cy - slot.thickness / 2 == pytest.approx(sill - t / c, abs=TOL)
+    assert slot.cy + slot.thickness / 2 == pytest.approx(sill + t * s * (1 - s) / c, abs=TOL)
+    lift_x = 3.0 * math.tan(th) / math.tan(math.radians(scene['phi']))
+    assert slot.cx == pytest.approx(d.position.x + lift_x + (a + b) / 2, abs=TOL)       # under the tab
+
+
+def test_small_dormer_still_gets_every_joint():
+    """The CLI default house with the default dormer (25 mm wide, 10 mm house fingers): the dormer uses its own,
+    smaller fingers, so its ridge, both rake tabs and the base tab all exist."""
+    house = make_house(length=80, width=60, height=70, gable_angle=35, material_thickness=3, finger_length=10)
+    house.add_additional_gable('roof_panel_right', 30, 15, 25)
+    p = {q.name: q for q in house.build_panels()}
+    face = p['additional_gable_front_0']
+    assert set(face.joints) == {'base', 'rake_left', 'rake_right'}
+    assert 'ridge' in p['additional_gable_roof_left_0'].joints and 'ridge' in p['additional_gable_roof_right_0'].joints
+    assert p['additional_gable_roof_left_0'].slots and p['additional_gable_roof_right_0'].slots
+    assert [s.owner for s in p['roof_panel_right'].slots if s.owner] == ['additional_gable_front_0']
+    fingers = [b - a for j in face.joints.values() for a, b in j.nominal]
+    assert min(fingers) >= 1.5 * 3 - 1e-9 and max(fingers) < 10
 
 
 def test_requested_depth_is_ignored_with_a_warning():
