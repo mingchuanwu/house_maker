@@ -7,6 +7,7 @@ import math
 
 import pytest
 
+from house_maker.geometry import Point, edge_shifts
 from house_maker.svgpath import parse_path
 from house_maker.dormer_geometry import default_pitch
 from ..conftest import make_house
@@ -72,8 +73,10 @@ def test_roof_panel_edges_are_the_true_3d_lengths(scene):
     assert lengths['ridge'] == pytest.approx(norm(sub(Q, P)) + scene['o'], abs=TOL)    # ridge + overhang
     assert lengths['valley'] == pytest.approx(norm(sub(Q, A)), abs=TOL)
     assert lengths['side'] == pytest.approx(scene['o'], abs=TOL)
-    assert sorted(edge_length(right, n) for n in right.edge_names) == \
-        pytest.approx(sorted(lengths.values()), abs=TOL)                              # congruent panels
+    # the right panel is the mirror image, except that with ridge fingers it laps t beyond the ridge line
+    lap = 3.0 if right.joints.get('ridge') else 0.0
+    want = dict(lengths, front=lengths['front'] + lap, **({'ridge_end': lap} if lap else {}))
+    assert {n: edge_length(right, n) for n in right.edge_names} == pytest.approx(want, abs=TOL + 0.1)
 
 
 def test_footprint_on_the_main_roof_panel(scene):
@@ -150,24 +153,33 @@ def large(inspect):
     panels = inspect('dormer', 'large_with_fingers', house,
                      ['roof_panel_right', lambda n: n.startswith('additional_gable')],
                      title='Dormer wide enough for ridge fingers and face tabs/slots')
-    return t, k, {p.name: p for p in panels}
+    return t, k, {p.name: p for p in panels}, house
 
 
 def test_large_dormer_ridge_fingers_mate(large):
-    t, k, p = large
+    t, k, p, house = large
     left, right = p['additional_gable_roof_left_0'], p['additional_gable_roof_right_0']
     lf, rf = edge_profile(left, 'ridge'), edge_profile(right, 'ridge')
     assert len(lf) == len(rf) > 0
-    length = edge_length(left, 'ridge')
-    assert edge_length(right, 'ridge') == pytest.approx(length, abs=TOL)
-    for male, female in zip(lf, mirrored(rf, length)):                     # left = male, right = female
-        pm, pf = physical(male, k), physical(female, k)
-        assert (pm.start, pm.end) == pytest.approx((pf.start, pf.end), abs=TOL)
-        assert pm.depth == pytest.approx(t, abs=TOL) and -pf.depth == pytest.approx(t, abs=TOL)
+    # physical finger positions along the NOMINAL ridge edges (a spec's positions are measured from its drawn edge
+    # start, which the kerf offset moves differently on the two panels); the right edge runs the other way
+    g = house.architectural_config.additional_gables[0].geometry
+
+    def along_nominal(panel, mirrored, lap):
+        nominal = [Point(*q) for _, q in g.roof_panel_edges(mirrored, lap)]
+        shift = edge_shifts(nominal, panel.corners)[panel.edge_names.index('ridge')]
+        return [(a + shift, b + shift) for a, b in panel.joints['ridge'].nominal]
+
+    L = g.roof_panel_ridge_length
+    lf_n, rf_n = along_nominal(left, False, 0.0), along_nominal(right, True, t)
+    flat = lambda pairs: [x for pair in sorted(pairs) for x in pair]
+    assert flat((L - b, L - a) for a, b in lf_n) == pytest.approx(flat(rf_n), abs=TOL)
+    for male, female in zip(lf, rf):
+        assert physical(male, k).depth == pytest.approx(t, abs=TOL) and -physical(female, k).depth == pytest.approx(t, abs=TOL)
 
 
 def test_large_dormer_face_tabs_line_up_with_roof_slots(large):
-    t, k, p = large
+    t, k, p, _ = large
     face = p['additional_gable_front_0']
     rafter = nominal_extent(p['additional_gable_roof_left_0'], k)[0]
     rake = nominal_edge_length(face, 'rake_left', k)
@@ -219,9 +231,10 @@ def test_ridge_notches_never_reach_the_valley(width, theta, t):
     g = house.architectural_config.additional_gables[0].geometry
     valley = [c for n, c in zip(right.edge_names, right.corners) if n == 'valley'][0]
     valley_end = right.corners[(right.corners.index(valley) + 1) % len(right.corners)]
-    # every notch-bottom vertex stays at least t from the valley line (the right panel's ridge is its x = 0 edge)
+    # every notch-bottom vertex stays at least t from the valley line (the right panel's ridge edge laps t beyond
+    # the ridge line x = 0, so the notch bottoms lie on it)
     if right.joints.get('ridge'):
-        bottoms = [q for q in outline_pts if abs(q.x - (t - 0.05)) < 1e-2]      # ridge edge is drawn kerf/2 out
+        bottoms = [q for q in outline_pts if abs(q.x - (0 - 0.05)) < 1e-2]      # ridge edge is drawn kerf/2 out
         assert bottoms
         for q in bottoms:
             assert segment_distance(q, valley, valley_end) >= t - 0.02, f"notch bottom {q} too close to the valley"

@@ -3,9 +3,11 @@ Dormer panels: a triangular front face and two roof panels, from `dormer_geometr
 
 Joints
 ------
-* Ridge: the left roof panel carries male fingers, the right one female (same convention as the
-  main ridge); both ridge edges have the same length so the fingers mate. Edges shorter than 1.5
-  finger lengths are left plain (glued).
+* Ridge: the left roof panel carries male fingers, the right one female; both ridge edges have the same
+  length so the fingers mate. The two panels' undersides meet on the ridge line, so the left panel's end
+  face rests against the right panel's underside; the right panel laps t beyond the ridge line (its notches
+  are cut in that strip) to reach the outer corner, where the left panel's fingers arrive - as the main
+  roof's female panel reaches t beyond the peak. Edges too short for a finger are left plain (glued).
 * Front face <-> roof panels: each sloped edge of the face carries one tab that passes through a
   slot in the roof panel. The slot centre is `overhang + t/2` behind the roof panel's front edge
   (the face is `t` thick, standing at the front), centred along the rafter. Tabs and slots are only
@@ -93,13 +95,13 @@ def _rake_joints(dormer: AdditionalGable, engine: FingerJointEngine, slot: SlotS
 
 def _ridge_span(dormer: AdditionalGable, kerf: float) -> float:
     """
-    Length of the ridge edge (from the front) that may carry fingers: the roof panel tapers to a point at Q, so a
-    notch (t deep) would cut through the valley edge there. A notch bottom at ridge position v sits
-    (R (1 - v / L) - t) * L / valley from the valley line (perpendicular); it must keep t of material, so fingers
-    end at v = L - t (L + valley) / R.
+    Length of the ridge edge (from the front) that may carry fingers: the right panel tapers to a point at Q, so
+    near Q there is no material behind a notch. The notches are cut in the lap strip, so their bottoms lie on the
+    ridge line, R (1 - v / L) * L / valley (perpendicular) from the valley line at ridge position v; keeping t of
+    material there ends the fingers at v = L - t * valley / R.
     """
     g, t = dormer.geometry, dormer.thickness
-    v_max = g.ridge - t * (g.ridge + g.valley) / g.rafter
+    v_max = g.ridge - t * g.valley / g.rafter
     if v_max <= 0:
         return 0.0
     return min(g.roof_panel_ridge_length, v_max + g.overhang - kerf)
@@ -184,7 +186,7 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
     # ---- roof panels
     ridge = _ridge_joint(dormer, engine)
     for side, mirrored in (('left', False), ('right', True)):
-        edges = g.roof_panel_edges(mirrored)
+        edges = g.roof_panel_edges(mirrored, lap=dormer.thickness if ridge else 0.0)
         names = [n for n, _ in edges]
         nominal = [Point(*p) for _, p in edges]
         planned = [(engine.mirrored(ridge, FEMALE) if mirrored else ridge) if (n == 'ridge' and ridge) else None

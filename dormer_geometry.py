@@ -60,7 +60,7 @@ class DormerGeometry:
         """Ridge edge of a roof panel, including the front overhang."""
         return self.ridge + self.overhang
 
-    def roof_panel_edges(self, mirrored: bool = False) -> Tuple[Tuple[str, Tuple[float, float]], ...]:
+    def roof_panel_edges(self, mirrored: bool = False, lap: float = 0.0) -> Tuple[Tuple[str, Tuple[float, float]], ...]:
         """
         Counter-clockwise outline (x right, y up) of a roof panel as (name of the edge that starts at
         this point, point); x runs along the rafter and y along the ridge.
@@ -68,15 +68,20 @@ class DormerGeometry:
         The left panel runs A' P' Q A (front, ridge, valley, side); `mirrored` gives the right panel (mirror
         image, traversed to stay counter-clockwise). Without overhang the short `side` edge has no length
         and the panel is a plain right triangle.
+
+        `lap` (right panel only) carries its ridge edge that far beyond the ridge line (to x = -lap) over the
+        whole ridge, ending in a short `ridge_end` edge at Q: the female half of a corner joint must reach the
+        outer corner, where the male panel's fingers arrive.
         """
         R, L, o = self.rafter, self.ridge, self.overhang
         if not mirrored:
             if o > 0:
                 return (('front', (0.0, -o)), ('ridge', (R, -o)), ('valley', (R, L)), ('side', (0.0, 0.0)))
             return (('front', (0.0, 0.0)), ('ridge', (R, 0.0)), ('valley', (R, L)))
+        end = (('ridge_end', (0.0, L)), ('ridge', (-lap, L))) if lap > 0 else (('ridge', (0.0, L)),)
         if o > 0:
-            return (('side', (R, -o)), ('valley', (R, 0.0)), ('ridge', (0.0, L)), ('front', (0.0, -o)))
-        return (('valley', (R, 0.0)), ('ridge', (0.0, L)), ('front', (0.0, 0.0)))
+            return (('side', (R, -o)), ('valley', (R, 0.0))) + end + (('front', (-lap, -o)),)
+        return (('valley', (R, 0.0)),) + end + (('front', (-lap, 0.0)),)
 
     def roof_panel_outline(self, mirrored: bool = False) -> Tuple[Tuple[float, float], ...]:
         """The corner points of `roof_panel_edges`."""

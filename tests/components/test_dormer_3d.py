@@ -154,3 +154,27 @@ def test_face_base_tab_goes_through_the_main_roof(scene):
     bottom = fr.to_world(np.array([a, b]), np.full(2, -face.joints['base'].depth), np.full(2, T))
     under = s['roof'].to_local(bottom)[2]
     assert np.abs(under).max() <= k + 1e-6, f"base tab bottom is {under} mm off the roof's underside"
+
+
+def test_ridge_fingers_land_in_the_right_panels_lap(scene):
+    """The left panel's ridge fingers stick out t past its end face, which rests on the right panel's underside;
+    they must land inside the right panel - in the notches of its lap strip beyond the ridge line - not beside it.
+    Exact for a square ridge (90 degree apex, pitch 45); other pitches have the main ridge's limitation (a square
+    cut cannot follow a different angle): the fingers stand off by at most t * |cos(2 * pitch)|."""
+    s = scene
+    left = s['panels']['additional_gable_roof_left_0']
+    if not left.joints.get('ridge'):
+        pytest.skip('no ridge fingers on this dormer')
+    k = s['k']
+    pts, _ = s['samples']['additional_gable_roof_left_0']
+    fingers = tab_points(left, s['solids']['additional_gable_roof_left_0'], pts)
+    assert len(fingers)
+    right = s['panels']['additional_gable_roof_right_0']
+    u, v, w = s['frames']['additional_gable_roof_right_0'].to_local(fingers)
+    us = [c.x for c in right.corners]
+    tol = k + 0.05 + T * abs(math.cos(math.radians(2 * s['phi'])))
+    assert u.min() >= min(us) - tol, f"fingers reach {min(us) - u.min():.3f} mm past the right panel's lap"
+    assert u.max() <= 0 + tol, f"fingers reach {u.max():.3f} mm past the lap's notch bottoms"
+    assert w.min() >= -tol and w.max() <= T + tol, "fingers outside the right panel's thickness"
+    if s['phi'] == 45:                     # square ridge: the fingers fill the lap (to within a sampling step)
+        assert w.max() >= T - (STEP + k + 0.05) and u.min() <= min(us) + STEP + k + 0.05
