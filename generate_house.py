@@ -155,7 +155,7 @@ Architectural options:
     parser.add_argument('--additional-gable-width', type=float, default=25.0,
                        help='Additional gable width in mm (default: 25)')
     parser.add_argument('--additional-gable-pitch', type=float, default=None,
-                       help='Additional gable roof pitch in degrees (default: same as the main roof). '
+                       help='Additional gable roof pitch in degrees (default: 45, a 90 degree apex, or the main roof angle if steeper). '
                             'The depth follows from the width and pitch (horizontal ridge).')
     parser.add_argument('--additional-gable-overhang', type=float, default=3.0,
                        help='Additional gable roof overhang in mm (default: 3)')

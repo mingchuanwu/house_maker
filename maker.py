@@ -297,7 +297,7 @@ class HouseMaker:
             x, y: top-left of the dormer's bounding box on the roof panel (mm)
             width: dormer width (default 25mm)
             roof_overhang: how far the dormer roof projects in front of its face (default 3mm)
-            pitch: dormer roof pitch in degrees (default: the main roof angle)
+            pitch: dormer roof pitch in degrees (default: 45, a 90 degree apex, or the main roof angle if steeper)
 
         Returns the AdditionalGable. Raises PlacementError if it does not fit.
         """

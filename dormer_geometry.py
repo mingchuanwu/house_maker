@@ -33,6 +33,14 @@ import math
 from dataclasses import dataclass
 from typing import Tuple
 
+DEFAULT_PITCH = 45.0       # degrees: a 90 degree apex, the classic dormer; deeper than matching a shallower main roof
+
+
+def default_pitch(theta_deg: float) -> float:
+    """Dormer pitch when none is given: 45 degrees (a right angle at the apex), or the main roof's angle when that is
+    steeper - on a steep roof a 45 degree dormer would be shallower and lower than one that matches it."""
+    return max(DEFAULT_PITCH, theta_deg)
+
 
 @dataclass(frozen=True)
 class DormerGeometry:
@@ -98,11 +106,11 @@ def solve_dormer(theta_deg: float, width: float, phi_deg: float = None,
     Args:
         theta_deg: main roof angle (0 < theta < 90)
         width: dormer sill width W
-        phi_deg: dormer roof pitch; default = theta (the dormer matches the main roof pitch)
+        phi_deg: dormer roof pitch; default `default_pitch(theta_deg)`
         overhang: how far the dormer roof planes project in front of the front face
     """
     if phi_deg is None:
-        phi_deg = theta_deg
+        phi_deg = default_pitch(theta_deg)
     if not 0 < theta_deg < 90 or not 0 < phi_deg < 90:
         raise ValueError("roof angles must be between 0 and 90 degrees")
     if width <= 0:

@@ -231,7 +231,7 @@ class Chimney:
 class AdditionalGable:
     """
     A gable dormer on a roof panel. All dimensions come from `dormer_geometry.solve_dormer`:
-    the dormer's pitch defaults to the main roof's pitch and its depth follows from the horizontal
+    the dormer's pitch defaults to 45 degrees (a 90 degree apex; the main roof's angle if steeper) and its depth follows from the horizontal
     ridge constraint, so `position.height` is *derived* (the footprint depth on the roof panel).
     """
 
@@ -261,9 +261,10 @@ class AdditionalGable:
         if self.roof_overhang < 0:
             raise GeometryError("additional_gable_validation", "Roof overhang cannot be negative")
         w, h, _ = self.geometry.face_triangle(self.face_lift)
-        if w <= 0 or h <= 0:
+        if w <= 0 or h < self.thickness:
             raise GeometryError("additional_gable_validation",
-                                "Gable too low for its roof angle: the front face would vanish once lifted clear of the roof")
+                                "Gable too low for its roof angle: once lifted clear of the roof, the front face would be "
+                                "lower than the material is thick (make it wider or steeper)")
 
     def footprint(self) -> Tuple[float, float, float, float]:
         """Bounding box on the roof panel as (x, y, width, depth)."""

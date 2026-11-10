@@ -302,7 +302,7 @@ class ArchitecturalConfiguration:
             height: ignored. The depth is fixed by the horizontal-ridge constraint; the derived
                 value is available as `result.position.height`.
             roof_overhang: how far the dormer roof projects in front of its face (default 3)
-            pitch: dormer roof pitch in degrees; default = the main roof angle
+            pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex), or the main roof angle if steeper
         """
         if height is not None:
             warn_caller("`height` of an additional gable is ignored: the depth is determined by "

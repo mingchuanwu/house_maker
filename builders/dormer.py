@@ -92,12 +92,16 @@ def _rake_joints(dormer: AdditionalGable, engine: FingerJointEngine, slot: SlotS
 
 
 def _ridge_span(dormer: AdditionalGable, kerf: float) -> float:
-    """Length of the ridge edge (from the front) that may carry fingers: the roof panel tapers to a point at Q,
-    so a notch (t deep) would cut through the valley edge there; fingers stay where the panel is >= 2t wide."""
+    """
+    Length of the ridge edge (from the front) that may carry fingers: the roof panel tapers to a point at Q, so a
+    notch (t deep) would cut through the valley edge there. A notch bottom at ridge position v sits
+    (R (1 - v / L) - t) * L / valley from the valley line (perpendicular); it must keep t of material, so fingers
+    end at v = L - t (L + valley) / R.
+    """
     g, t = dormer.geometry, dormer.thickness
-    if g.rafter <= 2 * t:
+    v_max = g.ridge - t * (g.ridge + g.valley) / g.rafter
+    if v_max <= 0:
         return 0.0
-    v_max = g.ridge * (1 - 2 * t / g.rafter)              # last ridge position with >= 2t of material
     return min(g.roof_panel_ridge_length, v_max + g.overhang - kerf)
 
 

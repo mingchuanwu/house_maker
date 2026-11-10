@@ -10,12 +10,13 @@ import numpy as np
 import pytest
 
 from ..assembly3d import PanelSolid, box_frames, dormer_frames, roof_point
+from house_maker.dormer_geometry import default_pitch
 from ..conftest import make_house
 from .test_assembly_3d import STEP, tab_points, tol_depth
 
 T = 3.0
 SCENES = [
-    # theta, phi (None = match), roof panel, width, overhang, kerf
+    # theta, phi (None = default pitch), roof panel, width, overhang, kerf
     (45, None, 'roof_panel_left', 30, 3.0, 0.1),
     (35, None, 'roof_panel_left', 30, 3.0, 0.1),
     (60, None, 'roof_panel_right', 40, 3.0, 0.0),
@@ -27,7 +28,7 @@ POS = (40.0, 20.0)
 
 
 def sid(s):
-    return f"a{s[0]}-phi{s[1] or 'match'}-{s[2].replace('roof_panel_', '')}-W{s[3]}-o{s[4]}-k{s[5]}"
+    return f"a{s[0]}-phi{s[1] or 'default'}-{s[2].replace('roof_panel_', '')}-W{s[3]}-o{s[4]}-k{s[5]}"
 
 
 @pytest.fixture(params=SCENES, ids=sid, scope='module')
@@ -38,11 +39,11 @@ def scene(request):
     panels = {p.name: p for p in house.build_panels()}
     frames = box_frames(220, 170, 90, theta, T, k)
     roof = frames[panel]
-    df, pts = dormer_frames(roof, POS[0], POS[1], W, theta, phi or theta, T, k)
+    df, pts = dormer_frames(roof, POS[0], POS[1], W, theta, phi or default_pitch(theta), T, k)
     solids = {n: PanelSolid(panels[n], df[n]) for n in df}
     solids[panel] = PanelSolid(panels[panel], roof)
     samples = {n: s.sample(step=STEP) for n, s in solids.items()}
-    return dict(theta=theta, phi=phi or theta, panel=panel, W=W, o=o, k=k, panels=panels, frames=df, roof=roof,
+    return dict(theta=theta, phi=phi or default_pitch(theta), panel=panel, W=W, o=o, k=k, panels=panels, frames=df, roof=roof,
                 solids=solids, samples=samples, pts=pts, dormer=dormer)
 
 

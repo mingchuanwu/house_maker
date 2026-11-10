@@ -115,8 +115,8 @@ def test_dormer_wiring_depends_on_whether_tabs_exist():
         ('additional_gable_front_0', 'base', 'roof_panel_right', 2),                     # after the 2 gable slots
     }
     # a dormer too short for any rake tab still plugs its base tab into the main roof
-    small = make_house(length=160, width=140, height=90, gable_angle=30, material_thickness=4,
-                       dormers=[('roof_panel_left', 30, 25, 30)])
+    small = make_house(length=200, width=160, height=90, gable_angle=20, material_thickness=2)
+    small.add_additional_gable('roof_panel_left', 30, 25, 25, roof_overhang=0)      # no material in front of a rake slot
     panels = {p.name: p for p in small.build_panels()}
     assert 'rake_left' not in panels['additional_gable_front_0'].joints
     assert {x for x in slot_set(declared_mates(panels)) if x[0].startswith('additional')} == {
