@@ -1,5 +1,5 @@
 """
-Dormer panels: a triangular front face and two roof panels, from `dormer_geometry`.
+Dormer panels: a front face, two roof panels and (with side walls) two cheeks, from `dormer_geometry`.
 
 Joints
 ------
@@ -16,6 +16,14 @@ Joints
   main roof panel. The tab is t / cos(theta) deep, so its bottom ends flush with the roof's underside along the
   face's rear surface; because it passes through the sloped roof at an angle, the slot is longer than t along the
   slope (see `roof_slots`).
+* Side walls (cheeks), when the dormer has them:
+  - face <-> cheek: corner fingers along the vertical edge; the face (full width) is female, notched t deep, and
+    the cheek, standing behind it, is male, so the corner finishes flush;
+  - cheek bottom -> main roof: the bottom lies on the roof, so its one tab goes in square to it, t deep, through a
+    plain slot in the main roof panel;
+  - cheek top -> dormer roof: the cheek stands flush with the roof panel's side edge, so its tab (t / cos(phi)
+    tall, ending flush with the roof's top face at the outside) goes into a notch in that edge, t (cos(phi) +
+    tan(phi)) deep - the tab's shadow through the sloped slab.
 * Valley edges rest on the main roof and are glued; the footprint is scored on the roof panel.
 
 Finger size: the dormer uses its own finger length, at most half its shortest joint edge (so small dormers still
@@ -24,7 +32,7 @@ get joints) and at least two material thicknesses; an edge too short for that is
 
 import dataclasses
 import math
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from ..components import AdditionalGable
 from ..constants import COORDINATE_PRECISION
@@ -37,6 +45,7 @@ _P = COORDINATE_PRECISION
 _SLOT_EDGE_MARGIN = 0.5      # in thicknesses: slot must keep this much material to the panel edge
 MIN_FINGER_IN_THICKNESSES = 2.0
 RAKE_TAB_MIN = 1.5           # in thicknesses: narrowest face tab into a dormer roof panel
+CHEEK_TAB_MIN = 1.0          # in thicknesses: narrowest tab on a side wall (cheek) edge
 
 
 def _polygon(points) -> str:
@@ -44,9 +53,9 @@ def _polygon(points) -> str:
 
 
 def footprint_score(dormer: AdditionalGable) -> str:
-    """Score triangle on the main roof panel marking where the dormer sits."""
+    """Score line on the main roof panel marking where the dormer sits (a triangle, a pentagon with walls)."""
     x, y, _, _ = dormer.footprint()
-    pts = [Point(x + px, y + py) for px, py in dormer.geometry.footprint_triangle()]
+    pts = [Point(x + px, y + py) for px, py in dormer.geometry.footprint_polygon()]
     return _polygon(pts)
 
 
@@ -75,7 +84,9 @@ def _tab_slot(dormer: AdditionalGable, engine: FingerJointEngine) -> Optional[Sl
     bottom, top = cy - thickness / 2, cy + thickness / 2
     if bottom < -g.overhang + margin:
         return None
-    lo = max((top / g.ridge) * g.rafter + margin, g.rafter - rake)      # the valley edge leans over as v grows
+    e = g.eave_depth                                                    # the valley starts at (0, e)
+    valley_u = max(0.0, (top - e) / (g.ridge - e)) * g.rafter           # it leans over as v grows
+    lo = max(valley_u + margin, g.rafter - rake)
     hi = g.rafter - t - margin
     width = min(engine.finger_length, hi - lo + k)                      # nominal tab width (the slot is kerf less)
     if width < RAKE_TAB_MIN * t:
@@ -116,10 +127,20 @@ def _ridge_joint(dormer: AdditionalGable, engine: FingerJointEngine):
     return engine.plan_edge(dormer.geometry.roof_panel_ridge_length, MALE, span=(0.0, hi))
 
 
+def _cheek_lengths(dormer: AdditionalGable) -> Tuple[float, float, float]:
+    """(front, top, bottom) edge lengths of a cheek."""
+    g, t = dormer.geometry, dormer.thickness
+    front = g.wall_height - dormer.face_lift
+    return front, g.eave_depth - t, front / math.sin(math.radians(dormer.roof_angle))
+
+
 def joint_engine(dormer: AdditionalGable, engine: FingerJointEngine) -> FingerJointEngine:
     """Engine with the dormer's finger length: at most half its shortest joint edge, at least 2t."""
     face_w, _, rake = dormer.geometry.face_triangle(dormer.face_lift)
-    shortest = min(face_w - 2 * dormer.thickness, rake, _ridge_span(dormer, engine.kerf))
+    edges = [face_w - 2 * dormer.thickness, rake, _ridge_span(dormer, engine.kerf)]
+    if dormer.geometry.walls:
+        edges += _cheek_lengths(dormer)
+    shortest = min(edges)
     f = max(min(engine.finger_length, shortest / 2), MIN_FINGER_IN_THICKNESSES * dormer.thickness)
     return engine.with_finger_length(f)
 
@@ -135,49 +156,100 @@ def _base_joint(dormer: AdditionalGable, engine: FingerJointEngine):
     return engine.plan_edge(face_w, MALE, inset=dormer.thickness, count=1)
 
 
+def cheek_top_depth(dormer: AdditionalGable) -> float:
+    """How far a cheek's top tab reaches above the cheek: the roof slab's vertical thickness at the outer face."""
+    return dormer.thickness / math.cos(math.radians(dormer.geometry.phi_deg))
+
+
+def side_notch_depth(dormer: AdditionalGable) -> float:
+    """Depth (across the roof panel, from its side edge) of the notch that takes a cheek's top tab: the tab's
+    t-wide, t/cos(phi)-tall cross-section measured along the sloped slab."""
+    ph = math.radians(dormer.geometry.phi_deg)
+    return dormer.thickness * (math.cos(ph) + math.tan(ph))
+
+
+def _single_tab(engine: FingerJointEngine, length: float, t: float):
+    """One centred tab, as wide as a finger but leaving t/2 at each end of the edge (cheeks are small triangles on
+    steep roofs); None if that leaves less than CHEEK_TAB_MIN thicknesses."""
+    width = min(engine.finger_length, length - t)
+    if width < CHEEK_TAB_MIN * t:
+        return None
+    return engine.spec(MALE, length, [((length - width) / 2, (length + width) / 2)])
+
+
+def _cheek_joints(dormer: AdditionalGable, engine: FingerJointEngine):
+    """Planned (nominal) specs of a cheek: {'front': corner fingers, 'top': tab, 'bottom': tab}; any may be None.
+    The plans are the same for both cheeks (every layout is symmetric about the edge's middle)."""
+    t = dormer.thickness
+    front, top, bottom = _cheek_lengths(dormer)
+    return {'front': engine.plan_edge(front, MALE) or _single_tab(engine, front, t),
+            'top': _single_tab(engine, top, t),
+            'bottom': _single_tab(engine, bottom, t)}
+
+
 def roof_slots(dormer: AdditionalGable, index: int, engine: FingerJointEngine) -> List[SlotSpec]:
     """
-    Slot in the main roof panel (its drawn coordinates, v down the slope) for the face's base tab.
+    Slots in the main roof panel (its drawn coordinates, v down the slope) for the face's base tab and, with side
+    walls, the cheeks' bottom tabs.
 
     The face stands with its front surface on the sill line (v = sill) and its rear surface t up-slope, where the
     roof's top meets the lifted base. Moving vertically down by h moves along the roof by h * sin(theta) in v,
     so the tab's cross-section (t wide horizontally, from the base down to t / cos(theta) below it) covers
     v in [sill - t / cos(theta), sill + t * sin(theta) * (1 - sin(theta)) / cos(theta)] through the roof.
     A void: drawn kerf/2 smaller on every side.
+
+    A cheek's bottom edge lies on the roof from the face's rear (t / cos(theta) up-slope of the sill) back, so a
+    tab d along it from the front sits d further up-slope; it is t wide across the slope (the cheek's thickness).
     """
     eng = joint_engine(dormer, engine)
-    tab = _base_joint(dormer, eng)
-    if tab is None:
-        return []
     t, k = dormer.thickness, engine.kerf
     th = math.radians(dormer.roof_angle)
     s, c = math.sin(th), math.cos(th)
     x, y, _, depth = dormer.footprint()
     sill = y + depth
-    u0 = x + dormer.face_lift / math.tan(math.radians(dormer.geometry.phi_deg))   # the face's base starts here
-    (a, b), = tab.nominal
-    v0, v1 = sill - t / c, sill + t * s * (1 - s) / c
-    return [SlotSpec(u0 + (a + b) / 2, (v0 + v1) / 2, (b - a) - k, (v1 - v0) - k, 'horizontal',
-                     owner=f'additional_gable_front_{index}')]
+    out = []
+    tab = _base_joint(dormer, eng)
+    if tab is not None:
+        u0 = x + dormer.geometry.face_offset(dormer.face_lift)          # the face's base starts here
+        (a, b), = tab.nominal
+        v0, v1 = sill - t / c, sill + t * s * (1 - s) / c
+        out.append(SlotSpec(u0 + (a + b) / 2, (v0 + v1) / 2, (b - a) - k, (v1 - v0) - k, 'horizontal',
+                            owner=f'additional_gable_front_{index}', owner_edge='base'))
+    bottom = _cheek_joints(dormer, eng)['bottom'] if dormer.geometry.walls else None
+    if bottom is not None:
+        (a, b), = bottom.nominal                                        # laid out symmetrically: same from either end
+        W = dormer.geometry.width
+        for side, u in (('left', x + t / 2), ('right', x + W - t / 2)):
+            out.append(SlotSpec(u, sill - t / c - (a + b) / 2, (b - a) - k, t - k, 'vertical',
+                                owner=f'additional_gable_cheek_{side}_{index}', owner_edge='bottom'))
+    return out
+
+
+def _traced(engine: FingerJointEngine, nominal: List[Point], planned, depths: Dict[str, float], names: List[str]):
+    """Kerf-compensated outline with the planned specs refitted, and special tab/notch depths applied."""
+    corners, specs = engine.kerf_outline(nominal, planned)             # drawn kerf/2 outside the nominal outline
+    specs = [dataclasses.replace(sp, depth=depths[n]) if sp and n in depths else sp for n, sp in zip(names, specs)]
+    return corners, specs
 
 
 def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJointEngine) -> List[Panel]:
-    g = dormer.geometry
+    g, t = dormer.geometry, dormer.thickness
     engine = joint_engine(dormer, engine)
     slot = _tab_slot(dormer, engine)
     use_tabs = slot is not None
+    cheek = _cheek_joints(dormer, engine) if g.walls else {}
     panels: List[Panel] = []
 
-    # ---- front face: triangle on the roof, tabs on both sloped edges (into the dormer roof panels) and on the
-    # base (through the main roof)
-    face_w, face_h, _ = g.face_triangle(dormer.face_lift)
-    nominal = [Point(0, 0), Point(face_w, 0), Point(face_w / 2, face_h)]
-    names = ['base', 'rake_right', 'rake_left']
+    # ---- front face: triangle (pentagon with walls) on the roof; tabs on both sloped edges (into the dormer roof
+    # panels) and on the base (through the main roof); with walls, notches on both vertical sides for the cheeks
+    edges = g.face_edges(dormer.face_lift)
+    names = [n for n, _ in edges]
+    nominal = [Point(*q) for _, q in edges]
     rakes = _rake_joints(dormer, engine, slot) if use_tabs else (None, None)
-    planned = [_base_joint(dormer, engine), rakes[0], rakes[1]]
-    corners, specs = engine.kerf_outline(nominal, planned)             # drawn kerf/2 outside the nominal outline
-    if specs[0]:
-        specs[0] = dataclasses.replace(specs[0], depth=base_tab_depth(dormer))
+    corner = engine.mirrored(cheek['front'], FEMALE) if cheek.get('front') else None
+    plan = {'base': _base_joint(dormer, engine), 'rake_right': rakes[0], 'rake_left': rakes[1],
+            'side_right': corner, 'side_left': corner}
+    corners, specs = _traced(engine, nominal, [plan[n] for n in names], {'base': base_tab_depth(dormer)}, names)
     panels.append(Panel(
         name=f'additional_gable_front_{index}', label=f'Additional Gable Front {index + 1}',
         cut=[engine.trace_outline(corners, specs)], nominal_size=_extent(corners), corners=corners,
@@ -185,13 +257,23 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
 
     # ---- roof panels
     ridge = _ridge_joint(dormer, engine)
+    top = cheek.get('top')
+    e, o = g.eave_depth, g.overhang
     for side, mirrored in (('left', False), ('right', True)):
-        edges = g.roof_panel_edges(mirrored, lap=dormer.thickness if ridge else 0.0)
+        edges = g.roof_panel_edges(mirrored, lap=t if ridge else 0.0)
         names = [n for n, _ in edges]
-        nominal = [Point(*p) for _, p in edges]
-        planned = [(engine.mirrored(ridge, FEMALE) if mirrored else ridge) if (n == 'ridge' and ridge) else None
-                   for n in names]
-        pts, specs = engine.kerf_outline(nominal, planned)
+        nominal = [Point(*q) for _, q in edges]
+        notch = None
+        if top is not None:
+            # the cheek top's tab sits at y in [t + a, t + b] (both cheeks: its plan is centred); the left panel's side
+            # edge runs from the eave end (v = e) to the front, the right one's from the front (v = -o) back
+            (a, b), = top.nominal
+            length = e + o
+            ys = (t + a, t + b)
+            pos = (e - ys[1], e - ys[0]) if not mirrored else (ys[0] + o, ys[1] + o)
+            notch = engine.spec(FEMALE, length, [pos])
+        plan = {'ridge': (engine.mirrored(ridge, FEMALE) if mirrored else ridge) if ridge else None, 'side': notch}
+        pts, specs = _traced(engine, nominal, [plan.get(n) for n in names], {'side': side_notch_depth(dormer)}, names)
         # the slot is planned in the left panel's coordinates (u from the eave); the right panel measures u from
         # the ridge, so its slot is the mirror image
         slots = [] if slot is None else [slot if not mirrored else engine.make_slot(
@@ -203,4 +285,16 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
             cut=cut, pattern=polygon_shingles_pattern(nominal), pattern_class=PATTERN_ROOF,
             nominal_size=_extent(pts), corners=pts, edge_names=names,
             joints={n: sp for n, sp in zip(names, specs) if sp}, slots=slots))
+
+    # ---- side walls
+    if g.walls:
+        for side in ('left', 'right'):
+            edges = g.cheek_edges(side, t)
+            names = [n for n, _ in edges]
+            nominal = [Point(*q) for _, q in edges]
+            corners, specs = _traced(engine, nominal, [cheek[n] for n in names], {'top': cheek_top_depth(dormer)}, names)
+            panels.append(Panel(
+                name=f'additional_gable_cheek_{side}_{index}', label=f'Additional Gable Wall {side.title()} {index + 1}',
+                cut=[engine.trace_outline(corners, specs)], nominal_size=_extent(corners), corners=corners,
+                edge_names=names, joints={n: sp for n, sp in zip(names, specs) if sp}))
     return panels

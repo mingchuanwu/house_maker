@@ -292,7 +292,8 @@ class ArchitecturalConfiguration:
 
     def add_additional_gable(self, panel_name: str, x: float, y: float,
                              width: Optional[float] = None, height: Optional[float] = None,
-                             roof_overhang: float = 3.0, pitch: Optional[float] = None) -> AdditionalGable:
+                             roof_overhang: float = 3.0, pitch: Optional[float] = None,
+                             wall_height: Optional[float] = None) -> AdditionalGable:
         """
         Add a gable dormer to a roof panel (see `dormer_geometry`).
 
@@ -302,7 +303,10 @@ class ArchitecturalConfiguration:
             height: ignored. The depth is fixed by the horizontal-ridge constraint; the derived
                 value is available as `result.position.height`.
             roof_overhang: how far the dormer roof projects in front of its face (default 3)
-            pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex), or the main roof angle if steeper
+            pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex) - without side walls the main roof
+                angle if steeper
+            wall_height: side wall (cheek) height in mm; 0 = no walls. Default: on roofs steeper than 45 degrees
+                walls as tall as the dormer's gable, otherwise none
         """
         if height is not None:
             warn_caller("`height` of an additional gable is ignored: the depth is determined by "
@@ -311,7 +315,7 @@ class ArchitecturalConfiguration:
         g = self.house_geometry
         try:
             gable = AdditionalGable(ComponentPosition(x, y, width, 0.0, panel_name), g.theta,
-                                    g.thickness, roof_overhang, pitch)
+                                    g.thickness, roof_overhang, pitch, wall_height)
         except (GeometryError, ValueError) as e:
             raise PlacementError('additional gable', getattr(e, 'message', str(e))) from e
         fx, fy, fw, fd = gable.footprint()

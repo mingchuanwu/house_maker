@@ -46,6 +46,9 @@ SCENES = {
     # `house-maker --add-chimney --add-additional-gable` with every default: a small dormer with its own small fingers
     'cli-features': dict(length=80, width=60, height=70, finger_length=10,
                          chimney=('roof_panel_left', 50, 20, 10, 15, 20), dormer=('roof_panel_right', 30, 15, 25)),
+    # `--angle 60 --add-chimney --add-additional-gable`: the steep roof gives the dormer side walls
+    'cli-steep-walls': dict(angle=60, length=80, width=60, height=70, finger_length=10,
+                            chimney=('roof_panel_left', 50, 20, 10, 15, 20), dormer=('roof_panel_right', 30, 15, 25)),
 }
 
 
@@ -131,7 +134,8 @@ def test_frames_agree_with_the_independent_model(scene):
                 assert a == pytest.approx(tuple(b), abs=1e-9), name
     for i, d in enumerate(cfg.additional_gables):
         p = d.position
-        want, _ = ref.dormer_frames(box[p.panel], p.x, p.y, p.width, g.theta, d.geometry.phi_deg, T, K, index=i)
+        want, _ = ref.dormer_frames(box[p.panel], p.x, p.y, p.width, g.theta, d.geometry.phi_deg, T, K, index=i,
+                                    wall=d.geometry.wall_height)
         for name, f in want.items():
             for a, b in ((frames[name].origin, f.O), (frames[name].eu, f.eu), (frames[name].ev, f.ev)):
                 assert a == pytest.approx(tuple(b), abs=1e-9), name

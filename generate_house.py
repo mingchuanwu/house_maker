@@ -155,8 +155,12 @@ Architectural options:
     parser.add_argument('--additional-gable-width', type=float, default=25.0,
                        help='Additional gable width in mm (default: 25)')
     parser.add_argument('--additional-gable-pitch', type=float, default=None,
-                       help='Additional gable roof pitch in degrees (default: 45, a 90 degree apex, or the main roof angle if steeper). '
+                       help='Additional gable roof pitch in degrees (default: 45, a 90 degree apex; without side walls the main '
+                            'roof angle if steeper). '
                             'The depth follows from the width and pitch (horizontal ridge).')
+    parser.add_argument('--additional-gable-wall-height', type=float, default=None,
+                       help='Additional gable side wall height in mm; 0 = no side walls '
+                            '(default: on roofs steeper than 45 degrees walls as tall as the gable, otherwise none)')
     parser.add_argument('--additional-gable-overhang', type=float, default=3.0,
                        help='Additional gable roof overhang in mm (default: 3)')
     
@@ -288,13 +292,16 @@ def main():
             dormer = house.add_additional_gable(
                 panel_name=args.additional_gable_panel, x=args.additional_gable_x,
                 y=args.additional_gable_y, width=args.additional_gable_width,
-                roof_overhang=args.additional_gable_overhang, pitch=args.additional_gable_pitch)
+                roof_overhang=args.additional_gable_overhang, pitch=args.additional_gable_pitch,
+                wall_height=args.additional_gable_wall_height)
             if args.verbose:
                 g = dormer.geometry
                 print(f"\n🏠 Additional gable (dormer) added on {args.additional_gable_panel}")
                 print(f"   Width {g.width}mm, pitch {g.phi_deg:.1f}°, apex angle {g.apex_angle_deg:.1f}°")
                 print(f"   Depth on roof (from horizontal ridge): {dormer.position.height:.1f}mm, "
-                      f"face height {g.gable_height:.1f}mm, rafter {g.rafter:.1f}mm, ridge {g.ridge:.1f}mm")
+                      f"gable height {g.gable_height:.1f}mm, rafter {g.rafter:.1f}mm, ridge {g.ridge:.1f}mm")
+                if g.walls:
+                    print(f"   Side walls {g.wall_height:.1f}mm high, {g.eave_depth:.1f}mm deep")
 
         if args.verbose:
             # Get architectural summary

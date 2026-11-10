@@ -130,15 +130,17 @@ def chimney_frames(roof: Frame, x: float, y: float, W: float, D: float, theta: f
 
 
 # ------------------------------------------------------------------------------------------------ dormer
-def dormer_frames(roof: Frame, x: float, y: float, W: float, theta: float, phi: float, index: int
-                  ) -> Dict[str, Frame]:
+def dormer_frames(roof: Frame, x: float, y: float, W: float, theta: float, phi: float, index: int,
+                  wall: float = 0.0) -> Dict[str, Frame]:
     """
-    Frames of a gable dormer on `roof`: the front face (a vertical triangle) and the two roof panels. The ridge is
-    horizontal at the apex height, so the dormer ends where the main roof rises to that height.
+    Frames of a gable dormer on `roof`: the front face (a vertical triangle, a pentagon with side walls), the two
+    roof panels and, with `wall` > 0, the two side walls (cheeks). The ridge is horizontal at the apex height, so the
+    dormer ends where the main roof rises to that height. The roof panels' undersides start at the eave line, `wall`
+    above the sill; the cheeks stand just inside the sill's ends, behind the face, from its rear surface back.
     """
     t = roof.thickness
     th, ph = math.radians(theta), math.radians(phi)
-    height = (W / 2) * math.tan(ph)
+    height = wall + (W / 2) * math.tan(ph)
     plan_depth = height / math.tan(th)
     down = _unit((roof.ev[0], roof.ev[1], 0.0))
     up = _neg(down)
@@ -148,12 +150,20 @@ def dormer_frames(roof: Frame, x: float, y: float, W: float, theta: float, phi: 
     P = _add(_mul(_add(A, B), 0.5), (0.0, 0.0, height))
     a = _unit(_sub(B, A))
     lift = t * math.tan(th)
-    face0 = _add(_add(_add(A, _mul(_Z, lift)), _mul(a, lift / math.tan(ph))), _mul(up, t / 2))
-    return {
+    Ae, Be = _add(A, _mul(_Z, wall)), _add(B, _mul(_Z, wall))                # ends of the eave line
+    offset = 0.0 if wall > 0 else lift / math.tan(ph)                       # without walls the lifted face is narrower
+    face0 = _add(_add(_add(A, _mul(_Z, lift)), _mul(a, offset)), _mul(up, t / 2))
+    frames = {
         f'additional_gable_front_{index}': _slab(face0, a, _Z, t),
-        f'additional_gable_roof_left_{index}': _plane_slab(A, _sub(P, A), up, t, _Z),
-        f'additional_gable_roof_right_{index}': _plane_slab(P, _sub(B, P), up, t, _Z),
+        f'additional_gable_roof_left_{index}': _plane_slab(Ae, _sub(P, Ae), up, t, _Z),
+        f'additional_gable_roof_right_{index}': _plane_slab(P, _sub(Be, P), up, t, _Z),
     }
+    if wall > 0:
+        eave = wall / math.tan(th)
+        # left cheek: seen from outside (-a) its x runs from its back end towards the front; right cheek: from the face
+        frames[f'additional_gable_cheek_left_{index}'] = _slab(_add(_add(A, _mul(a, t / 2)), _mul(up, eave)), down, _Z, t)
+        frames[f'additional_gable_cheek_right_{index}'] = _slab(_add(_sub(B, _mul(a, t / 2)), _mul(up, t)), up, _Z, t)
+    return frames
 
 
 # ------------------------------------------------------------------------------------------------ casings

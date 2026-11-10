@@ -16,34 +16,50 @@ from .test_assembly_3d import STEP, tab_points, tol_depth
 
 T = 3.0
 SCENES = [
-    # theta, phi (None = default pitch), roof panel, width, overhang, kerf
-    (45, None, 'roof_panel_left', 30, 3.0, 0.1),
-    (35, None, 'roof_panel_left', 30, 3.0, 0.1),
-    (60, None, 'roof_panel_right', 40, 3.0, 0.0),
-    (45, None, 'roof_panel_left', 70, 3.0, 0.1),         # large: ridge fingers and face tabs/slots
-    (35, None, 'roof_panel_right', 70, 3.0, 0.1),
-    (45, 30.0, 'roof_panel_left', 50, 0.0, 0.1),
+    # theta, phi (None = default pitch), roof panel, width, overhang, kerf, wall height (None = default rule)
+    (45, None, 'roof_panel_left', 30, 3.0, 0.1, 0),
+    (35, None, 'roof_panel_left', 30, 3.0, 0.1, 0),
+    (60, None, 'roof_panel_right', 40, 3.0, 0.0, 0),        # steep roof, walls switched off
+    (45, None, 'roof_panel_left', 70, 3.0, 0.1, 0),         # large: ridge fingers and face tabs/slots
+    (35, None, 'roof_panel_right', 70, 3.0, 0.1, 0),
+    (45, 30.0, 'roof_panel_left', 50, 0.0, 0.1, 0),
+    # side walls (cheeks)
+    (60, None, 'roof_panel_right', 30, 3.0, 0.1, None),     # steep roof: walls by default (as tall as the gable)
+    (65, None, 'roof_panel_left', 40, 3.0, 0.1, None),
+    (55, None, 'roof_panel_right', 50, 3.0, 0.0, 22.0),     # explicit, tall enough for a cheek top tab
+    (35, None, 'roof_panel_left', 40, 3.0, 0.1, 15.0),      # walls on a shallow roof, on request
 ]
 POS = (40.0, 20.0)
 
 
 def sid(s):
-    return f"a{s[0]}-phi{s[1] or 'default'}-{s[2].replace('roof_panel_', '')}-W{s[3]}-o{s[4]}-k{s[5]}"
+    wall = 'auto' if s[6] is None else s[6]
+    return f"a{s[0]}-phi{s[1] or 'default'}-{s[2].replace('roof_panel_', '')}-W{s[3]}-o{s[4]}-k{s[5]}-wall{wall}"
+
+
+def expected_wall(theta, phi, W, wall):
+    """The documented default: on roofs steeper than 45 degrees walls as tall as the gable (at the 45 degree default
+    pitch), otherwise none; an explicit height wins."""
+    if wall is not None:
+        return wall
+    return (W / 2) * math.tan(math.radians(phi or 45.0)) if theta > 45 else 0.0
 
 
 @pytest.fixture(params=SCENES, ids=sid, scope='module')
 def scene(request):
-    theta, phi, panel, W, o, k = request.param
+    theta, phi, panel, W, o, k, wall = request.param
     house = make_house(length=220, width=170, height=90, gable_angle=theta, material_thickness=T, kerf=k)
-    dormer = house.add_additional_gable(panel, POS[0], POS[1], W, roof_overhang=o, pitch=phi)
+    dormer = house.add_additional_gable(panel, POS[0], POS[1], W, roof_overhang=o, pitch=phi, wall_height=wall)
     panels = {p.name: p for p in house.build_panels()}
     frames = box_frames(220, 170, 90, theta, T, k)
     roof = frames[panel]
-    df, pts = dormer_frames(roof, POS[0], POS[1], W, theta, phi or default_pitch(theta), T, k)
+    wall = expected_wall(theta, phi, W, wall)
+    phi = phi or (45.0 if wall else default_pitch(theta))
+    df, pts = dormer_frames(roof, POS[0], POS[1], W, theta, phi, T, k, wall=wall)
     solids = {n: PanelSolid(panels[n], df[n]) for n in df}
     solids[panel] = PanelSolid(panels[panel], roof)
     samples = {n: s.sample(step=STEP) for n, s in solids.items()}
-    return dict(theta=theta, phi=phi or default_pitch(theta), panel=panel, W=W, o=o, k=k, panels=panels, frames=df, roof=roof,
+    return dict(theta=theta, phi=phi, panel=panel, W=W, o=o, k=k, wall=wall, panels=panels, frames=df, roof=roof,
                 solids=solids, samples=samples, pts=pts, dormer=dormer)
 
 
@@ -55,8 +71,9 @@ def _top_plane(roof):
 def test_independent_ridge_ends_exactly_on_the_main_roof(scene):
     """The horizontal ridge at the apex height meets the roof at Q: Q lies on the main roof's top surface."""
     origin, n = _top_plane(scene['roof'])
-    for name in ('A', 'B', 'Q'):
+    for name in ('A', 'B', 'Q') + (('Ea', 'Eb') if scene['wall'] else ()):
         assert abs((scene['pts'][name] - origin) @ n) < 1e-9, name
+    assert scene['dormer'].geometry.wall_height == pytest.approx(scene['wall'])            # the default rule
     # and the library's footprint depth is the distance from the sill to Q along the roof surface
     assert scene['dormer'].position.height == pytest.approx(scene['pts']['l'], abs=5e-3)
 
@@ -178,3 +195,114 @@ def test_ridge_fingers_land_in_the_right_panels_lap(scene):
     assert w.min() >= -tol and w.max() <= T + tol, "fingers outside the right panel's thickness"
     if s['phi'] == 45:                     # square ridge: the fingers fill the lap (to within a sampling step)
         assert w.max() >= T - (STEP + k + 0.05) and u.min() <= min(us) + STEP + k + 0.05
+
+
+
+# ------------------------------------------------------------------ side walls (cheeks)
+def _walls(scene):
+    if not scene['wall']:
+        pytest.skip('no side walls')
+    return scene
+
+
+def _into_roof(s, side, pts):
+    """Depth of points into a dormer roof panel, measured from its underside (the plane through the eave line's end,
+    which is w = 0 or w = t of the slab depending on which way its frame normal points)."""
+    fr = s['frames'][f'additional_gable_roof_{side}_0']
+    w = fr.to_local(pts)[2]
+    under = fr.to_local(s['pts']['Ae' if side == 'left' else 'Be'][None, :])[2][0]
+    return w - under if under < T / 2 else under - w
+
+
+def _edge_points(panel, frame, edge, w, n=15):
+    i = panel.edge_names.index(edge)
+    a, b = panel.corners[i], panel.corners[(i + 1) % len(panel.corners)]
+    return frame.to_world(np.linspace(a.x, b.x, n), np.linspace(a.y, b.y, n), np.full(n, w))
+
+
+def test_cheek_bottoms_lie_on_the_main_roof(scene):
+    s = _walls(scene)
+    origin, n = _top_plane(s['roof'])
+    for side in ('left', 'right'):
+        name = f'additional_gable_cheek_{side}_0'
+        for w in (0.0, T):                     # both faces of the cheek: the roof is level across its thickness
+            gap = (_edge_points(s['panels'][name], s['frames'][name], 'bottom', w) - origin) @ n
+            assert np.abs(gap).max() <= s['k'] + 0.05, f"{side} cheek bottom is {np.abs(gap).max():.3f} mm off the roof"
+
+
+def test_cheek_tops_carry_the_dormer_roof_on_their_outer_face(scene):
+    """The roof panel's underside passes through the cheek top's outer edge; inside, it rises away (a wedge, hidden
+    within the dormer) - so the cheek never digs into the roof."""
+    s = _walls(scene)
+    k = s['k']
+    for side in ('left', 'right'):
+        name = f'additional_gable_cheek_{side}_0'
+        gaps = [_into_roof(s, side, _edge_points(s['panels'][name], s['frames'][name], 'top', w)) for w in (0.0, T)]
+        outer, inner = sorted(gaps, key=lambda g: np.abs(g).max())
+        assert np.abs(outer).max() <= k + 0.05, f"{side}: cheek top is {np.abs(outer).max():.3f} mm off the roof"
+        wedge = T * math.sin(math.radians(s['phi']))                 # t * tan(phi) vertically, measured normal to the roof
+        assert (-inner).min() == pytest.approx(wedge, abs=k + 0.05)
+
+
+def test_cheek_tabs_go_through_the_roofs_they_plug_into(scene):
+    """Bottom tab: through the main roof, square to it, ending flush with its underside. Front fingers: inside the
+    face's thickness. Top tab (if any): inside the dormer roof's thickness, flush with its top at the outer face."""
+    s = _walls(scene)
+    k = s['k']
+    tol = k + 0.05
+    for side in ('left', 'right'):
+        name = f'additional_gable_cheek_{side}_0'
+        cheek, fr = s['panels'][name], s['frames'][name]
+        assert 'bottom' in cheek.joints and 'front' in cheek.joints, f"{side} cheek has no bottom tab or corner fingers"
+        pts, _ = s['samples'][name]
+        tabs = tab_points(cheek, s['solids'][name], pts)
+        # which edge a tab belongs to: by its (u, v) position against the nominal triangle
+        u, v, _ = fr.to_local(tabs)
+        top_v = max(c.y for c in cheek.corners)
+        front_u = [c.x for c, nm in zip(cheek.corners, cheek.edge_names) if nm == 'front'][0]
+        on_top = v > top_v
+        on_front = ~on_top & (np.abs(u - front_u) < np.abs(u - front_u).min() + T + tol) & (
+            (u - front_u) * (1 if side == 'left' else -1) > 0)
+        on_bottom = ~on_top & ~on_front
+        _, _, w = s['roof'].to_local(tabs[on_bottom])
+        assert len(w) and w.min() >= -tol and w.max() <= T + tol, f"{side}: bottom tab leaves the main roof"
+        face = s['frames']['additional_gable_front_0']
+        _, _, wf = face.to_local(tabs[on_front])
+        assert len(wf) and wf.min() >= -tol and wf.max() <= T + tol, f"{side}: corner fingers leave the face"
+        if 'top' in cheek.joints:
+            # from the cheek top (inside: across the hidden wedge) up through the roof, never out of its top
+            d = _into_roof(s, side, tabs[on_top])
+            wedge = T * math.sin(math.radians(s['phi']))
+            assert len(d) and d.min() >= -wedge - tol and d.max() <= T + tol, f"{side}: top tab leaves the dormer roof"
+            # exact: the tab's tip on the cheek's outer face (w = t) is flush with the roof's top face
+            (a, b), = cheek.joints['top'].nominal
+            i = cheek.edge_names.index('top')
+            p0, p1 = cheek.corners[i], cheek.corners[(i + 1) % len(cheek.corners)]
+            L = math.hypot(p1.x - p0.x, p1.y - p0.y)
+            ux = (p1.x - p0.x) / L
+            us = np.array([p0.x + ux * q for q in (a, b)])
+            a_dir = (s['pts']['B'] - s['pts']['A']) / np.linalg.norm(s['pts']['B'] - s['pts']['A'])
+            faces = [fr.to_world(us, np.full(2, p0.y + cheek.joints['top'].depth), np.full(2, w)) for w in (0.0, T)]
+            outer = max(faces, key=lambda q: abs((q[0] - s['pts']['P']) @ a_dir))   # farther from the dormer's middle
+            assert _into_roof(s, side, outer) == pytest.approx([T, T], abs=k + 0.1), f"{side}: top tab not flush on top"
+        # exact: the bottom tab ends on the main roof's underside
+        (a, b), = cheek.joints['bottom'].nominal
+        i = cheek.edge_names.index('bottom')
+        p0, p1 = cheek.corners[i], cheek.corners[(i + 1) % len(cheek.corners)]
+        L = math.hypot(p1.x - p0.x, p1.y - p0.y)
+        ux, uy = (p1.x - p0.x) / L, (p1.y - p0.y) / L
+        nx, ny = uy, -ux                                                 # outward = right of travel
+        d = cheek.joints['bottom'].depth
+        us = np.array([p0.x + ux * q + nx * d for q in (a, b)])
+        vs = np.array([p0.y + uy * q + ny * d for q in (a, b)])
+        tip = s['roof'].to_local(fr.to_world(us, vs, np.full(2, T / 2)))[2]
+        assert np.abs(tip).max() <= k + 0.15, f"{side}: bottom tab tip is {tip} mm off the roof's underside"
+
+
+def test_tall_walls_get_a_cheek_top_tab(scene):
+    s = _walls(scene)
+    if s['wall'] < 20:
+        pytest.skip('walls too low for a top tab on this roof')
+    for side in ('left', 'right'):
+        assert 'top' in s['panels'][f'additional_gable_cheek_{side}_0'].joints
+        assert 'side' in s['panels'][f'additional_gable_roof_{side}_0'].joints

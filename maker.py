@@ -286,7 +286,7 @@ class HouseMaker:
         return self.architectural_config.add_chimney(panel_name, x, y, width, height, chimney_height)
 
     def add_additional_gable(self, panel_name, x, y, width=None, height=None, roof_overhang=3.0,
-                             pitch=None):
+                             pitch=None, wall_height=None):
         """
         Add a gable dormer to a roof panel ('roof_panel_left' or 'roof_panel_right').
 
@@ -297,12 +297,15 @@ class HouseMaker:
             x, y: top-left of the dormer's bounding box on the roof panel (mm)
             width: dormer width (default 25mm)
             roof_overhang: how far the dormer roof projects in front of its face (default 3mm)
-            pitch: dormer roof pitch in degrees (default: 45, a 90 degree apex, or the main roof angle if steeper)
+            pitch: dormer roof pitch in degrees (default: 45, a 90 degree apex; without side walls the main roof
+                angle if steeper)
+            wall_height: side wall (cheek) height in mm; 0 = no walls (default: walls as tall as the gable on
+                roofs steeper than 45 degrees, none otherwise)
 
         Returns the AdditionalGable. Raises PlacementError if it does not fit.
         """
         return self.architectural_config.add_additional_gable(
-            panel_name, x, y, width, height, roof_overhang, pitch)
+            panel_name, x, y, width, height, roof_overhang, pitch, wall_height)
 
     def get_windows_for_panel(self, panel_name):
         """Get all windows on a specific panel"""

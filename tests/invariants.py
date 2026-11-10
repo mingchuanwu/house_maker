@@ -117,8 +117,11 @@ def check_roof_slot_keepouts_match_the_drawn_slots(house, panels):
         if not panel.name.startswith('roof_panel'):
             continue
         rects = house.geometry.roof_slot_rects(panel.name)
+        owned = [(sl.cx, sl.cy) for sl in panel.slots if sl.owner]        # dormer tabs' slots, not gable ones
+        theirs = lambda b: any(abs((b.min_x + b.max_x) / 2 - x) < 1e-2 and abs((b.min_y + b.max_y) / 2 - y) < 1e-2
+                               for x, y in owned)
         boxes = sorted((b.min_x, b.min_y, b.max_x, b.max_y) for b in (path_bbox(d) for d in panel.cut[1:])
-                       if (b.max_x - b.min_x) < min(rects[0][2] - rects[0][0] + 0.5, 6))
+                       if (b.max_x - b.min_x) < min(rects[0][2] - rects[0][0] + 0.5, 6) and not theirs(b))
         assert len(boxes) == len(rects) == 2, panel.name
         for got, want in zip(boxes, sorted(rects)):
             assert got == pytest.approx(want, abs=TOL), panel.name

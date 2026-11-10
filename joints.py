@@ -55,7 +55,8 @@ class SlotSpec:
     length: float        # extent along the slot's long axis
     thickness: float     # extent across it
     orientation: str     # 'vertical': long axis along y; 'horizontal': long axis along x
-    owner: str = ''      # panel whose tab it receives, when that is not fixed by naming (dormer base tabs)
+    owner: str = ''      # panel whose tab it receives, when that is not fixed by naming (dormer tabs)
+    owner_edge: str = ''  # ... and the edge of that panel carrying the tab
 
 
 class FingerJointEngine:

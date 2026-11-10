@@ -140,7 +140,7 @@ def test_random_house_satisfies_every_invariant(seed):
                       p.panel, f'chimney {i}')
     for i, g in enumerate(cfg.additional_gables):
         p, phi = g.position, g.geometry.phi_deg
-        df, _ = dormer_frames(frames[p.panel], p.x, p.y, p.width, th, phi, t, k, index=i)
+        df, _ = dormer_frames(frames[p.panel], p.x, p.y, p.width, th, phi, t, k, index=i, wall=g.geometry.wall_height)
         ridge_extra = t * abs(math.cos(math.radians(2 * phi))) if phi < 45 else 0.0
         check_feature(df, p.panel, f'dormer {i}',
                       ({f'additional_gable_roof_left_{i}', f'additional_gable_roof_right_{i}'}, ridge_extra))

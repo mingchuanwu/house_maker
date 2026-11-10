@@ -35,7 +35,7 @@ def scene(request, inspect):
     theta, phi = request.param
     W, o = 30.0, 3.0
     house = make_house(gable_angle=theta, material_thickness=3.0, length=160, width=140, height=90, kerf=0.0)
-    dormer = house.add_additional_gable('roof_panel_left', 30, 20, W, roof_overhang=o, pitch=phi)
+    dormer = house.add_additional_gable('roof_panel_left', 30, 20, W, roof_overhang=o, pitch=phi, wall_height=0)
     panels = inspect('dormer', f"a{theta}_pitch{phi or 'default'}", house,
                      ['roof_panel_left', lambda n: n.startswith('additional_gable')],
                      title=f'{theta}° main roof, dormer pitch {phi or default_pitch(theta)}, width {W}')

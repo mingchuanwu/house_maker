@@ -213,21 +213,26 @@ def chimney_frames(roof: Frame, x, y, W, D, theta, t, k, index=0, shift=0.0):
 # ------------------------------------------------------------------------------------------------
 # Dormer
 # ------------------------------------------------------------------------------------------------
-def dormer_points(roof: Frame, x, y, W, theta, phi, t):
-    """Corner points of the dormer in 3D: sill corners A, B on the roof, apex P of the face, ridge end Q.
-    Independent construction: the ridge is horizontal at the apex height, so it ends where the main roof
-    surface rises to that height (Q is checked to lie on the roof plane by the tests)."""
+def dormer_points(roof: Frame, x, y, W, theta, phi, t, wall=0.0):
+    """Corner points of the dormer in 3D: sill corners A, B on the roof, the eave line's ends Ae, Be (`wall` above
+    them), the apex P of the face, the ridge end Q and the eave line's back ends Ea, Eb (where the eave line meets the
+    roof, the cheeks' back corners). Independent construction: the ridge is horizontal at the apex height, so it ends
+    where the main roof surface rises to that height (Q, Ea, Eb are checked to lie on the roof plane by the tests)."""
     th, ph = math.radians(theta), math.radians(phi)
-    H = (W / 2) * math.tan(ph)
+    H = wall + (W / 2) * math.tan(ph)                              # apex above the sill
     plan_depth = H / math.tan(th)                                  # horizontal distance from the sill to Q
     down = _unit(np.array([roof.ev[0], roof.ev[1], 0.0]))
     up = -down
     l = plan_depth / math.cos(th)                                  # the same distance measured on the roof surface
     A = roof_point(roof, x, y + l, t)
     B = roof_point(roof, x + W, y + l, t)
-    P = (A + B) / 2 + np.array([0.0, 0.0, H])
+    Z = np.array([0.0, 0.0, 1.0])
+    Ae, Be = A + wall * Z, B + wall * Z
+    P = (A + B) / 2 + H * Z
     Q = P + plan_depth * up
-    return dict(A=A, B=B, P=P, Q=Q, up=up, H=H, plan_depth=plan_depth, l=l)
+    eave = wall / math.tan(th)
+    return dict(A=A, B=B, Ae=Ae, Be=Be, P=P, Q=Q, Ea=Ae + eave * up, Eb=Be + eave * up, up=up, H=H,
+                plan_depth=plan_depth, l=l, wall=wall)
 
 
 def _plane_slab(P00, eu, ev, t, k, outward, shift=0.0):
@@ -238,17 +243,24 @@ def _plane_slab(P00, eu, ev, t, k, outward, shift=0.0):
     return Frame(O, eu, ev, n, t, k, shift)
 
 
-def dormer_frames(roof: Frame, x, y, W, theta, phi, t, k, index=0, shift=0.0):
-    d = dormer_points(roof, x, y, W, theta, phi, t)
+def dormer_frames(roof: Frame, x, y, W, theta, phi, t, k, index=0, shift=0.0, wall=0.0):
+    d = dormer_points(roof, x, y, W, theta, phi, t, wall)
     A, B, P, up = d['A'], d['B'], d['P'], d['up']
     Z = np.array([0.0, 0.0, 1.0])
     a = _unit(B - A)
     lift = t * math.tan(math.radians(theta))        # the face is cut level at the highest roof point under it
-    return {
-        # front face: vertical triangle, thickness t BEHIND the front line (up-slope)
-        f'additional_gable_front_{index}': _slab(
-            A + lift * Z + (lift / math.tan(math.radians(phi))) * a + (t / 2) * up, a, Z, t, k, shift),
-        # roof panels: underside plane through the sill corner, the apex and the ridge end
-        f'additional_gable_roof_left_{index}': _plane_slab(A, P - A, up, t, k, Z, shift),
-        f'additional_gable_roof_right_{index}': _plane_slab(P, B - P, up, t, k, Z, shift),
-    }, d
+    # without walls the lifted face is a smaller triangle (its rakes stay on the roof planes), so it starts further in
+    inset = 0.0 if wall > 0 else lift / math.tan(math.radians(phi))
+    frames = {
+        # front face: vertical, thickness t BEHIND the front line (up-slope)
+        f'additional_gable_front_{index}': _slab(A + lift * Z + inset * a + (t / 2) * up, a, Z, t, k, shift),
+        # roof panels: underside plane through the eave line's end, the apex and the ridge end
+        f'additional_gable_roof_left_{index}': _plane_slab(d['Ae'], P - d['Ae'], up, t, k, Z, shift),
+        f'additional_gable_roof_right_{index}': _plane_slab(P, d['Be'] - P, up, t, k, Z, shift),
+    }
+    if wall > 0:
+        # cheeks: vertical, t thick just inside the sill's ends; drawn as seen from outside, the left one from its
+        # back end (Ea, on the roof) forwards, the right one from the face's rear surface backwards
+        frames[f'additional_gable_cheek_left_{index}'] = _slab(d['Ea'] - wall * Z + (t / 2) * a, -up, Z, t, k, shift)
+        frames[f'additional_gable_cheek_right_{index}'] = _slab(B + t * up - (t / 2) * a, up, Z, t, k, shift)
+    return frames, d

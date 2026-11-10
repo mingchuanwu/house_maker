@@ -236,11 +236,11 @@ class AdditionalGable:
     """
 
     def __init__(self, position: ComponentPosition, roof_angle: float, thickness: float,
-                 roof_overhang: float = 3.0, pitch: Optional[float] = None):
+                 roof_overhang: float = 3.0, pitch: Optional[float] = None, wall_height: Optional[float] = None):
         self.roof_overhang = roof_overhang
         self.roof_angle = roof_angle
         self.thickness = thickness
-        self.geometry = solve_dormer(roof_angle, position.width, pitch, roof_overhang)
+        self.geometry = solve_dormer(roof_angle, position.width, pitch, roof_overhang, wall_height)
         # The requested depth is ignored: it is fixed by geometry (see dormer_geometry).
         self.position = position._replace(height=self.geometry.footprint_depth)
         self._validate_position()
@@ -265,6 +265,13 @@ class AdditionalGable:
             raise GeometryError("additional_gable_validation",
                                 "Gable too low for its roof angle: once lifted clear of the roof, the front face would be "
                                 "lower than the material is thick (make it wider or steeper)")
+        g = self.geometry
+        if g.walls and g.wall_height - self.face_lift < self.thickness:
+            raise GeometryError("additional_gable_validation",
+                                f"Dormer side walls too low: they must stand at least {self.face_lift + self.thickness:.1f}mm "
+                                f"(the face's lift t*tan(roof angle) plus one thickness) above the sill")
+        if g.walls and 2 * self.thickness >= g.width:
+            raise GeometryError("additional_gable_validation", "Dormer too narrow for side walls")
 
     def footprint(self) -> Tuple[float, float, float, float]:
         """Bounding box on the roof panel as (x, y, width, depth)."""
@@ -272,7 +279,12 @@ class AdditionalGable:
         return (p.x, p.y, p.width, p.height)
 
     def get_wall_panel_dimensions(self) -> Dict[str, Tuple[float, float]]:
-        return {'additional_gable_front': self.face_size()}
+        dims = {'additional_gable_front': self.face_size()}
+        g = self.geometry
+        if g.walls:
+            cheek = (g.eave_depth - self.thickness, g.wall_height - self.face_lift)
+            dims.update({'additional_gable_cheek_left': cheek, 'additional_gable_cheek_right': cheek})
+        return dims
 
     def get_roof_panel_dimensions(self) -> Dict[str, Tuple[float, float]]:
         g = self.geometry

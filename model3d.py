@@ -94,7 +94,8 @@ def house_frames(geometry: HouseGeometry, config: ArchitecturalConfiguration,
         frames.update(chimney_frames(frames[p.panel], p.x, p.y, p.width, p.height, theta, i))
     for i, d in enumerate(config.additional_gables):
         p = d.position
-        frames.update(dormer_frames(frames[p.panel], p.x, p.y, p.width, theta, d.geometry.phi_deg, i))
+        frames.update(dormer_frames(frames[p.panel], p.x, p.y, p.width, theta, d.geometry.phi_deg, i,
+                                    d.geometry.wall_height))
     for name in [n for n in frames if n in panels and n in box_frames(geometry)]:
         wall = frames[name]
         for kind, items in (('window', config.get_windows_for_panel(name)), ('door', config.get_doors_for_panel(name))):
