@@ -53,7 +53,7 @@ def _box_features(name: str, geometry: HouseGeometry, config: ArchitecturalConfi
     """Collect the decoration of one main panel from the configuration as plain data."""
     f = PanelFeatures()
     k = geometry.kerf                                          # cut-outs are holes: drawn kerf/2 smaller all round
-    f.cutouts += [compensate_void(window_cutout(w), k) for w in config.get_windows_for_panel(name)]
+    f.cutouts += [compensate_void(window_cutout(w, geometry.thickness), k) for w in config.get_windows_for_panel(name)]
     f.cutouts += [compensate_void(door_cutout(d), k) for d in config.get_doors_for_panel(name)]
     f.score += [chimney_footprint(c) for c in config.get_chimneys_for_panel(name)]
     f.cutouts += [chimney_cutout(c, geometry.kerf) for c in config.get_chimneys_for_panel(name)]

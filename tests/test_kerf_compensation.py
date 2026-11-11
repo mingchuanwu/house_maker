@@ -46,7 +46,7 @@ def assert_offset(nominal, compensated, inward):
 def test_window_cutouts_are_drawn_kerf_smaller(wtype):
     house = make_house(length=160, width=120, height=100, kerf=K)
     w = house.add_window('side_wall_left', 50, 30, window_type=wtype)
-    nominal = window_cutout(w)
+    nominal = window_cutout(w, house.geometry.thickness)
     drawn = [d for d in house.build_panels() if d.name == 'side_wall_left'][0].cut[1:]
     assert_offset(polys(nominal), [dedupe(sub) for d in drawn for sub in parse_path(d, CURVE_SAMPLES)], inward=True)
 

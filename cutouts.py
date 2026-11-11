@@ -5,8 +5,13 @@ Extension point: add a WindowType/DoorType by writing a `(x, y, width, height) -
 function and registering it in WINDOW_CUTOUTS / DOOR_CUTOUTS. Nothing else needs to change.
 """
 
+from typing import Optional, Tuple
+
 from .components import Door, DoorType, Window, WindowType
 from .constants import COORDINATE_PRECISION
+
+PANE_SPLIT = 30.0                 # mm: an opening at least this wide (tall) gets 3 columns (rows) of panes, else 2
+MIN_PANE_IN_THICKNESSES = 2.0     # a pane must be at least this many material thicknesses in both directions
 
 
 def _generate_rectangular_cutout(x: float, y: float, width: float, height: float) -> str:
@@ -222,6 +227,29 @@ def _generate_dutch_door_cutout(x: float, y: float, width: float, height: float)
     return top + " " + bottom
 
 
+def pane_grid(width: float, height: float, bar: float) -> Tuple[int, int]:
+    """
+    (columns, rows) of panes for a rectangular window opening with glazing bars `bar` wide: 3 along a side at least
+    PANE_SPLIT long, else 2, as long as every pane stays MIN_PANE_IN_THICKNESSES bars wide (3 falls back to 2); a window
+    too small even for 2 x 2 stays a single pane, (1, 1).
+    """
+    def count(size: float) -> int:
+        for n in ((3, 2) if size >= PANE_SPLIT else (2,)):
+            if (size - (n - 1) * bar) / n >= MIN_PANE_IN_THICKNESSES * bar:
+                return n
+        return 1
+    cols, rows = count(width), count(height)
+    return (1, 1) if 1 in (cols, rows) else (cols, rows)
+
+
+def _generate_paned_cutout(x: float, y: float, width: float, height: float, bar: float) -> str:
+    """The window opening as equal panes, separated by glazing bars of wall material `bar` wide (see `pane_grid`)."""
+    cols, rows = pane_grid(width, height, bar)
+    pw, ph = (width - (cols - 1) * bar) / cols, (height - (rows - 1) * bar) / rows
+    return " ".join(_generate_rectangular_cutout(x + i * (pw + bar), y + j * (ph + bar), pw, ph)
+                    for j in range(rows) for i in range(cols))
+
+
 _RECT = _generate_rectangular_cutout
 
 WINDOW_CUTOUTS = {
@@ -248,9 +276,12 @@ DOOR_CUTOUTS = {
 }
 
 
-def window_cutout(window: Window) -> str:
-    """Cutout path for a window at its panel-local position."""
+def window_cutout(window: Window, thickness: Optional[float] = None) -> str:
+    """Cutout path for a window at its panel-local position. Given the material `thickness`, a rectangular window is
+    cut as a grid of panes with glazing bars one thickness wide (see `pane_grid`)."""
     p = window.position
+    if window.type == WindowType.RECTANGULAR and thickness:
+        return _generate_paned_cutout(p.x, p.y, p.width, p.height, thickness)
     return WINDOW_CUTOUTS.get(window.type, _RECT)(p.x, p.y, p.width, p.height)
 
 
