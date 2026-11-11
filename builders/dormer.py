@@ -27,7 +27,9 @@ Joints
 * Valley edges rest on the main roof and are glued; the footprint is scored on the roof panel.
 
 Finger size: the dormer uses its own finger length, at most half its shortest joint edge (so small dormers still
-get joints) and at least two material thicknesses; an edge too short for that is left plain (glued).
+get joints) and at least two material thicknesses. An edge too short for a regular finger (1.5 finger lengths) gets
+one narrower tab instead, down to one thickness wide, keeping t/2 of material at its ends; only an edge too short
+even for that is left plain (glued).
 """
 
 import dataclasses
@@ -45,7 +47,7 @@ _P = COORDINATE_PRECISION
 _SLOT_EDGE_MARGIN = 0.5      # in thicknesses: slot must keep this much material to the panel edge
 MIN_FINGER_IN_THICKNESSES = 2.0
 RAKE_TAB_MIN = 1.5           # in thicknesses: narrowest face tab into a dormer roof panel
-CHEEK_TAB_MIN = 1.0          # in thicknesses: narrowest tab on a side wall (cheek) edge
+SINGLE_TAB_MIN = 1.0         # in thicknesses: narrowest single tab where a regular finger does not fit
 
 
 def _polygon(points) -> str:
@@ -118,13 +120,26 @@ def _ridge_span(dormer: AdditionalGable, kerf: float) -> float:
     return min(g.roof_panel_ridge_length, v_max + g.overhang - kerf)
 
 
+def _single_tab(engine: FingerJointEngine, length: float, t: float, lo: float = 0.0, hi: Optional[float] = None):
+    """One tab centred on [lo, hi] of an edge (default: all of it), as wide as a finger but leaving t/2 at each end of
+    that span - small dormers and cheeks are too short for a regular finger (1.5 finger lengths); None if that leaves
+    less than SINGLE_TAB_MIN thicknesses."""
+    hi = length if hi is None else hi
+    width = min(engine.finger_length, hi - lo - t)
+    if width < SINGLE_TAB_MIN * t:
+        return None
+    mid = (lo + hi) / 2
+    return engine.spec(MALE, length, [(mid - width / 2, mid + width / 2)])
+
+
 def _ridge_joint(dormer: AdditionalGable, engine: FingerJointEngine):
     """Male fingers for the left panel's ridge edge (it runs from the front to the apex Q); the right panel
-    gets the mirrored female layout."""
+    gets the mirrored female layout. A ridge too short for a regular finger gets a single narrower one."""
     hi = _ridge_span(dormer, engine.kerf)
     if hi <= 0:
         return None
-    return engine.plan_edge(dormer.geometry.roof_panel_ridge_length, MALE, span=(0.0, hi))
+    L = dormer.geometry.roof_panel_ridge_length
+    return engine.plan_edge(L, MALE, span=(0.0, hi)) or _single_tab(engine, L, dormer.thickness, 0.0, hi)
 
 
 def _cheek_lengths(dormer: AdditionalGable) -> Tuple[float, float, float]:
@@ -151,9 +166,11 @@ def base_tab_depth(dormer: AdditionalGable) -> float:
 
 
 def _base_joint(dormer: AdditionalGable, engine: FingerJointEngine):
-    """One tab in the middle of the face's base edge (kept t clear of its ends), or None if it is too short."""
+    """One tab in the middle of the face's base edge (kept t clear of its ends): a regular finger, or a narrower
+    single tab on a small face; None if even that does not fit."""
     face_w, _, _ = dormer.geometry.face_triangle(dormer.face_lift)
-    return engine.plan_edge(face_w, MALE, inset=dormer.thickness, count=1)
+    t = dormer.thickness
+    return engine.plan_edge(face_w, MALE, inset=t, count=1) or _single_tab(engine, face_w, t, t, face_w - t)
 
 
 def cheek_top_depth(dormer: AdditionalGable) -> float:
@@ -166,15 +183,6 @@ def side_notch_depth(dormer: AdditionalGable) -> float:
     t-wide, t/cos(phi)-tall cross-section measured along the sloped slab."""
     ph = math.radians(dormer.geometry.phi_deg)
     return dormer.thickness * (math.cos(ph) + math.tan(ph))
-
-
-def _single_tab(engine: FingerJointEngine, length: float, t: float):
-    """One centred tab, as wide as a finger but leaving t/2 at each end of the edge (cheeks are small triangles on
-    steep roofs); None if that leaves less than CHEEK_TAB_MIN thicknesses."""
-    width = min(engine.finger_length, length - t)
-    if width < CHEEK_TAB_MIN * t:
-        return None
-    return engine.spec(MALE, length, [((length - width) / 2, (length + width) / 2)])
 
 
 def _cheek_joints(dormer: AdditionalGable, engine: FingerJointEngine):

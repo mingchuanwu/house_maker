@@ -52,6 +52,9 @@ SCENES = {
                             chimney=('roof_panel_left', 50, 20, 10, 15, 20), dormer=('roof_panel_right', 30, 15, 25)),
     # `--angle 60 --add-additional-gable --additional-gable-wall-height 15 --additional-gable-pitch 60`: the slot layout
     # that broke the main roof's triangulation (two hole bridges to one corner)
+    # `--angle 60 --add-additional-gable --additional-gable-wall-height 0`: single narrow ridge and base tabs
+    'cli-steep-no-walls': dict(angle=60, length=80, width=60, height=70, finger_length=10, chimney=False,
+                               dormer=('roof_panel_right', 30, 15, 25, None, 3.0, None, 0)),
     'cli-walls-pitch60': dict(angle=60, length=80, width=60, height=70, finger_length=10, chimney=False,
                               dormer=('roof_panel_right', 30, 15, 25, None, 3.0, 60, 15)),
 }

@@ -241,3 +241,19 @@ def test_ridge_notches_never_reach_the_valley(width, theta, t):
     # mating: the left panel's fingers sit at the mirrored positions
     lf, rf = edge_profile(left, 'ridge'), edge_profile(right, 'ridge')
     assert len(lf) == len(rf)
+
+
+def test_steep_small_dormer_gets_single_narrow_tabs():
+    """`--angle 60 --add-additional-gable --additional-gable-wall-height 0`: the ridge (6.9 mm usable) and the lifted
+    face's base (8.6 mm between its t margins) are too short for a regular 6 mm finger (9 mm), so each gets one
+    narrower tab - at least t wide, t/2 clear of the span's ends - and the base tab its main-roof slot."""
+    house = make_house(length=80, width=60, height=70, gable_angle=60, material_thickness=3, finger_length=10)
+    house.add_additional_gable('roof_panel_right', 30, 15, 25, wall_height=0)
+    p = {q.name: q for q in house.build_panels()}
+    face, left, right = (p[f'additional_gable_{n}_0'] for n in ('front', 'roof_left', 'roof_right'))
+    widths = lambda j: [b - a for a, b in j.nominal]
+    assert set(face.joints) == {'base', 'rake_left', 'rake_right'}
+    assert len(widths(face.joints['base'])) == 1 and 3.0 <= widths(face.joints['base'])[0] < 6.0
+    assert len(widths(left.joints['ridge'])) == 1 and 3.0 <= widths(left.joints['ridge'])[0] < 6.0
+    assert widths(right.joints['ridge']) == pytest.approx(widths(left.joints['ridge']))
+    assert [s.owner_edge for s in p['roof_panel_right'].slots if s.owner] == ['base']
