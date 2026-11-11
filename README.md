@@ -61,6 +61,15 @@ python3 generate_house.py --width 90 --length 90 --height 180 --angle 45 \
     --chimney-x 40 --chimney-y 15 \
     --chimney-width 12 --chimney-depth 18 --chimney-height 25 \
     --output house_with_chimney.svg --verbose
+
+# Several dormers and chimneys: repeat --dormer / --chimney, SIDE:key=value... (unset keys use the defaults)
+#   --dormer  keys: x, y, width, wall (side wall height, 0 = none), pitch, overhang
+#   --chimney keys: x, y, width, depth, height
+python3 generate_house.py --length 200 --width 140 --height 100 --angle 45 \
+    --chimney left:x=90:y=20:width=12 \
+    --dormer left:x=25:y=30:width=35 \
+    --dormer left:x=140:y=30:width=35:wall=12 \
+    --dormer right:x=80:y=25:width=40 --3d view
 ```
 
 ### Command Line Options

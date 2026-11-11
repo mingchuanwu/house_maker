@@ -45,6 +45,40 @@ except ImportError as e:
     sys.exit(1)
 
 
+
+# ------------------------------------------------------------------ repeatable roof features
+ROOF_SIDES = {'left': 'roof_panel_left', 'right': 'roof_panel_right',
+              'roof_panel_left': 'roof_panel_left', 'roof_panel_right': 'roof_panel_right'}
+FEATURE_KEYS = {
+    'dormer': {'x': 30.0, 'y': 15.0, 'width': 25.0, 'wall': None, 'pitch': None, 'overhang': 3.0},
+    'chimney': {'x': 50.0, 'y': 20.0, 'width': 10.0, 'depth': 15.0, 'height': 20.0},
+}
+
+
+def feature_spec(kind):
+    """argparse type for --dormer / --chimney: 'SIDE[:key=value]...' (SIDE: left, right, roof_panel_left or
+    roof_panel_right; keys in FEATURE_KEYS[kind]) -> (spec text, roof panel, {key: value}) with defaults filled in."""
+    keys = FEATURE_KEYS[kind]
+
+    def parse(text):
+        side, *pairs = text.split(':')
+        if side not in ROOF_SIDES:
+            raise argparse.ArgumentTypeError(f"{text!r}: start with the roof side, left or right (e.g. left:x=30:y=20)")
+        values = {}
+        for pair in pairs:
+            key, sep, value = pair.partition('=')
+            if not sep or key not in keys:
+                raise argparse.ArgumentTypeError(f"{text!r}: {pair!r} is not key=value with a key from "
+                                                 f"{', '.join(keys)}")
+            if key in values:
+                raise argparse.ArgumentTypeError(f"{text!r}: {key} given twice")
+            try:
+                values[key] = float(value)
+            except ValueError:
+                raise argparse.ArgumentTypeError(f"{text!r}: {key}={value!r} is not a number") from None
+        return text, ROOF_SIDES[side], {**keys, **values}
+    return parse
+
 def create_parser():
     """Create command line argument parser"""
     parser = argparse.ArgumentParser(
@@ -142,6 +176,14 @@ Architectural options:
     parser.add_argument('--chimney-height', type=float, default=20.0,
                        help='Minimum chimney exposure above the roof (up-slope wall) in mm (default: 20)')
     
+    # Repeatable roof features
+    parser.add_argument('--dormer', action='append', default=[], type=feature_spec('dormer'), metavar='SIDE[:KEY=VALUE...]',
+                       help='Add a dormer; repeat for more. SIDE is left or right (roof panel); keys: x, y, width, wall '
+                            '(side wall height, 0 = none), pitch, overhang - e.g. --dormer left:x=25:y=30:width=35:wall=12. '
+                            'Unset keys use the --additional-gable-* defaults')
+    parser.add_argument('--chimney', action='append', default=[], type=feature_spec('chimney'), metavar='SIDE[:KEY=VALUE...]',
+                       help='Add a chimney; repeat for more. Keys: x, y, width, depth, height - e.g. --chimney left:x=90:y=20')
+
     # Additional gable options
     parser.add_argument('--add-additional-gable', action='store_true',
                        help='Add an additional gable (dormer) to the roof panel')
@@ -287,6 +329,19 @@ def main():
                 print(f"   Outer footprint on roof: {w:.1f}×{d:.1f}mm at ({x}, {y})")
                 print(f"   Exposure above roof: {chimney.chimney_height}mm up-slope, "
                       f"{chimney.side_wall_heights()[0]:.1f}mm down-slope (level top)")
+
+        for text, panel, v in args.chimney:
+            try:
+                house.add_chimney(panel_name=panel, x=v['x'], y=v['y'], width=v['width'], height=v['depth'],
+                                  chimney_height=v['height'])
+            except PlacementError as e:
+                raise PlacementError('chimney', f"--chimney {text}: {e.message.split(': ', 1)[1]}") from e
+        for text, panel, v in args.dormer:
+            try:
+                house.add_additional_gable(panel_name=panel, x=v['x'], y=v['y'], width=v['width'],
+                                           roof_overhang=v['overhang'], pitch=v['pitch'], wall_height=v['wall'])
+            except PlacementError as e:
+                raise PlacementError('dormer', f"--dormer {text}: {e.message.split(': ', 1)[1]}") from e
 
         if args.add_additional_gable:
             dormer = house.add_additional_gable(

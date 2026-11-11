@@ -325,7 +325,7 @@ class ArchitecturalConfiguration:
             if not hints:
                 raise
             raise PlacementError('additional gable', e.message.split(': ', 1)[1] +
-                                 ". It would fit with " + "; or ".join(hints)) from e
+                                 ". It would fit with (mm) " + "; or ".join(hints)) from e
         self.additional_gables.append(gable)
         return gable
 
@@ -378,19 +378,18 @@ class ArchitecturalConfiguration:
         steps = lambda top: [i / 10 for i in range(int(top * 10) + 1)]
         ys = interval(steps(ph), lambda v: fits(y=v), y)
         if ys:
-            hints.append(f"y between {ys[0]:.1f} and {ys[-1]:.1f} (--additional-gable-y)")
+            hints.append(f"y between {ys[0]:.1f} and {ys[-1]:.1f}")
         xs = interval(steps(pw), lambda v: fits(x=v), x)
         if xs and not (xs[0] <= x <= xs[-1]):
-            hints.append(f"x between {xs[0]:.1f} and {xs[-1]:.1f} (--additional-gable-x)")
+            hints.append(f"x between {xs[0]:.1f} and {xs[-1]:.1f}")
         if wall > 0:
             lowest = gable.face_lift + g.thickness
             w = largest(math.ceil(lowest * 10) / 10, wall, lambda v: fits(wall=v))
             if w is not None:
-                hints.append(f"side walls at most {w:.1f}mm high, at least {math.ceil(lowest * 10) / 10:.1f} "
-                             f"(--additional-gable-wall-height)")
+                hints.append(f"wall at most {w:.1f} (side wall height, at least {math.ceil(lowest * 10) / 10:.1f})")
         wd = largest(15.0, width, lambda v: fits(width=v))
         if wd is not None and wd < width:
-            hints.append(f"width at most {wd:.1f}mm (--additional-gable-width)")
+            hints.append(f"width at most {wd:.1f}")
         return hints
 
     def get_chimneys_for_panel(self, panel_name: str) -> List[Chimney]:

@@ -114,8 +114,8 @@ def test_placement_error_proposes_settings_that_fit():
         house.add_additional_gable('roof_panel_right', 30, 15, 25, wall_height=10, pitch=30)
     msg = str(err.value)
     y0, y1 = map(float, re.search(r'y between ([\d.]+) and ([\d.]+)', msg).groups())
-    wall = float(re.search(r'side walls at most ([\d.]+)mm', msg).group(1))
-    width = float(re.search(r'width at most ([\d.]+)mm', msg).group(1))
+    wall = float(re.search(r'wall at most ([\d.]+)', msg).group(1))
+    width = float(re.search(r'width at most ([\d.]+)', msg).group(1))
     for change in (dict(y=y0), dict(y=y1), dict(wall_height=wall), dict(width=width)):
         args = {**dict(x=30, y=15, width=25, wall_height=10, pitch=30), **change}
         make_house(**kw).add_additional_gable('roof_panel_right', **args)            # does not raise
