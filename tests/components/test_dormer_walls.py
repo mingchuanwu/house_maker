@@ -11,7 +11,8 @@ import pathlib
 
 import pytest
 
-from house_maker import PlacementError
+from house_maker import PlacementError, WindowType
+from house_maker.svgpath import parse_path
 from house_maker.mates import EDGE, TAB_SLOT, declared_mates
 from ..conftest import make_house
 
@@ -128,3 +129,59 @@ def test_no_proposal_when_nothing_fits():
     with pytest.raises(PlacementError) as err:
         house.add_additional_gable('roof_panel_right', 30, 15, 25, wall_height=60, pitch=60)   # far too deep anywhere
     assert 'It would fit with' not in str(err.value)          # no single change helps: the plain reason only
+
+
+# ------------------------------------------------------------------ the dormer window
+def _segment_distance(p, a, b):
+    ax, ay, bx, by = a.x, a.y, b.x, b.y
+    L2 = (bx - ax) ** 2 + (by - ay) ** 2
+    s = 0.0 if L2 == 0 else max(0.0, min(1.0, ((p.x - ax) * (bx - ax) + (p.y - ay) * (by - ay)) / L2))
+    return math.hypot(p.x - (ax + s * (bx - ax)), p.y - (ay + s * (by - ay)))
+
+
+@pytest.mark.parametrize('theta,width,kw,grid', [
+    (60, 40, {}, (2, 2)),                    # walls by default: room for panes
+    (60, 50, {}, (3, 2)),
+    (45, 70, {}, (2, 2)),                    # large plain dormer
+    (60, 25, {}, (1, 1)),                    # small: a single pane
+    (60, 30, dict(wall_height=15), (1, 1)),
+    (35, 25, {}, None),                      # too small for any window
+    (60, 25, dict(wall_height=0), None),
+])
+def test_dormer_face_window_fits_the_face(theta, width, kw, grid):
+    house = make_house(length=200, width=160, height=90, gable_angle=theta, material_thickness=T, kerf=0.0)
+    d = house.add_additional_gable('roof_panel_left', 40, 20, width, **kw)
+    face = {p.name: p for p in house.build_panels()}['additional_gable_front_0']
+    holes = [sub for path in face.cut[1:] for sub in parse_path(path)]
+    if grid is None:
+        assert not holes
+        return
+    assert len(holes) == grid[0] * grid[1]
+    corners, names = face.corners, face.edge_names
+    for hole in holes:
+        for q in hole:
+            for i, name in enumerate(names):
+                a, b = corners[i], corners[(i + 1) % len(corners)]
+                need = 2 * T if name.startswith('side') else T          # notched sides: notch t + t of material
+                assert _segment_distance(q, a, b) >= need - 1e-3, f"window corner {q} too close to {name}"  # 3-decimal file
+
+
+def test_attic_windows_are_only_ever_in_gable_triangles():
+    from house_maker import HouseMaker
+    for dims in ((200, 140, 100), (100, 100, 70)):
+        h = HouseMaker(length=dims[0], width=dims[1], height=dims[2], gable_angle=45)
+        panels = {p.name for p in h.build_panels()}
+        for wall in ('gable_wall_front', 'gable_wall_back'):
+            for i, w in enumerate(h.architectural_config.get_windows_for_panel(wall)):
+                if w.position.y < h.geometry.z:                      # on a floor: an ordinary, framed window
+                    assert w.type != WindowType.ATTIC and f'{wall}_w{i}_window_casing' in panels, (wall, i)
+
+
+def test_side_windows_beside_the_main_window_are_symmetric():
+    from house_maker import HouseMaker
+    h = HouseMaker(length=200, width=140, height=100, gable_angle=45, material_thickness=3)
+    ws = sorted((w.position for w in h.architectural_config.get_windows_for_panel('gable_wall_back')
+                 if w.position.y < h.geometry.z), key=lambda p: p.x)
+    assert len(ws) == 3
+    left, main, right = ws
+    assert main.x - (left.x + left.width) == pytest.approx(right.x - (main.x + main.width), abs=1e-6)

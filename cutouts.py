@@ -242,7 +242,7 @@ def pane_grid(width: float, height: float, bar: float) -> Tuple[int, int]:
     return (1, 1) if 1 in (cols, rows) else (cols, rows)
 
 
-def _generate_paned_cutout(x: float, y: float, width: float, height: float, bar: float) -> str:
+def paned_cutout(x: float, y: float, width: float, height: float, bar: float) -> str:
     """The window opening as equal panes, separated by glazing bars of wall material `bar` wide (see `pane_grid`)."""
     cols, rows = pane_grid(width, height, bar)
     pw, ph = (width - (cols - 1) * bar) / cols, (height - (rows - 1) * bar) / rows
@@ -281,7 +281,7 @@ def window_cutout(window: Window, thickness: Optional[float] = None) -> str:
     cut as a grid of panes with glazing bars one thickness wide (see `pane_grid`)."""
     p = window.position
     if window.type == WindowType.RECTANGULAR and thickness:
-        return _generate_paned_cutout(p.x, p.y, p.width, p.height, thickness)
+        return paned_cutout(p.x, p.y, p.width, p.height, thickness)
     return WINDOW_CUTOUTS.get(window.type, _RECT)(p.x, p.y, p.width, p.height)
 
 

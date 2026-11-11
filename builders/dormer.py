@@ -26,6 +26,10 @@ Joints
     tan(phi)) deep - the tab's shadow through the sloped slab.
 * Valley edges rest on the main roof and are glued; the footprint is scored on the roof panel.
 
+Window: the front face gets a window opening (no frame), the largest rectangle centred on the face that keeps
+WINDOW_MARGIN thicknesses of material to its base and sloped edges (and to the side notches of a walled face), cut as
+panes like the house's windows; a face too small for a window of at least 2t keeps none.
+
 Finger size: the dormer uses its own finger length, at most half its shortest joint edge (so small dormers still
 get joints) and at least two material thicknesses. An edge too short for a regular finger (1.5 finger lengths) gets
 one narrower tab instead, down to one thickness wide, keeping t/2 of material at its ends; only an edge too short
@@ -38,8 +42,11 @@ from typing import Dict, List, Optional, Tuple
 
 from ..components import AdditionalGable
 from ..constants import COORDINATE_PRECISION
-from ..geometry import Point
+from ..cutouts import MIN_PANE_IN_THICKNESSES, pane_grid, paned_cutout
+from ..exceptions import GeometryError
+from ..geometry import Point, offset_polygon
 from ..joints import FEMALE, MALE, FingerJointEngine, SlotSpec
+from ..kerf import compensate_void
 from ..panel import Panel, PATTERN_ROOF
 from ..patterns import polygon_shingles_pattern
 
@@ -48,6 +55,8 @@ _SLOT_EDGE_MARGIN = 0.5      # in thicknesses: slot must keep this much material
 MIN_FINGER_IN_THICKNESSES = 2.0
 RAKE_TAB_MIN = 1.5           # in thicknesses: narrowest face tab into a dormer roof panel
 SINGLE_TAB_MIN = 1.0         # in thicknesses: narrowest single tab where a regular finger does not fit
+WINDOW_MARGIN = 1.0          # in thicknesses: material kept around the dormer window
+WINDOW_SIDE_MARGIN = 2.0     # in thicknesses: from a walled face's notched sides (notches are t deep)
 
 
 def _polygon(points) -> str:
@@ -233,6 +242,54 @@ def roof_slots(dormer: AdditionalGable, index: int, engine: FingerJointEngine) -
     return out
 
 
+def face_window(dormer: AdditionalGable) -> Optional[Tuple[float, float, float, float]]:
+    """
+    (x, y, width, height) of the dormer's window in front-face coordinates (nominal, y up from the base), or None: the
+    largest-area rectangle centred on the face, standing on the inset base, inside its outline inset by WINDOW_MARGIN
+    thicknesses (with walls also WINDOW_SIDE_MARGIN from the notched sides), at least MIN_PANE_IN_THICKNESSES
+    thicknesses each way - preferring the largest that still splits into a grid of panes (see `pane_grid`).
+    """
+    g, t = dormer.geometry, dormer.thickness
+    outline = [Point(*q) for _, q in g.face_edges(dormer.face_lift)]
+    try:
+        inner = offset_polygon(outline, -WINDOW_MARGIN * t)
+    except GeometryError:
+        return None
+    if len(inner) < 3 or sum(a.x * b.y - b.x * a.y for a, b in zip(inner, inner[1:] + inner[:1])) <= 0:
+        return None                                          # the inset collapsed (or turned inside out)
+    w = g.face_triangle(dormer.face_lift)[0]
+    cx, bottom = w / 2, min(q.y for q in inner)
+    half_max = (max(q.x for q in inner) - min(q.x for q in inner)) / 2
+    if g.walls:
+        half_max = min(half_max, w / 2 - WINDOW_SIDE_MARGIN * t)
+
+    def top_at(x):
+        """Highest point of the inset outline above x (it is convex)."""
+        ys = []
+        for a, b in zip(inner, inner[1:] + inner[:1]):
+            if min(a.x, b.x) - 1e-9 <= x <= max(a.x, b.x) + 1e-9:
+                ys.append(a.y if abs(b.x - a.x) < 1e-12 else a.y + (x - a.x) * (b.y - a.y) / (b.x - a.x))
+        return max(ys) if ys else bottom
+
+    best = {True: None, False: None}                         # largest with panes / as a single pane
+    smallest = MIN_PANE_IN_THICKNESSES * t
+    for i in range(1, 201):
+        half = half_max * i / 200
+        top = min(top_at(cx - half), top_at(cx + half)) - bottom
+        # every height up to the top fits: try the tallest, and the tallest that still splits into rows of panes
+        for height in {top, *(n * smallest + (n - 1) * t for n in (2, 3) if n * smallest + (n - 1) * t <= top)}:
+            if 2 * half < smallest or height < smallest:
+                continue
+            paned = pane_grid(2 * half, height, t) != (1, 1)
+            if best[paned] is None or 2 * half * height > best[paned][0]:
+                best[paned] = (2 * half * height, half, height)
+    chosen = best[True] or best[False]
+    if chosen is None:
+        return None
+    _, half, height = chosen
+    return (cx - half, bottom, 2 * half, height)
+
+
 def _traced(engine: FingerJointEngine, nominal: List[Point], planned, depths: Dict[str, float], names: List[str]):
     """Kerf-compensated outline with the planned specs refitted, and special tab/notch depths applied."""
     corners, specs = engine.kerf_outline(nominal, planned)             # drawn kerf/2 outside the nominal outline
@@ -258,9 +315,11 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
     plan = {'base': _base_joint(dormer, engine), 'rake_right': rakes[0], 'rake_left': rakes[1],
             'side_right': corner, 'side_left': corner}
     corners, specs = _traced(engine, nominal, [plan[n] for n in names], {'base': base_tab_depth(dormer)}, names)
+    window = face_window(dormer)
+    holes = [] if window is None else [compensate_void(paned_cutout(*window, t), engine.kerf)]
     panels.append(Panel(
         name=f'additional_gable_front_{index}', label=f'Additional Gable Front {index + 1}',
-        cut=[engine.trace_outline(corners, specs)], nominal_size=_extent(corners), corners=corners,
+        cut=[engine.trace_outline(corners, specs)] + holes, nominal_size=_extent(corners), corners=corners,
         edge_names=names, joints={n: sp for n, sp in zip(names, specs) if sp}))
 
     # ---- roof panels

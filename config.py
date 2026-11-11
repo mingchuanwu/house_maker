@@ -120,8 +120,13 @@ class ArchitecturalConfiguration:
 
                 if (panel_name.startswith('gable_wall') and self._positioner.can_add_attic_window(
                         self.house_geometry.gable_peak_height, self.house_geometry.theta)):
-                    accept(self._positioner.get_recommended_windows(
-                        panel_name, WindowType.ATTIC, existing_components=existing), self.windows)
+                    # the attic pass lays the whole wall out again: only its window in the gable triangle is an attic
+                    # window; any it adds on a floor (beside the main window) is an ordinary, framed and paned one
+                    plain = window_type if window_type in (WindowType.RECTANGULAR, WindowType.ARCHED,
+                                                           WindowType.CIRCULAR) else WindowType.RECTANGULAR
+                    accept([w if w.position.y >= self.house_geometry.z else Window(plain, w.position)
+                            for w in self._positioner.get_recommended_windows(
+                                panel_name, WindowType.ATTIC, existing_components=existing)], self.windows)
 
     # ------------------------------------------------------------------ wall components
     GABLE_FIT_STEPS = 20        # sizes tried, each 5% smaller than the last

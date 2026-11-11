@@ -449,8 +449,10 @@ class ComponentPositioner:
                             door = door_positions[0]  # Assume one door per gable wall
                             
                             # Try positions on either side of the door
+                            # the same gap on both sides (room for both windows' trim frames)
+                            gap = min_spacing + comp_width - max(comp_width * 0.7, 5.0)
                             left_x = door.x - comp_width - min_spacing
-                            right_x = door.x + door.width + min_spacing
+                            right_x = door.x + door.width + gap
                             
                             # Smaller windows to fit beside door, but ensure minimum size
                             side_comp_width = max(comp_width * 0.7, 5.0)  # Minimum 5mm

@@ -85,12 +85,14 @@ def test_automatic_components_flags():
     assert not cfg.doors                                                    # unknown door panel: no door, no crash
 
 
-def test_attic_windows_only_on_gable_walls():
-    h = HouseMaker(length=100, width=100, height=70, gable_angle=45)
-    cfg = h.architectural_config
-    attic = [w for w in cfg.windows if w.type == WindowType.ATTIC]
-    assert attic and all(w.position.panel.startswith('gable_wall') for w in attic)
-    assert not [w for w in cfg.windows if w.type == WindowType.ATTIC and w.position.panel.startswith('side_wall')]
+@pytest.mark.parametrize('dims', [(100, 100, 70), (200, 140, 100), (80, 60, 70), (160, 120, 140)])
+def test_attic_windows_only_in_gable_triangles(dims):
+    """An attic window (no frame, no panes) is only ever the small window in a gable triangle; every window on a
+    floor - including the ones placed beside the main window or the door - is an ordinary one."""
+    h = HouseMaker(length=dims[0], width=dims[1], height=dims[2], gable_angle=45)
+    for w in h.architectural_config.windows:
+        if w.type == WindowType.ATTIC:
+            assert w.position.panel.startswith('gable_wall') and w.position.y >= h.geometry.z, w.position
 
 
 def test_a_size_given_for_only_one_dimension_is_respected():
