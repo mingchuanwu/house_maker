@@ -167,8 +167,12 @@ def solve_dormer(theta_deg: float, width: float, phi_deg: float = None,
     walls = wall_height > 0 if wall_height is not None else theta_deg > AUTO_WALL_ANGLE
     if phi_deg is None:
         phi_deg = DEFAULT_PITCH
-    if not 0 < theta_deg < 90 or not 0 < phi_deg < 90:
-        raise ValueError("roof angles must be between 0 and 90 degrees")
+    if not 0 < theta_deg < 90:
+        raise ValueError("the main roof angle must be between 0 and 90 degrees")
+    if not 0 < phi_deg < 90:
+        raise ValueError(f"dormer pitch {phi_deg:g} is out of range: it is the slope of each dormer roof panel from "
+                         f"horizontal, between 0 and 90 degrees (the apex angle is 180 - 2 x pitch: 45 gives a 90 degree "
+                         f"apex)")
     if width <= 0:
         raise ValueError("dormer width must be positive")
     if wall_height is not None and wall_height < 0:

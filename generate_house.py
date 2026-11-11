@@ -155,7 +155,8 @@ Architectural options:
     parser.add_argument('--additional-gable-width', type=float, default=25.0,
                        help='Additional gable width in mm (default: 25)')
     parser.add_argument('--additional-gable-pitch', type=float, default=None,
-                       help='Additional gable roof pitch in degrees (default: 45, a 90 degree apex). '
+                       help='Additional gable roof pitch: slope of each dormer roof panel from horizontal, in degrees, '
+                            'between 0 and 90; the apex angle is 180 - 2 x pitch (default: 45, a 90 degree apex). '
                             'The depth follows from the width and pitch (horizontal ridge).')
     parser.add_argument('--additional-gable-wall-height', type=float, default=None,
                        help='Additional gable side wall height in mm; 0 = no side walls '

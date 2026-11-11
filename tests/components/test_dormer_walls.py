@@ -96,3 +96,9 @@ def test_cli_wall_height(tmp_path, angle, extra, cheeks):
                        capture_output=True, text=True, cwd=PKG.parent)
     assert r.returncode == 0, r.stdout + r.stderr
     assert ('additional_gable_cheek_left_0' in out.read_text()) == cheeks
+
+
+@pytest.mark.parametrize('pitch', [90, 0, -10, 120])
+def test_pitch_out_of_range_explains_pitch_vs_apex(pitch):
+    with pytest.raises(PlacementError, match='apex angle is 180 - 2 x pitch'):
+        dormer(60, pitch=pitch)
