@@ -45,13 +45,6 @@ DEFAULT_PITCH = 45.0       # degrees: a 90 degree apex, the classic dormer; deep
 AUTO_WALL_ANGLE = 45.0     # degrees: dormers on steeper main roofs get side walls unless told otherwise
 
 
-def default_pitch(theta_deg: float, walls: bool = False) -> float:
-    """Dormer pitch when none is given: 45 degrees (a right angle at the apex). Without side walls, the main roof's
-    angle when that is steeper - on a steep roof a 45 degree dormer without walls would be shallow and low; with
-    walls the walls lift it instead."""
-    return DEFAULT_PITCH if walls else max(DEFAULT_PITCH, theta_deg)
-
-
 @dataclass(frozen=True)
 class DormerGeometry:
     width: float                # W: sill length
@@ -166,14 +159,14 @@ def solve_dormer(theta_deg: float, width: float, phi_deg: float = None,
     Args:
         theta_deg: main roof angle (0 < theta < 90)
         width: dormer sill width W
-        phi_deg: dormer roof pitch; default `default_pitch(theta_deg, walls)`
+        phi_deg: dormer roof pitch; default DEFAULT_PITCH (45: a right angle at the apex)
         overhang: how far the dormer roof planes project in front of the front face
         wall_height: side wall height (eave line above the sill); 0 = no walls. Default: walls as tall as the
             gable on roofs steeper than AUTO_WALL_ANGLE, none otherwise.
     """
     walls = wall_height > 0 if wall_height is not None else theta_deg > AUTO_WALL_ANGLE
     if phi_deg is None:
-        phi_deg = default_pitch(theta_deg, walls)
+        phi_deg = DEFAULT_PITCH
     if not 0 < theta_deg < 90 or not 0 < phi_deg < 90:
         raise ValueError("roof angles must be between 0 and 90 degrees")
     if width <= 0:

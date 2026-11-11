@@ -29,7 +29,7 @@ def dormer(theta, width=30, **kw):
     (50, {}, 15.0, 45.0),
     (45, {}, 0.0, 45.0),                                 # not steeper than 45: no walls
     (35, {}, 0.0, 45.0),
-    (60, dict(wall_height=0), 0.0, 60.0),                # walls off: the old rule (pitch follows a steeper roof)
+    (60, dict(wall_height=0), 0.0, 45.0),                # walls off: still a 90 degree apex
     (35, dict(wall_height=12), 12.0, 45.0),              # walls on request on a shallow roof
     (60, dict(pitch=50), 15 * math.tan(math.radians(50)), 50.0),   # auto walls follow the gable at that pitch
 ])

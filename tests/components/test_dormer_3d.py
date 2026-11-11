@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from ..assembly3d import PanelSolid, box_frames, dormer_frames, roof_point
-from house_maker.dormer_geometry import default_pitch
+from house_maker.dormer_geometry import DEFAULT_PITCH
 from ..conftest import make_house
 from .test_assembly_3d import STEP, tab_points, tol_depth
 
@@ -54,7 +54,7 @@ def scene(request):
     frames = box_frames(220, 170, 90, theta, T, k)
     roof = frames[panel]
     wall = expected_wall(theta, phi, W, wall)
-    phi = phi or (45.0 if wall else default_pitch(theta))
+    phi = phi or DEFAULT_PITCH
     df, pts = dormer_frames(roof, POS[0], POS[1], W, theta, phi, T, k, wall=wall)
     solids = {n: PanelSolid(panels[n], df[n]) for n in df}
     solids[panel] = PanelSolid(panels[panel], roof)

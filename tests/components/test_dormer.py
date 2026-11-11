@@ -9,7 +9,7 @@ import pytest
 
 from house_maker.geometry import Point, edge_shifts
 from house_maker.svgpath import parse_path
-from house_maker.dormer_geometry import default_pitch
+from house_maker.dormer_geometry import DEFAULT_PITCH
 from ..conftest import make_house
 from ..geom import centre_from_drawn_start, cross, dot, norm, nominal_edge_length, nominal_extent, outline, sub
 from ..profiles import edge_length, edge_profile, mirrored, physical
@@ -38,8 +38,8 @@ def scene(request, inspect):
     dormer = house.add_additional_gable('roof_panel_left', 30, 20, W, roof_overhang=o, pitch=phi, wall_height=0)
     panels = inspect('dormer', f"a{theta}_pitch{phi or 'default'}", house,
                      ['roof_panel_left', lambda n: n.startswith('additional_gable')],
-                     title=f'{theta}° main roof, dormer pitch {phi or default_pitch(theta)}, width {W}')
-    return dict(theta=theta, phi=phi or default_pitch(theta), W=W, o=o, dormer=dormer, p={q.name: q for q in panels})
+                     title=f'{theta}° main roof, dormer pitch {phi or DEFAULT_PITCH}, width {W}')
+    return dict(theta=theta, phi=phi or DEFAULT_PITCH, W=W, o=o, dormer=dormer, p={q.name: q for q in panels})
 
 
 def test_roof_plane_has_the_right_pitch_and_a_horizontal_ridge(scene):

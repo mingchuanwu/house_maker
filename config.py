@@ -303,8 +303,7 @@ class ArchitecturalConfiguration:
             height: ignored. The depth is fixed by the horizontal-ridge constraint; the derived
                 value is available as `result.position.height`.
             roof_overhang: how far the dormer roof projects in front of its face (default 3)
-            pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex) - without side walls the main roof
-                angle if steeper
+            pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex)
             wall_height: side wall (cheek) height in mm; 0 = no walls. Default: on roofs steeper than 45 degrees
                 walls as tall as the dormer's gable, otherwise none
         """
