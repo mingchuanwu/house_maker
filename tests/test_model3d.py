@@ -215,6 +215,18 @@ def _dist_to_polyline(p, pts):
     return best
 
 
+def test_door_casings_stand_on_the_ground(scene):
+    """A door casing is open at the bottom; its legs reach down to the underside of the floor (z = 0), level with the
+    bottom of the walls, instead of stopping at the door's sill."""
+    doors = [n for n in scene['parts'] if n.endswith('door_casing')]
+    if not doors:
+        pytest.skip('no door')
+    floor = min(v[2] for v in scene['parts']['gable_wall_front'].mesh.vertices)
+    assert floor == pytest.approx(0, abs=1e-6)
+    for name in doors:
+        assert min(v[2] for v in scene['parts'][name].mesh.vertices) == pytest.approx(floor, abs=1e-6), name
+
+
 # ------------------------------------------------------------------ triangulation
 def test_triangulation_covers_exactly_the_polygon_area():
     sq = [(0, 0), (10, 0), (10, 10), (0, 10)]

@@ -48,5 +48,11 @@ def test_casing_is_a_u_frame_around_the_door_width(scene):
     k = scene['k']                                       # the frame is a part: drawn kerf larger than the cut size
     assert casing.nominal_size[0] == pytest.approx(d.width + 2 * 1.5 * t + 2 * 0.6 * t + k, abs=TOL)
     assert len(parse_path(casing.cut[0])) == 1
-    if scene['type'] != DoorType.ARCHED:
-        assert casing.nominal_size[1] == pytest.approx(d.height + 1.5 * 1.5 * t + k, abs=TOL)
+    # the legs reach from the top of the frame down to the bottom of the wall (the floor's underside): the door's
+    # sill height above it (d.y, less the wall's kerf offset) longer than the opening
+    sill = d.y - k / 2
+    if scene['type'] == DoorType.ARCHED:       # the outer arch is a quadratic curve: it peaks halfway to its control
+        height = 0.85 * d.height + 1.5 * t     # point (0.7 h + frame width, 1.0 h + frame width)
+    else:
+        height = d.height + 1.5 * 1.5 * t      # the top bar is 1.5 frame widths tall
+    assert casing.nominal_size[1] == pytest.approx(height + sill + k, abs=TOL)

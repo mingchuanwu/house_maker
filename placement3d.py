@@ -177,6 +177,8 @@ def casing_frame(wall: Frame, kind: str, ctype, pos) -> Frame:
     t = wall.thickness
     left, bottom, right, top = casing_margins(kind, ctype, pos.width, pos.height, t)
     u0, v0 = pos.x - left, pos.y - bottom
+    if kind == 'door':
+        v0 = wall.shift                         # a door casing's legs reach the bottom of the wall (see casings)
     if kind == 'door' and ctype != DoorType.ARCHED:
         far = pos.x + pos.width + right, pos.y + pos.height + top        # the piece's far corner becomes its origin
         return Frame(wall.to_world(far[0], far[1], t), _neg(wall.eu), _neg(wall.ev), wall.n, t, 0.0)

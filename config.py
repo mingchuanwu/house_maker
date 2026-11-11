@@ -198,7 +198,8 @@ class ArchitecturalConfiguration:
     @staticmethod
     def _trim_rect(kind: str, ctype, p: ComponentPosition, t: float) -> Rect:
         left, bottom, right, top = casing_margins(kind, ctype, p.width, p.height, t)
-        return (p.x - left, p.y - bottom, p.x + p.width + right, p.y + p.height + top)
+        y0 = 0.0 if kind == 'door' else p.y - bottom            # door casing legs reach the bottom of the wall
+        return (p.x - left, y0, p.x + p.width + right, p.y + p.height + top)
 
     def add_custom_window(self, panel_name: str, x: float, y: float,
                           width: Optional[float] = None, height: Optional[float] = None,

@@ -76,7 +76,7 @@ def test_window_casings_grow_and_their_openings_shrink(wtype):
 def test_door_casings_grow(dtype):
     house = make_house(length=160, width=120, height=100, kerf=K)
     d = house.add_door('gable_wall_front', 40, 4, 16, 40, door_type=dtype)
-    nominal = door_casing_pieces(d, 'x', house.geometry.thickness)
+    nominal = door_casing_pieces(d, 'x', house.geometry.thickness, d.position.y - K / 2)
     (_, (_, _, path)), = [(n, v) for n, v in nominal.items() if not n.endswith('scores')]
     (casing,) = [p for p in house.build_panels() if p.name.endswith('door_casing')]
     assert_offset(polys(path)[:1], [dedupe(s) for s in parse_path(casing.cut[0], CURVE_SAMPLES)][:1], inward=False)

@@ -97,7 +97,8 @@ def build_panels(geometry: HouseGeometry, style: HouseStyle,
         for idx, window in enumerate(config.get_windows_for_panel(panel_name)):
             casings.update(window_casing_pieces(window, f'{panel_name}_w{idx}', t))
         for idx, door in enumerate(config.get_doors_for_panel(panel_name)):
-            casings.update(door_casing_pieces(door, f'{panel_name}_d{idx}', t))
+            sill = door.position.y - geometry.kerf / 2              # opening above the wall's nominal bottom
+            casings.update(door_casing_pieces(door, f'{panel_name}_d{idx}', t, sill))
         for name, (w, h, path) in casings.items():
             if name.endswith('_scores'):
                 continue

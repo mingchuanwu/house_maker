@@ -316,19 +316,22 @@ def _generate_rectangular_door_casing(inner_width: float, inner_height: float,
     }
 
 def _generate_arched_door_casing(inner_width: float, inner_height: float,
-                                casing_width: float, extension: float, panel_name: str) -> Dict[str, Tuple[float, float, str]]:
-    """Generate arched door casing (horseshoe shape with arch at BOTTOM, opening at TOP for upside-down gable walls)"""
+                                casing_width: float, extension: float, panel_name: str,
+                                leg: float = 0.0) -> Dict[str, Tuple[float, float, str]]:
+    """Generate arched door casing (horseshoe shape with arch at BOTTOM, opening at TOP for upside-down gable walls).
+    `leg` lengthens both legs at the open end (y = 0), so the frame reaches the floor below the door's sill."""
     # Outer frame dimensions (3-sided, opening at top)
     outer_width = inner_width + 2 * casing_width + 2 * extension
-    outer_height = inner_height + casing_width
+    outer_height = inner_height + casing_width + leg
 
     # Inner cutout position
     inner_x = extension + casing_width
     inner_y = 0.0  # No top casing (opening is at top)
     inner_right_x = inner_x + inner_width
 
-    # Calculate arch dimensions (bottom 30% of door is arched)
-    inner_arch_start = inner_height * 0.7
+    # Calculate arch dimensions (bottom 30% of door is arched), below the extra leg length
+    inner_arch_start = inner_height * 0.7 + leg
+    inner_height = inner_height + leg
 
     # For outer arch, calculate where rectangular portion ends
     outer_arch_start = inner_arch_start + casing_width
@@ -382,15 +385,20 @@ def window_casing_pieces(window: Window, panel_name: str, thickness: float) -> D
     return _generate_rectangular_window_casing(inner_width, inner_height, casing_width, extension, panel_name)
 
 
-def door_casing_pieces(door: Door, panel_name: str, thickness: float) -> Dict[str, Tuple[float, float, str]]:
-    """Door casing: a 3-sided frame (no bottom) with an inner cutout; arched for arched doors."""
+def door_casing_pieces(door: Door, panel_name: str, thickness: float, sill: float = 0.0) -> Dict[str, Tuple[float, float, str]]:
+    """
+    Door casing: a 3-sided frame (no bottom) with an inner cutout; arched for arched doors. `sill` is how far the
+    door's opening starts above the bottom of the wall (the underside of the floor): the frame's legs reach down by
+    that much more, so the frame stands on the ground instead of floating at the sill.
+    """
     inner_width = door.position.width
     inner_height = door.position.height
     casing_width = 1.5 * thickness
     extension = 0.6 * thickness
     if door.type == DoorType.ARCHED:
-        return _generate_arched_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
-    return _generate_rectangular_door_casing(inner_width, inner_height, casing_width, extension, panel_name)
+        return _generate_arched_door_casing(inner_width, inner_height, casing_width, extension, panel_name, leg=sill)
+    # drawn from the top bar down: longer legs = a taller opening between them
+    return _generate_rectangular_door_casing(inner_width, inner_height + sill, casing_width, extension, panel_name)
 
 
 def casing_margins(kind: str, ctype, width: float, height: float, thickness: float) -> Tuple[float, float, float, float]:
