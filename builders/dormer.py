@@ -56,8 +56,8 @@ RAKE_TAB_MIN = 1.5           # in thicknesses: narrowest face tab into a dormer 
 SINGLE_TAB_MIN = 1.0         # in thicknesses: narrowest single tab where a regular finger does not fit
 WINDOW_MARGIN = 1.0          # in thicknesses: material kept around the dormer window
 WINDOW_SIDE_MARGIN = 2.0     # in thicknesses: from a walled face's notched sides (notches are t deep)
-DORMER_WINDOW_WIDTH = 0.55   # of the face's width: a slim double-hung window ...
-DORMER_WINDOW_ASPECT = 1.4   # ... this many times as tall as wide
+DORMER_WINDOW_WIDTH = 0.65   # of the face's width: a slim double-hung window ... (model dormers: ~2/3)
+DORMER_WINDOW_ASPECT = 2.0   # ... this many times as tall as wide (model dormer and 6-over-6 windows: ~2:1)
 DORMER_GRIDS = ((2, 3), (2, 2), (1, 2), (1, 1))   # (columns, rows), the first whose panes fit
 DORMER_BAR = 0.5             # in thicknesses: glazing bars (finer than the house's: dormer windows are small)
 
