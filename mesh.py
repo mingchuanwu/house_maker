@@ -55,6 +55,28 @@ def _in_triangle(a: Pt, b: Pt, c: Pt, p: Pt) -> bool:
     return _cross(a, b, p) >= -_EPS and _cross(b, c, p) >= -_EPS and _cross(c, a, p) >= -_EPS
 
 
+def _wedge_copy(outer: List[int], cand: int, m: Pt, pts: List[Pt]) -> int:
+    """
+    Position, among the copies of outline vertex outer[cand] (a vertex an earlier hole was bridged to occurs several
+    times), of the one whose interior angle contains the direction towards `m`: splicing a bridge in at any other copy
+    would run it outside the polygon. The interior angle of a counter-clockwise outline at vertex v spans
+    counter-clockwise from the edge to the next vertex to the edge to the previous one.
+    """
+    p = pts[outer[cand]]
+    copies = [j for j in range(len(outer)) if pts[outer[j]] == p]
+    if len(copies) == 1:
+        return cand
+    n = len(outer)
+    angle = lambda q: math.atan2(q[1] - p[1], q[0] - p[0])
+    target = angle(m)
+    for j in copies:
+        start, end = angle(pts[outer[(j + 1) % n]]), angle(pts[outer[j - 1]])
+        span = (end - start) % (2 * math.pi)
+        if 0 < (target - start) % (2 * math.pi) < span:
+            return j
+    return cand
+
+
 def _bridge(outer: List[int], hole: List[int], pts: List[Pt]) -> List[int]:
     """Merge a hole (CW indices) into the outline (CCW indices) through a cut to a visible vertex."""
     m_pos = max(range(len(hole)), key=lambda i: (pts[hole[i]][0], -pts[hole[i]][1]))
@@ -94,6 +116,8 @@ def _bridge(outer: List[int], hole: List[int], pts: List[Pt]) -> List[int]:
                 ang = abs(math.atan2(q[1] - my, q[0] - mx))
                 if best_ang is None or ang < best_ang or (ang == best_ang and q[0] < pts[outer[cand]][0]):
                     best_ang, cand = ang, j
+    # earlier bridges repeat outline vertices: splice at the copy whose interior angle the bridge enters
+    cand = _wedge_copy(outer, cand, (mx, my), pts)
     # splice: outer[..cand], M, hole around, M, outer[cand..]
     rotated = hole[m_pos:] + hole[:m_pos]
     return outer[:cand + 1] + rotated + [rotated[0]] + outer[cand:]

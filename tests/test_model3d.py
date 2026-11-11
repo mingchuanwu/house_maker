@@ -6,6 +6,7 @@ the three file formats are parsed back and compared with the meshes they were wr
 import io
 import json
 import math
+import random
 import struct
 import subprocess
 import sys
@@ -49,6 +50,10 @@ SCENES = {
     # `--angle 60 --add-chimney --add-additional-gable`: the steep roof gives the dormer side walls
     'cli-steep-walls': dict(angle=60, length=80, width=60, height=70, finger_length=10,
                             chimney=('roof_panel_left', 50, 20, 10, 15, 20), dormer=('roof_panel_right', 30, 15, 25)),
+    # `--angle 60 --add-additional-gable --additional-gable-wall-height 15 --additional-gable-pitch 60`: the slot layout
+    # that broke the main roof's triangulation (two hole bridges to one corner)
+    'cli-walls-pitch60': dict(angle=60, length=80, width=60, height=70, finger_length=10, chimney=False,
+                              dormer=('roof_panel_right', 30, 15, 25, None, 3.0, 60, 15)),
 }
 
 
@@ -225,6 +230,53 @@ def test_triangulation_of_a_comb_with_a_notched_hole():
     m = extrude(comb, [hole], 2.0, lambda u, v, w: (u, v, w))
     assert m.is_watertight()
     assert m.volume() == pytest.approx((abs(signed_area(comb)) - abs(signed_area(hole))) * 2)
+
+
+def test_triangulation_when_two_hole_bridges_share_an_outline_corner():
+    """Both holes bridge to the outline's top right corner, which then appears three times in the merged polygon;
+    an ear at another copy of that corner must not be clipped across the first bridge (regression: the steep-roof
+    dormer's main roof panel had overlapping, flipped triangles and was not closed)."""
+    rect = lambda x0, y0, x1, y1: [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+    outer = rect(0.05, 0.05, 98.05, 75.15)
+    holes = [rect(6, 28.05, 9, 38.05), rect(39.5, 51.321, 45.5, 58.017)]
+    pts, tris = triangulate(outer, holes)
+    assert all(signed_area([pts[i] for i in t]) > 0 for t in tris), "flipped triangle"
+    area = sum(signed_area([pts[i] for i in t]) for t in tris)
+    assert area == pytest.approx(abs(signed_area(outer)) - sum(abs(signed_area(h)) for h in holes))
+    m = extrude(outer, holes, 3.0, lambda u, v, w: (u, v, w))
+    assert m.is_watertight()
+
+
+@pytest.mark.parametrize('seed', range(40))
+def test_triangulation_of_random_slotted_panels(seed):
+    """Random disjoint slots (half of them on shared rows/columns, so bridges meet at the same outline corners and
+    rays run along edges) in a panel with finger notches: the triangles cover exactly the material, none flipped,
+    and the extruded solid is closed."""
+    rng = random.Random(seed)
+    W, H = rng.uniform(40, 120), rng.uniform(30, 90)
+    outer = [(0, 0)]
+    x = 0.0
+    while x + 12 < W:                                   # notches along the bottom edge
+        x += rng.uniform(4, 8)
+        outer += [(x, 0), (x, -3), (x + 4, -3), (x + 4, 0)]
+        x += 4
+    outer += [(W, 0), (W, H), (0, H)]
+    rows, cols = [rng.uniform(5, H - 10) for _ in range(2)], [rng.uniform(5, W - 10) for _ in range(2)]
+    holes, boxes = [], []
+    for _ in range(rng.randint(2, 7)):
+        w, h = rng.choice([(3, 6), (6, 3), (2.9, 9.9), (5.9, 6.6)])
+        x0 = rng.choice(cols) if rng.random() < 0.5 else rng.uniform(3, W - w - 3)
+        y0 = rng.choice(rows) if rng.random() < 0.5 else rng.uniform(3, H - h - 3)
+        box = (x0, y0, x0 + w, y0 + h)
+        if box[2] > W - 2 or box[3] > H - 2 or any(not (box[2] + 1 < b[0] or b[2] + 1 < box[0] or box[3] + 1 < b[1] or b[3] + 1 < box[1]) for b in boxes):
+            continue
+        boxes.append(box)
+        holes.append([(box[0], box[1]), (box[2], box[1]), (box[2], box[3]), (box[0], box[3])])
+    pts, tris = triangulate(outer, holes)
+    assert all(signed_area([pts[i] for i in t]) > -1e-9 for t in tris), "flipped triangle"
+    area = sum(signed_area([pts[i] for i in t]) for t in tris)
+    assert area == pytest.approx(abs(signed_area(outer)) - sum(abs(signed_area(h)) for h in holes), rel=1e-9)
+    assert extrude(outer, holes, 3.0, lambda u, v, w: (u, v, w)).is_watertight()
 
 
 # ------------------------------------------------------------------ file formats
