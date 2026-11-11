@@ -242,9 +242,11 @@ def pane_grid(width: float, height: float, bar: float) -> Tuple[int, int]:
     return (1, 1) if 1 in (cols, rows) else (cols, rows)
 
 
-def paned_cutout(x: float, y: float, width: float, height: float, bar: float) -> str:
-    """The window opening as equal panes, separated by glazing bars of wall material `bar` wide (see `pane_grid`)."""
-    cols, rows = pane_grid(width, height, bar)
+def paned_cutout(x: float, y: float, width: float, height: float, bar: float,
+                 grid: Optional[Tuple[int, int]] = None) -> str:
+    """The window opening as equal panes, separated by glazing bars of wall material `bar` wide: `grid` (columns, rows),
+    or by default as chosen by `pane_grid`."""
+    cols, rows = grid or pane_grid(width, height, bar)
     pw, ph = (width - (cols - 1) * bar) / cols, (height - (rows - 1) * bar) / rows
     return " ".join(_generate_rectangular_cutout(x + i * (pw + bar), y + j * (ph + bar), pw, ph)
                     for j in range(rows) for i in range(cols))

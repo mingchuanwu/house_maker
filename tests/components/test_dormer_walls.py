@@ -140,15 +140,18 @@ def _segment_distance(p, a, b):
 
 
 @pytest.mark.parametrize('theta,width,kw,grid', [
-    (60, 40, {}, (2, 2)),                    # walls by default: room for panes
-    (60, 50, {}, (3, 2)),
-    (45, 70, {}, (2, 2)),                    # large plain dormer
-    (60, 25, {}, (1, 1)),                    # small: a single pane
-    (60, 30, dict(wall_height=15), (1, 1)),
+    (60, 40, {}, (2, 3)),                    # walls by default: a six-pane double-hung window
+    (60, 50, {}, (2, 3)),
+    (35, 40, dict(wall_height=12), (2, 3)),
+    (45, 70, {}, (2, 3)),                    # large plain dormer
+    (60, 25, {}, (1, 2)),                    # small: top and bottom sash only
+    (45, 40, {}, (1, 1)),                    # low triangular face: one pane
     (35, 25, {}, None),                      # too small for any window
     (60, 25, dict(wall_height=0), None),
 ])
-def test_dormer_face_window_fits_the_face(theta, width, kw, grid):
+def test_dormer_face_window_is_slim_and_clear_of_the_edges(theta, width, kw, grid):
+    """A slim double-hung window: at most 55% of the face wide, 1.4 times as tall as wide, centred, panes of at least
+    t with half-thickness bars, t of material to the base and slopes and 2t to a walled face's notched sides."""
     house = make_house(length=200, width=160, height=90, gable_angle=theta, material_thickness=T, kerf=0.0)
     d = house.add_additional_gable('roof_panel_left', 40, 20, width, **kw)
     face = {p.name: p for p in house.build_panels()}['additional_gable_front_0']
@@ -156,7 +159,19 @@ def test_dormer_face_window_fits_the_face(theta, width, kw, grid):
     if grid is None:
         assert not holes
         return
-    assert len(holes) == grid[0] * grid[1]
+    cols, rows = grid
+    assert len(holes) == cols * rows
+    x0, y0 = min(q.x for h in holes for q in h), min(q.y for h in holes for q in h)
+    x1, y1 = max(q.x for h in holes for q in h), max(q.y for h in holes for q in h)
+    face_w = d.geometry.face_triangle(d.face_lift)[0]
+    assert (x0 + x1) / 2 == pytest.approx(face_w / 2, abs=1e-3)                     # centred
+    assert x1 - x0 <= 0.55 * face_w + 1e-3
+    assert (y1 - y0) == pytest.approx(1.4 * (x1 - x0), abs=2e-3)                    # portrait
+    xs, ys = sorted({round(min(q.x for q in h), 3) for h in holes}), sorted({round(min(q.y for q in h), 3) for h in holes})
+    pane_w = (x1 - x0 - (cols - 1) * T / 2) / cols
+    assert len(xs) == cols and len(ys) == rows and pane_w >= T - 1e-3
+    if cols > 1:
+        assert xs[1] - xs[0] - pane_w == pytest.approx(T / 2, abs=2e-3)               # half-thickness bars
     corners, names = face.corners, face.edge_names
     for hole in holes:
         for q in hole:

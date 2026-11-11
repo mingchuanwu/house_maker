@@ -26,9 +26,8 @@ Joints
     tan(phi)) deep - the tab's shadow through the sloped slab.
 * Valley edges rest on the main roof and are glued; the footprint is scored on the roof panel.
 
-Window: the front face gets a window opening (no frame), the largest rectangle centred on the face that keeps
-WINDOW_MARGIN thicknesses of material to its base and sloped edges (and to the side notches of a walled face), cut as
-panes like the house's windows; a face too small for a window of at least 2t keeps none.
+Window: the front face gets a slim double-hung window (opening + panes, no frame), sized to the face and kept clear of
+its edges and notches; see `face_window`. A face too small for one keeps none.
 
 Finger size: the dormer uses its own finger length, at most half its shortest joint edge (so small dormers still
 get joints) and at least two material thicknesses. An edge too short for a regular finger (1.5 finger lengths) gets
@@ -42,7 +41,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..components import AdditionalGable
 from ..constants import COORDINATE_PRECISION
-from ..cutouts import MIN_PANE_IN_THICKNESSES, pane_grid, paned_cutout
+from ..cutouts import paned_cutout
 from ..exceptions import GeometryError
 from ..geometry import Point, offset_polygon
 from ..joints import FEMALE, MALE, FingerJointEngine, SlotSpec
@@ -57,6 +56,10 @@ RAKE_TAB_MIN = 1.5           # in thicknesses: narrowest face tab into a dormer 
 SINGLE_TAB_MIN = 1.0         # in thicknesses: narrowest single tab where a regular finger does not fit
 WINDOW_MARGIN = 1.0          # in thicknesses: material kept around the dormer window
 WINDOW_SIDE_MARGIN = 2.0     # in thicknesses: from a walled face's notched sides (notches are t deep)
+DORMER_WINDOW_WIDTH = 0.55   # of the face's width: a slim double-hung window ...
+DORMER_WINDOW_ASPECT = 1.4   # ... this many times as tall as wide
+DORMER_GRIDS = ((2, 3), (2, 2), (1, 2), (1, 1))   # (columns, rows), the first whose panes fit
+DORMER_BAR = 0.5             # in thicknesses: glazing bars (finer than the house's: dormer windows are small)
 
 
 def _polygon(points) -> str:
@@ -242,12 +245,14 @@ def roof_slots(dormer: AdditionalGable, index: int, engine: FingerJointEngine) -
     return out
 
 
-def face_window(dormer: AdditionalGable) -> Optional[Tuple[float, float, float, float]]:
+def face_window(dormer: AdditionalGable):
     """
-    (x, y, width, height) of the dormer's window in front-face coordinates (nominal, y up from the base), or None: the
-    largest-area rectangle centred on the face, standing on the inset base, inside its outline inset by WINDOW_MARGIN
-    thicknesses (with walls also WINDOW_SIDE_MARGIN from the notched sides), at least MIN_PANE_IN_THICKNESSES
-    thicknesses each way - preferring the largest that still splits into a grid of panes (see `pane_grid`).
+    The dormer's window in front-face coordinates (nominal, y up from the base): (x, y, width, height, grid, bar), or
+    None. A slim double-hung window: DORMER_WINDOW_WIDTH of the face wide (at most), DORMER_WINDOW_ASPECT times as
+    tall as wide, centred; on a walled face its top sits on the eave line (where the slopes start) if it can, otherwise
+    it stands as low as the margins allow. It keeps WINDOW_MARGIN thicknesses of material to the base and the sloped
+    edges and WINDOW_SIDE_MARGIN to a walled face's notched sides, shrinking (same proportions) until it does. Panes:
+    the first of DORMER_GRIDS whose panes are at least one thickness, with bars DORMER_BAR thicknesses wide.
     """
     g, t = dormer.geometry, dormer.thickness
     outline = [Point(*q) for _, q in g.face_edges(dormer.face_lift)]
@@ -255,39 +260,35 @@ def face_window(dormer: AdditionalGable) -> Optional[Tuple[float, float, float, 
         inner = offset_polygon(outline, -WINDOW_MARGIN * t)
     except GeometryError:
         return None
-    if len(inner) < 3 or sum(a.x * b.y - b.x * a.y for a, b in zip(inner, inner[1:] + inner[:1])) <= 0:
+    ring = list(zip(inner, inner[1:] + inner[:1]))
+    if len(inner) < 3 or sum(a.x * b.y - b.x * a.y for a, b in ring) <= 0:
         return None                                          # the inset collapsed (or turned inside out)
-    w = g.face_triangle(dormer.face_lift)[0]
-    cx, bottom = w / 2, min(q.y for q in inner)
-    half_max = (max(q.x for q in inner) - min(q.x for q in inner)) / 2
-    if g.walls:
-        half_max = min(half_max, w / 2 - WINDOW_SIDE_MARGIN * t)
+    inside = lambda x, y: all((b.x - a.x) * (y - a.y) - (b.y - a.y) * (x - a.x) >= -1e-9 for a, b in ring)
+    face_w = g.face_triangle(dormer.face_lift)[0]
+    cx, base = face_w / 2, min(q.y for q in inner)
+    eave = g.wall_height - dormer.face_lift if g.walls else None
+    side = face_w / 2 - WINDOW_SIDE_MARGIN * t if g.walls else math.inf
+    bar = DORMER_BAR * t
 
-    def top_at(x):
-        """Highest point of the inset outline above x (it is convex)."""
-        ys = []
-        for a, b in zip(inner, inner[1:] + inner[:1]):
-            if min(a.x, b.x) - 1e-9 <= x <= max(a.x, b.x) + 1e-9:
-                ys.append(a.y if abs(b.x - a.x) < 1e-12 else a.y + (x - a.x) * (b.y - a.y) / (b.x - a.x))
-        return max(ys) if ys else bottom
+    def place(width):
+        height = DORMER_WINDOW_ASPECT * width
+        bottom = max(base, eave - height) if eave is not None else base
+        x0, x1, y1 = cx - width / 2, cx + width / 2, bottom + height
+        if width / 2 > side or not all(inside(x, y) for x in (x0, x1) for y in (bottom, y1)):
+            return None
+        return x0, bottom, width, height
 
-    best = {True: None, False: None}                         # largest with panes / as a single pane
-    smallest = MIN_PANE_IN_THICKNESSES * t
-    for i in range(1, 201):
-        half = half_max * i / 200
-        top = min(top_at(cx - half), top_at(cx + half)) - bottom
-        # every height up to the top fits: try the tallest, and the tallest that still splits into rows of panes
-        for height in {top, *(n * smallest + (n - 1) * t for n in (2, 3) if n * smallest + (n - 1) * t <= top)}:
-            if 2 * half < smallest or height < smallest:
-                continue
-            paned = pane_grid(2 * half, height, t) != (1, 1)
-            if best[paned] is None or 2 * half * height > best[paned][0]:
-                best[paned] = (2 * half * height, half, height)
-    chosen = best[True] or best[False]
-    if chosen is None:
-        return None
-    _, half, height = chosen
-    return (cx - half, bottom, 2 * half, height)
+    width = DORMER_WINDOW_WIDTH * face_w
+    while width >= t:
+        spot = place(width)
+        if spot is not None:
+            x, y, w, h = spot
+            for cols, rows in DORMER_GRIDS:
+                if (w - (cols - 1) * bar) / cols >= t and (h - (rows - 1) * bar) / rows >= t:
+                    return x, y, w, h, (cols, rows), bar
+            return None
+        width *= 0.98
+    return None
 
 
 def _traced(engine: FingerJointEngine, nominal: List[Point], planned, depths: Dict[str, float], names: List[str]):
@@ -316,7 +317,10 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
             'side_right': corner, 'side_left': corner}
     corners, specs = _traced(engine, nominal, [plan[n] for n in names], {'base': base_tab_depth(dormer)}, names)
     window = face_window(dormer)
-    holes = [] if window is None else [compensate_void(paned_cutout(*window, t), engine.kerf)]
+    holes = []
+    if window is not None:
+        x, y, w, h, grid, bar = window
+        holes = [compensate_void(paned_cutout(x, y, w, h, bar, grid), engine.kerf)]
     panels.append(Panel(
         name=f'additional_gable_front_{index}', label=f'Additional Gable Front {index + 1}',
         cut=[engine.trace_outline(corners, specs)] + holes, nominal_size=_extent(corners), corners=corners,
