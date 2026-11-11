@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..constants import COORDINATE_PRECISION
 from ..geometry import HouseGeometry, Point
-from ..joints import FEMALE, MALE, FingerJointEngine, SlotSpec
+from ..joints import FEMALE, MALE, FingerJointEngine, JointSpec, SlotSpec
 from ..panel import Panel, PATTERN_DECORATIVE, PATTERN_ROOF
 
 _P = COORDINATE_PRECISION
@@ -32,6 +32,14 @@ class PanelFeatures:
     score: List[str] = field(default_factory=list)     # engraved lines (e.g. chimney footprint)
     pattern: str = ''                                  # decorative engraving
     slots: List[SlotSpec] = field(default_factory=list)  # extra internal slots for other panels' tabs (dormer faces)
+    edge_specs: Dict[str, JointSpec] = field(default_factory=dict)   # replace an edge's planned joint (eave notches)
+    edge_fragments: Dict[str, str] = field(default_factory=dict)     # replace an edge's straight line (cross gables)
+
+
+def _fragment_area(fragment: str) -> float:
+    """Area a custom edge profile ("L x,y ..." from the straight edge out and back to it) adds to the panel."""
+    pts = [tuple(map(float, tok.split(','))) for tok in fragment.split() if ',' in tok]
+    return abs(sum(a[0] * b[1] - b[0] * a[1] for a, b in zip(pts, pts[1:] + pts[:1]))) / 2
 
 
 def _edges(*plans: EdgePlan) -> Tuple[EdgePlan, ...]:
@@ -96,8 +104,17 @@ class BoxPanelBuilder:
             length = ((b.x - a.x) ** 2 + (b.y - a.y) ** 2) ** 0.5
             specs.append(self.engine.plan_edge(length, plan.role, plan.inset * t, plan.count)
                          if plan.role else None)
+        specs = [features.edge_specs.get(plan.name, s) for plan, s in zip(plans, specs)]
         joints = {plan.name: s for plan, s in zip(plans, specs) if s}
-        path = self.engine.trace_outline(corners, specs)
+        path = f"M {corners[0].x:.{_P}f},{corners[0].y:.{_P}f}"
+        for i, (plan, spec) in enumerate(zip(plans, specs)):
+            a, b = corners[i], corners[(i + 1) % len(corners)]
+            if plan.name in features.edge_fragments:              # a custom profile, ending where the edge resumes
+                path += " " + features.edge_fragments[plan.name] + f" L {b.x:.{_P}f},{b.y:.{_P}f}"
+            else:
+                path += " " + self.engine.trace_edge(a, b, spec)
+        path += " Z"
+        profile_area = sum(_fragment_area(f) for f in features.edge_fragments.values())
 
         slots = self._slots(name) + list(features.slots)
         cut = [path] + [self.engine.slot_path(s) for s in slots] + list(features.cutouts)
@@ -106,4 +123,5 @@ class BoxPanelBuilder:
                      score=list(features.score), pattern=features.pattern,
                      pattern_class=PATTERN_ROOF if is_roof else PATTERN_DECORATIVE,
                      nominal_size=self.geometry.get_panel_dimensions()[name],
-                     corners=corners, edge_names=[p.name for p in plans], joints=joints, slots=slots)
+                     corners=corners, edge_names=[p.name for p in plans], joints=joints, slots=slots,
+                     profile_area=profile_area, profiled_edges=sorted(features.edge_fragments))

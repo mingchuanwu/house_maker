@@ -96,6 +96,9 @@ def house_frames(geometry: HouseGeometry, config: ArchitecturalConfiguration,
         p = d.position
         frames.update(dormer_frames(frames[p.panel], p.x, p.y, p.width, theta, d.geometry.phi_deg, i,
                                     d.geometry.wall_height))
+    for i, c in enumerate(config.cross_gables):
+        p = c.position
+        frames.update(dormer_frames(frames[p.panel], p.x, p.y, p.width, theta, c.geometry.phi_deg, i, cross=True))
     for name in [n for n in frames if n in panels and n in box_frames(geometry)]:
         wall = frames[name]
         for kind, items in (('window', config.get_windows_for_panel(name)), ('door', config.get_doors_for_panel(name))):

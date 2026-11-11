@@ -59,6 +59,8 @@ def check_drawn_fingers_are_exactly_the_planned_ones(house, panels):
         for edge in panel.edge_names:
             drawn = edge_profile(panel, edge)
             spec = panel.joints.get(edge)
+            if edge in panel.profiled_edges:              # a cross gable's rise: checked by area and in 3D instead
+                continue
             if spec is None:
                 assert not drawn, f"{panel.name}.{edge}: fingers drawn on an edge without a joint"
                 continue
@@ -76,7 +78,7 @@ def check_area_is_nominal_plus_tabs_minus_notches(house, panels):
         outline = drawn_polys(panel)[0]
         nominal = abs(signed_area(panel.corners))
         delta = sum((b - a) * j.depth * (1 if j.role == 'male' else -1)
-                    for j in panel.joints.values() for a, b in j.fingers)
+                    for j in panel.joints.values() for a, b in j.fingers) + panel.profile_area
         perimeter = sum(((a.x - b.x) ** 2 + (a.y - b.y) ** 2) ** 0.5 for a, b in zip(outline, outline[1:] + outline[:1]))
         # coordinates are rounded to 0.001: allow that much along the whole perimeter
         assert abs(signed_area(outline)) == pytest.approx(nominal + delta, abs=0.05 + 0.001 * perimeter), panel.name

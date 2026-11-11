@@ -53,6 +53,7 @@ FEATURE_KEYS = {
     'dormer': {'x': 30.0, 'y': 15.0, 'width': 25.0, 'wall': None, 'pitch': None, 'overhang': 3.0},
     'chimney': {'x': 50.0, 'y': 20.0, 'width': 10.0, 'depth': 15.0, 'height': 20.0},
     'dormers': {'count': None, 'width': 25.0, 'wall': None, 'pitch': None, 'overhang': 3.0, 'y': None},
+    'cross_gable': {'x': None, 'width': 30.0, 'pitch': None, 'overhang': 3.0},
 }
 LAYOUT_SIDES = dict(ROOF_SIDES, both='both')
 
@@ -80,6 +81,8 @@ def feature_spec(kind):
                 values[key] = float(value)
             except ValueError:
                 raise argparse.ArgumentTypeError(f"{text!r}: {key}={value!r} is not a number") from None
+        if kind == 'cross_gable' and 'x' not in values:
+            raise argparse.ArgumentTypeError(f"{text!r}: give x= (where along the side wall the gable starts, mm)")
         if kind == 'dormers':
             if 'count' not in values or values['count'] < 1 or values['count'] != int(values['count']):
                 raise argparse.ArgumentTypeError(f"{text!r}: give count=N (a whole number of dormers, at least 1)")
@@ -193,6 +196,11 @@ Architectural options:
                        help='Add a row of N identical dormers on a roof side (left, right or both): over the windows below '
                             'when there are N window columns, else evenly spaced; as low on the roof as they fit. Keys: '
                             'count (required), width, wall, pitch, overhang, y - e.g. --dormers both:count=3:width=30')
+    parser.add_argument('--cross-gable', action='append', default=[], type=feature_spec('cross_gable'), dest='cross_gable',
+                       metavar='SIDE:x=X[:KEY=VALUE...]',
+                       help='Add a cross gable: the side wall (left or right) rises into a gable with its own small roof '
+                            'running back into the main roof. Keys: x (required, along the side wall, mm), width, pitch, '
+                            'overhang - e.g. --cross-gable left:x=80:width=40')
     parser.add_argument('--chimney', action='append', default=[], type=feature_spec('chimney'), metavar='SIDE[:KEY=VALUE...]',
                        help='Add a chimney; repeat for more. Keys: x, y, width, depth, height - e.g. --chimney left:x=90:y=20')
 
@@ -355,6 +363,11 @@ def main():
             except PlacementError as e:
                 raise PlacementError('dormer', f"--dormer {text}: {e.message.split(': ', 1)[1]}") from e
 
+        for text, panel, v in args.cross_gable:
+            try:
+                house.add_cross_gable(panel, v['x'], width=v['width'], pitch=v['pitch'], roof_overhang=v['overhang'])
+            except PlacementError as e:
+                raise PlacementError('cross gable', f"--cross-gable {text}: {e.message.split(': ', 1)[1]}") from e
         for text, side, v in args.dormers:
             try:
                 house.add_dormers(side, v['count'], width=v['width'], y=v['y'], roof_overhang=v['overhang'],

@@ -57,6 +57,7 @@ class ArchitecturalConfiguration:
         self.doors: List[Door] = []
         self.chimneys: List[Chimney] = []
         self.additional_gables: List[AdditionalGable] = []
+        self.cross_gables: List[AdditionalGable] = []          # wall gables, see add_cross_gable
 
     # ------------------------------------------------------------------ settings
     def set_roof_type(self, roof_type: RoofType):
@@ -248,6 +249,11 @@ class ArchitecturalConfiguration:
             if g.position.panel == panel_name:
                 x, y, w, d = g.footprint()
                 rects.append((x - t, y - t, x + w + t, y + d + g.roof_overhang + t))
+        height = self.house_geometry.get_panel_dimensions()[panel_name][1]
+        for g in self.cross_gables:
+            if g.position.panel == panel_name:
+                x, y, w, _ = g.footprint()
+                rects.append((x - t, y - t, x + w + t, height))           # its eave notch reaches the panel edge
         return rects
 
     def _check_roof_feature(self, kind: str, panel_name: str, rect: Rect, reach: float = 0.0,
@@ -341,9 +347,119 @@ class ArchitecturalConfiguration:
     MAX_DORMER_COVERAGE = 0.5     # rule of thumb: dormers should cover at most half a roof's width
 
     def dormer_coverage(self, panel_name: str) -> float:
-        """Fraction of a roof panel's width covered by its dormers (their widths added up)."""
+        """Fraction of a roof panel's width covered by its dormers and cross gables (their widths added up)."""
         width = self.house_geometry.get_panel_dimensions()[panel_name][0]
-        return sum(g.position.width for g in self.get_additional_gables_for_panel(panel_name)) / width
+        return sum(g.position.width for g in self.get_additional_gables_for_panel(panel_name) +
+                   self.get_cross_gables_for_panel(panel_name)) / width
+
+    # ------------------------------------------------------------------ cross gables (wall gables)
+    CROSS_GABLE_END_MARGIN = 2.0      # in thicknesses: clear of the side wall's corner joints
+
+    def get_cross_gables_for_panel(self, panel_name: str) -> List[AdditionalGable]:
+        return [g for g in self.cross_gables if g.position.panel == panel_name]
+
+    def _cross_gable(self, panel_name: str, x: float, width: float, roof_overhang: float,
+                     pitch: Optional[float]) -> AdditionalGable:
+        """The cross gable over side-wall x .. x + width (wall coordinates), placed on the roof panel above: its sill
+        on the roof's top surface along the wall's outer face. Raises PlacementError if it does not fit."""
+        g, t = self.house_geometry, self.house_geometry.thickness
+        wall = g.ROOF_OVER_WALL[panel_name]
+        wall_width = g.get_panel_dimensions()[wall][0]
+        margin = self.CROSS_GABLE_END_MARGIN * t
+        if x < margin - EPS or x + width > wall_width - margin + EPS:
+            raise PlacementError('cross gable', f"x {x:g} .. {x + width:g} leaves {wall} ({wall_width:.1f} long) "
+                                                f"minus {margin:g}mm at each end (its corner joints)")
+        u0 = min(g.roof_u_from_wall_x(panel_name, x), g.roof_u_from_wall_x(panel_name, x + width))
+        try:
+            probe = AdditionalGable(ComponentPosition(u0, 0.0, width, 0.0, panel_name), g.theta, t, roof_overhang,
+                                    pitch, cross=True)
+            sill = g.wall_line_v(panel_name)
+            gable = AdditionalGable(ComponentPosition(u0, sill - probe.position.height, width, 0.0, panel_name),
+                                    g.theta, t, roof_overhang, pitch, cross=True)
+        except (GeometryError, ValueError) as e:
+            raise PlacementError('cross gable', getattr(e, 'message', str(e))) from e
+        gable.wall_x = x                                          # where on the side wall (its own coordinates)
+        fx, fy, fw, _ = gable.footprint()
+        if fy < t - EPS:
+            raise PlacementError('cross gable', f"too tall: its ridge would reach the main ridge on {panel_name}")
+        if fy > g.wall_line_v(panel_name, inner=True) - t + EPS:
+            # its ridge would end within the strip of main roof cut away for the wall: the valleys would rest on nothing
+            raise PlacementError('cross gable', "too low: its roof would not reach the main roof beyond the wall "
+                                                "(make it wider or steeper)")
+        keepout = (fx - t, fy - t, fx + fw + t, g.get_panel_dimensions()[panel_name][1])
+        for other in self._roof_keepouts(panel_name):
+            if _overlap(keepout, other):
+                raise PlacementError('cross gable', f"overlaps another roof feature or a gable slot on {panel_name}")
+        return gable
+
+    def cross_gable_fits(self, panel_name: str, x: float, width: float, roof_overhang: float = 3.0,
+                         pitch: Optional[float] = None) -> bool:
+        try:
+            self._cross_gable(panel_name, x, width, roof_overhang, pitch)
+            return True
+        except PlacementError:
+            return False
+
+    def add_cross_gable(self, panel_name: str, x: float, width: float = 30.0, roof_overhang: float = 3.0,
+                        pitch: Optional[float] = None) -> AdditionalGable:
+        """
+        Add a cross gable: the side wall under `panel_name` rises into a gable over x .. x + width (measured along the
+        wall, like its windows), with a small roof running back at right angles until it meets the main roof.
+
+        Args:
+            panel_name: the roof panel above the side wall (roof_panel_left over side_wall_left, right likewise)
+            x, width: where on the side wall (mm)
+            roof_overhang: how far the cross roof projects in front of the wall (default 3)
+            pitch: its roof pitch in degrees (default 45, a 90 degree apex)
+        """
+        if panel_name not in ROOF_PANELS:
+            raise PlacementError('cross gable', f"cross gables belong on a roof panel ({', '.join(ROOF_PANELS)}), "
+                                                f"not {panel_name!r}")
+        try:
+            gable = self._cross_gable(panel_name, x, width, roof_overhang, pitch)
+        except PlacementError as e:
+            wall_width = self.house_geometry.get_panel_dimensions()[self.house_geometry.ROOF_OVER_WALL[panel_name]][0]
+            hints = []
+            ok = lambda v: self.cross_gable_fits(panel_name, v, width, roof_overhang, pitch)
+
+            def edge(inside, outside):
+                """Bisect between a fitting and a non-fitting x to 0.05 mm; returns the fitting end."""
+                while abs(outside - inside) > 0.05:
+                    mid = (inside + outside) / 2
+                    inside, outside = (mid, outside) if ok(mid) else (inside, mid)
+                return inside
+
+            step = 1.0                                               # coarse scan, then refine each stretch's ends
+            xs = [i * step for i in range(int(wall_width / step) + 1)]
+            fit = [ok(v) for v in xs]
+            runs = [(i, j) for i in range(len(xs)) for j in [i] if fit[i] and (i == 0 or not fit[i - 1])]
+            stretches = []
+            for i, _ in runs:
+                j = i
+                while j + 1 < len(xs) and fit[j + 1]:
+                    j += 1
+                lo = edge(xs[i], xs[i - 1]) if i > 0 else xs[i]
+                hi = edge(xs[j], xs[j + 1]) if j + 1 < len(xs) else xs[j]
+                stretches.append((lo, hi))
+            if stretches:
+                lo, hi = min(stretches, key=lambda r: min(abs(r[0] - x), abs(r[1] - x)))
+                hints.append(f"x between {math.ceil(lo * 10) / 10:.1f} and {math.floor(hi * 10) / 10:.1f}")
+            w_ok = lambda w: self.cross_gable_fits(panel_name, x, w, roof_overhang, pitch)
+            for w in (width * f for f in (0.9, 0.75, 0.6, 0.45)):    # a smaller one at the same place
+                if w >= 15 and w_ok(w):
+                    lo, hi = w, width
+                    while hi - lo > 0.05:
+                        mid = (lo + hi) / 2
+                        lo, hi = (mid, hi) if w_ok(mid) else (lo, mid)
+                    hints.append(f"width at most {math.floor(lo * 10) / 10:.1f}")
+                    break
+            if not hints:
+                raise
+            raise PlacementError('cross gable', e.message.split(': ', 1)[1] + ". It would fit with (mm) " +
+                                 "; or ".join(hints)) from e
+        self.cross_gables.append(gable)
+        self.check_dormer_coverage(panel_name)
+        return gable
 
     def check_dormer_coverage(self, panel_name: str):
         """Warn when the dormers on a roof panel cover more than half its width: they would dominate the roof."""
@@ -434,6 +550,7 @@ class ArchitecturalConfiguration:
         self.doors.clear()
         self.chimneys.clear()
         self.additional_gables.clear()
+        self.cross_gables.clear()
 
     def get_required_roof_panels(self) -> List[str]:
         return list(ROOF_PANELS)

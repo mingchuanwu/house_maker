@@ -128,6 +128,38 @@ class HouseGeometry:
         return [(cx - half_x, cy - half_y, cx + half_x, cy + half_y)
                 for cx in (2.5 * t, self.roof_panel_length - 2.5 * t)]
 
+    # --- roof panels over the side walls (cross gables) -------------------------
+    ROOF_OVER_WALL = {'roof_panel_left': 'side_wall_left', 'roof_panel_right': 'side_wall_right'}
+
+    def roof_u_from_wall_x(self, panel_name: str, x: float) -> float:
+        """Roof panel x (drawn, along the ridge) above the point at drawn x along the side wall below it. Both panel
+        kinds are drawn kerf/2 off their nominal origin; the left roof runs from the front (x = length + 3t)
+        towards the back, the right one from the back (x = -3t); the left wall from the back, the right from the front."""
+        h, t = self.kerf / 2, self.thickness
+        if panel_name == 'roof_panel_left':
+            return (self.x + 3 * t) - (x - h) + h
+        return (self.x - (x - h)) + 3 * t + h
+
+    def roof_v(self, panel_name: str, y: float, w: float) -> float:
+        """Roof panel y (drawn, down the slope from the ridge edge) of the point at world y (across the house) that
+        lies `w` above the panel's underside (0 = underside, t = top surface)."""
+        c, t = math.cos(self.theta_rad), self.thickness
+        if panel_name == 'roof_panel_left':
+            v = (self.y / 2 + t * c - y) / c
+        else:
+            v = (y - self.y / 2) / c
+        return v - w * math.tan(self.theta_rad) + self.kerf / 2
+
+    def wall_line_v(self, panel_name: str, inner: bool = False) -> float:
+        """Roof panel y where the side wall below passes through the roof's top surface: its outer face (the sill line
+        of a cross gable), or with `inner` its inner face (where a cross gable's eave notch must reach)."""
+        t = self.thickness
+        if panel_name == 'roof_panel_left':
+            y = 0.0 if inner else -t
+        else:
+            y = self.y if inner else self.y + t
+        return self.roof_v(panel_name, y, t)
+
     def validate_geometry(self):
         """Validate that all geometric calculations are reasonable"""
         if self.gable_peak_height <= 0:

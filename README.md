@@ -75,6 +75,15 @@ python3 generate_house.py --length 200 --width 140 --height 100 --angle 45 \
 # as low on the roof as they all fit; SIDE left, right or both; keys count (required), width, wall, pitch, overhang, y
 python3 generate_house.py --length 200 --width 140 --height 100 --dormers both:count=3:width=30 --3d view
 ```
+```bash
+# Cross gables: a side wall rises into a gable with its own small roof running back into the main roof (the main
+# roof's eave is notched there); x is along the side wall, like its windows; keys x (required), width, pitch, overhang
+python3 generate_house.py --length 200 --width 140 --height 100 --cross-gable left:x=80:width=40 --3d view
+```
+The cross gable's sloped edges tab into its roof (like a dormer face), its ridge is finger-jointed, its valleys are
+glued on the main roof, and its gable gets a slim double-hung window when there is room. In Python:
+`house.add_cross_gable('left', 80, 40)`.
+
 Dormers covering more than half a roof panel's width trigger a warning (a rule of thumb: more tends to dominate the
 roof). In Python: `house.add_dormers('both', 3, width=30)`.
 

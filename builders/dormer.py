@@ -164,7 +164,7 @@ def _cheek_lengths(dormer: AdditionalGable) -> Tuple[float, float, float]:
 def joint_engine(dormer: AdditionalGable, engine: FingerJointEngine) -> FingerJointEngine:
     """Engine with the dormer's finger length: at most half its shortest joint edge, at least 2t."""
     face_w, _, rake = dormer.geometry.face_triangle(dormer.face_lift)
-    edges = [face_w - 2 * dormer.thickness, rake, _ridge_span(dormer, engine.kerf)]
+    edges = [rake, _ridge_span(dormer, engine.kerf)] + ([] if dormer.cross else [face_w - 2 * dormer.thickness])
     if dormer.geometry.walls:
         edges += _cheek_lengths(dormer)
     shortest = min(edges)
@@ -326,9 +326,30 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
         cut=[engine.trace_outline(corners, specs)] + holes, nominal_size=_extent(corners), corners=corners,
         edge_names=names, joints={n: sp for n, sp in zip(names, specs) if sp}))
 
-    # ---- roof panels
+    panels += _roof_panels(dormer, engine, slot, cheek.get('top'), f'additional_gable_roof_{{side}}_{index}',
+                           f'Additional Gable Roof {{side}} {index + 1}')
+
+    # ---- side walls
+    if g.walls:
+        for side in ('left', 'right'):
+            edges = g.cheek_edges(side, t)
+            names = [n for n, _ in edges]
+            nominal = [Point(*q) for _, q in edges]
+            corners, specs = _traced(engine, nominal, [cheek[n] for n in names], {'top': cheek_top_depth(dormer)}, names)
+            panels.append(Panel(
+                name=f'additional_gable_cheek_{side}_{index}', label=f'Additional Gable Wall {side.title()} {index + 1}',
+                cut=[engine.trace_outline(corners, specs)], nominal_size=_extent(corners), corners=corners,
+                edge_names=names, joints={n: sp for n, sp in zip(names, specs) if sp}))
+    return panels
+
+
+def _roof_panels(dormer: AdditionalGable, engine: FingerJointEngine, slot: Optional[SlotSpec], top,
+                 name: str, label: str) -> List[Panel]:
+    """The two roof panels of a dormer or cross gable: ridge fingers (the right panel lapping t past the ridge), the
+    rake-tab slots, and with side walls the notches for the cheek tops. `name`/`label` take {side}."""
+    g, t = dormer.geometry, dormer.thickness
+    panels: List[Panel] = []
     ridge = _ridge_joint(dormer, engine)
-    top = cheek.get('top')
     e, o = g.eave_depth, g.overhang
     for side, mirrored in (('left', False), ('right', True)):
         edges = g.roof_panel_edges(mirrored, lap=t if ridge else 0.0)
@@ -351,21 +372,74 @@ def build_dormer_panels(dormer: AdditionalGable, index: int, engine: FingerJoint
             g.rafter - slot.cx, slot.cy, slot.orientation)]
         cut = [engine.trace_outline(pts, specs)] + [engine.slot_path(sl) for sl in slots]
         panels.append(Panel(
-            name=f'additional_gable_roof_{side}_{index}',
-            label=f'Additional Gable Roof {side.title()} {index + 1}',
+            name=name.format(side=side), label=label.format(side=side.title()),
             cut=cut, pattern=polygon_shingles_pattern(nominal), pattern_class=PATTERN_ROOF,
             nominal_size=_extent(pts), corners=pts, edge_names=names,
             joints={n: sp for n, sp in zip(names, specs) if sp}, slots=slots))
-
-    # ---- side walls
-    if g.walls:
-        for side in ('left', 'right'):
-            edges = g.cheek_edges(side, t)
-            names = [n for n, _ in edges]
-            nominal = [Point(*q) for _, q in edges]
-            corners, specs = _traced(engine, nominal, [cheek[n] for n in names], {'top': cheek_top_depth(dormer)}, names)
-            panels.append(Panel(
-                name=f'additional_gable_cheek_{side}_{index}', label=f'Additional Gable Wall {side.title()} {index + 1}',
-                cut=[engine.trace_outline(corners, specs)], nominal_size=_extent(corners), corners=corners,
-                edge_names=names, joints={n: sp for n, sp in zip(names, specs) if sp}))
     return panels
+
+
+# ------------------------------------------------------------------------------------------------ cross gables
+def build_cross_gable_panels(gable: AdditionalGable, index: int, engine: FingerJointEngine) -> List[Panel]:
+    """The cross gable's two roof panels (its face is the side wall: see `cross_gable_wall`)."""
+    engine = joint_engine(gable, engine)
+    return _roof_panels(gable, engine, _tab_slot(gable, engine), None, f'cross_gable_roof_{{side}}_{index}',
+                        f'Cross Gable Roof {{side}} {index + 1}')
+
+
+def cross_gable_wall(gable: AdditionalGable, engine: FingerJointEngine, wall_top: float, kerf: float):
+    """
+    The side wall's rise into a cross gable, in the wall's DRAWN coordinates (nominal + kerf/2): (fragment, holes).
+    `fragment` replaces the wall's straight top edge over the gable, traversed right to left like the top edge: up
+    through the main roof (t / cos(theta), to its top surface at the wall's outer face), the two rakes with their tabs
+    into the cross roof, and down again; drawn kerf/2 outside the nominal shape. `holes` is the window, as panes.
+    `wall_top` is the wall's nominal top (the house's wall height).
+    """
+    eng = joint_engine(gable, engine)
+    slot = _tab_slot(gable, eng)
+    g, t, h = gable.geometry, gable.thickness, kerf / 2
+    base = wall_top + t / math.cos(math.radians(gable.roof_angle))
+    x0, W = gable.wall_x - h, g.width                        # nominal
+    nominal = [Point(x0, wall_top), Point(x0 + W, wall_top), Point(x0 + W, base),
+               Point(x0 + W / 2, base + g.gable_height), Point(x0, base)]
+    rakes = _rake_joints(gable, eng, slot) if slot is not None else (None, None)
+    corners, specs = eng.kerf_outline(nominal, [None, None, rakes[0], rakes[1], None])
+    c = [Point(q.x + h, q.y + h) for q in corners]          # drawn coordinates
+    top = wall_top + 2 * h                                   # the wall's drawn top edge
+    start, end = Point(c[2].x, top), Point(c[4].x, top)
+    fragment = " ".join([f"L {start.x:.{_P}f},{start.y:.{_P}f}", eng.trace_edge(start, c[2], None),
+                         eng.trace_edge(c[2], c[3], specs[2]), eng.trace_edge(c[3], c[4], specs[3]),
+                         eng.trace_edge(c[4], end, None)])
+    holes = []
+    window = face_window(gable)
+    if window is not None:
+        x, y, w, wh, grid, bar = window                      # face coordinates: from the gable's base, centred
+        holes.append(compensate_void(paned_cutout(x0 + x + h, base + y + h, w, wh, bar, grid), kerf))
+    return fragment, holes
+
+
+def cross_gable_score(gable: AdditionalGable, notch_v: float, inset: float = 0.5) -> str:
+    """Score line on the main roof for a cross gable: its two valleys, from just above the eave notch (at roof y
+    `notch_v`; the sill itself lies in the notch) up to the ridge end - an open V, not the dormer's closed triangle."""
+    x, y, _, _ = gable.footprint()
+    (ax, ay), (bx, by), (qx, qy) = [(x + px, y + py) for px, py in gable.geometry.footprint_polygon()]
+    cut = notch_v - inset
+    on = lambda px, py: (qx + (px - qx) * (cut - qy) / (py - qy), cut)      # the valley at roof y = cut
+    a, b = on(ax, ay), on(bx, by)
+    return f"M {a[0]:.{_P}f},{a[1]:.{_P}f} L {qx:.{_P}f},{qy:.{_P}f} L {b[0]:.{_P}f},{b[1]:.{_P}f}"
+
+
+def cross_gable_eave_notches(gables: List[AdditionalGable], roof_width: float, roof_height: float,
+                             inner_v: float, engine: FingerJointEngine):
+    """
+    JointSpec for the main roof panel's eave edge (drawn from (roof_width, roof_height) to (0, roof_height)) with a
+    notch under each cross gable: across its width, from the eave up to `inner_v` - where the side wall's inner face
+    passes through the roof's top surface - so the wall can rise through it. None without cross gables. A void: drawn
+    kerf/2 smaller on each side (FEMALE), so after cutting it is exactly the gable's width.
+    """
+    if not gables:
+        return None
+    k = engine.kerf
+    fingers = sorted((roof_width - (gl.position.x + gl.position.width), roof_width - gl.position.x) for gl in gables)
+    spec = engine.spec(FEMALE, roof_width, fingers)
+    return dataclasses.replace(spec, depth=(roof_height - k / 2) - inner_v)

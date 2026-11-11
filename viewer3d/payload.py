@@ -28,7 +28,7 @@ DECIMALS = 4
 def part_group(name: str) -> str:
     if name.startswith('chimney'):
         return 'chimney'
-    if name.startswith('additional_gable'):
+    if name.startswith(('additional_gable', 'cross_gable')):
         return 'dormer'
     if 'casing' in name:
         return 'casings'
@@ -58,7 +58,7 @@ def _add(a: Vec, b: Vec, k: float = 1.0) -> Vec:
 
 def _assembly(name: str):
     """('chimney' | 'dormer', index) for chimney/dormer parts, else None."""
-    m = re.match(r'(chimney|additional_gable)_.*_(\d+)$', name)
+    m = re.match(r'(chimney|additional_gable|cross_gable)_.*_(\d+)$', name)
     return (m.group(1), int(m.group(2))) if m else None
 
 
@@ -72,7 +72,8 @@ def _explode_vectors(names: List[str], frames, centres: Dict[str, Vec],
         if _assembly(n):
             groups.setdefault(_assembly(n), []).append(n)
     for (kind, i), members in groups.items():
-        holder = (config.chimneys if kind == 'chimney' else config.additional_gables)[i].position.panel
+        holder = {'chimney': config.chimneys, 'additional_gable': config.additional_gables,
+                  'cross_gable': config.cross_gables}[kind][i].position.panel
         carry = out.get(holder, (0.0, 0.0, 0.0))
         middle = _centre([centres[m] for m in members])
         for m in members:

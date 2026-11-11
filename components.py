@@ -236,11 +236,14 @@ class AdditionalGable:
     """
 
     def __init__(self, position: ComponentPosition, roof_angle: float, thickness: float,
-                 roof_overhang: float = 3.0, pitch: Optional[float] = None, wall_height: Optional[float] = None):
+                 roof_overhang: float = 3.0, pitch: Optional[float] = None, wall_height: Optional[float] = None,
+                 cross: bool = False):
         self.roof_overhang = roof_overhang
         self.roof_angle = roof_angle
         self.thickness = thickness
-        self.geometry = solve_dormer(roof_angle, position.width, pitch, roof_overhang, wall_height)
+        # a cross gable: its "face" is the side wall rising into a gable from the roof's top surface (no lift, no walls)
+        self.cross = cross
+        self.geometry = solve_dormer(roof_angle, position.width, pitch, roof_overhang, 0.0 if cross else wall_height)
         # The requested depth is ignored: it is fixed by geometry (see dormer_geometry).
         self.position = position._replace(height=self.geometry.footprint_depth)
         self._validate_position()
@@ -248,8 +251,8 @@ class AdditionalGable:
     @property
     def face_lift(self) -> float:
         """Height the face's level base is raised above the sill line so it never digs into the rising roof:
-        its thickness times tan(roof angle)."""
-        return self.thickness * math.tan(math.radians(self.roof_angle))
+        its thickness times tan(roof angle). A cross gable's face is the wall, passing through the roof: no lift."""
+        return 0.0 if self.cross else self.thickness * math.tan(math.radians(self.roof_angle))
 
     def face_size(self) -> Tuple[float, float]:
         w, h, _ = self.geometry.face_triangle(self.face_lift)

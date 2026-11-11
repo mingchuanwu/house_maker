@@ -94,6 +94,11 @@ def declared_mates(panels: Dict[str, Panel]) -> List[Mate]:
                 edge(name, f'side_{side}', f'additional_gable_cheek_{side}_{i}', 'front', 'dormer face ↔ side wall')
                 edge(f'additional_gable_roof_{side}_{i}', 'side', f'additional_gable_cheek_{side}_{i}', 'top',
                      'dormer roof ↔ side wall top')
+    # --- cross gables: their roof's ridge (the rake tabs sit on the side wall's gable profile, not a named edge)
+    for name in panels:
+        if name.startswith('cross_gable_roof_left_'):
+            i = name.rsplit('_', 1)[1]
+            edge(f'cross_gable_roof_right_{i}', 'ridge', name, 'ridge', 'cross gable ridge')
     for roof in ('roof_panel_left', 'roof_panel_right'):
         for idx, slot in enumerate(panels[roof].slots if roof in panels else []):
             if slot.owner:

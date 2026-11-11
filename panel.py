@@ -33,6 +33,8 @@ class Panel:
     edge_names: List[str] = field(default_factory=list)         # edge i runs corners[i] -> corners[i+1]
     joints: Dict[str, JointSpec] = field(default_factory=dict)  # edge name -> planned fingers
     slots: List[SlotSpec] = field(default_factory=list)         # internal slots
+    profile_area: float = 0.0       # area added beyond the nominal outline by custom edge profiles (cross gables)
+    profiled_edges: List[str] = field(default_factory=list)     # edges drawn with such a profile instead of a line
 
     @cached_property
     def bbox(self) -> BBox:

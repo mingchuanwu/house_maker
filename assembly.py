@@ -9,7 +9,9 @@ from typing import List, Optional
 
 from .builders.box import BoxPanelBuilder, PanelFeatures
 from .builders.chimney import build_chimney_panels, footprint_score as chimney_footprint, roof_cutout as chimney_cutout
-from .builders.dormer import build_dormer_panels, footprint_score as dormer_footprint, roof_slots as dormer_slots
+from .builders.dormer import (build_cross_gable_panels, build_dormer_panels, cross_gable_eave_notches, cross_gable_score,
+                               cross_gable_wall,
+                               footprint_score as dormer_footprint, roof_slots as dormer_slots)
 from .casings import door_casing_pieces, window_casing_pieces
 from .config import ArchitecturalConfiguration
 from .constants import HouseStyle
@@ -60,6 +62,20 @@ def _box_features(name: str, geometry: HouseGeometry, config: ArchitecturalConfi
     f.score += [dormer_footprint(g) for g in config.get_additional_gables_for_panel(name)]
     f.slots += [sl for i, g in enumerate(config.additional_gables) if g.position.panel == name
                 for sl in dormer_slots(g, i, engine)]
+    if name.startswith('roof_panel'):                         # cross gables: footprint, and the notch in the eave
+        crosses = config.get_cross_gables_for_panel(name)
+        f.score += [cross_gable_score(g, geometry.wall_line_v(name, inner=True)) for g in crosses]
+        rw, rh = geometry.get_panel_dimensions()[name]
+        notch = cross_gable_eave_notches(crosses, rw, rh, geometry.wall_line_v(name, inner=True), engine)
+        if notch:
+            f.edge_specs['eave'] = notch
+    roof_above = {wall: roof for roof, wall in geometry.ROOF_OVER_WALL.items()}.get(name)
+    if roof_above:                                            # the side wall rises into each cross gable above it
+        pieces = [cross_gable_wall(g, engine, geometry.z, geometry.kerf)
+                  for g in sorted(config.get_cross_gables_for_panel(roof_above), key=lambda g: -g.wall_x)]
+        if pieces:
+            f.edge_fragments['top'] = " ".join(fragment for fragment, _ in pieces)
+            f.cutouts += [hole for _, holes in pieces for hole in holes]
     nominal = geometry.get_panel_dimensions()[name]
     pattern = wall_patterns.generate_pattern_for_panel(name, nominal)
     if name.startswith('roof_panel'):
@@ -83,13 +99,15 @@ def build_panels(geometry: HouseGeometry, style: HouseStyle,
                            for name in box_panel_names(style)]
 
     has_roof = any(n.startswith('roof_panel') for n in box_panel_names(style))
-    if (config.chimneys or config.additional_gables) and not has_roof:
+    if (config.chimneys or config.additional_gables or config.cross_gables) and not has_roof:
         raise PlacementError('roof feature', f"chimneys and dormers need roof panels, but house style "
                                              f"{style.name} has none")
     for idx, chimney in enumerate(config.chimneys):
         panels += build_chimney_panels(chimney, idx, engine)
     for idx, dormer in enumerate(config.additional_gables):
         panels += build_dormer_panels(dormer, idx, engine)
+    for idx, gable in enumerate(config.cross_gables):
+        panels += build_cross_gable_panels(gable, idx, engine)
 
     t = geometry.thickness
     for panel_name in box_panel_names(style):

@@ -17,7 +17,7 @@ from house_maker import (ArchitecturalStyle, DoorType, HouseMaker, PlacementErro
 from house_maker.exceptions import GeometryError
 from house_maker.mates import EDGE, TAB_SLOT, declared_mates
 from . import invariants
-from .assembly3d import PanelSolid, box_frames, chimney_frames, dormer_frames, worst_penetrations
+from .assembly3d import PanelSolid, box_frames, chimney_frames, cross_gable_frames, dormer_frames, worst_penetrations
 from .svgdoc import parse_svg
 
 N = int(os.environ.get('HOUSE_SWEEP_N', '30'))
@@ -47,10 +47,14 @@ def random_house(seed):
         w, h = house.geometry.get_panel_dimensions()[panel]
         x, y = rng.uniform(2, w - 10), rng.uniform(2, h - 10)
         try:
-            if rng.random() < 0.5:
+            roll = rng.random()
+            if roll < 0.4:
                 house.add_chimney(panel, x, y, rng.choice([6, 8, 10, 14, 20]), rng.choice([10, 12, 16, 22]), rng.choice([14, 20, 30]))
-            else:
+            elif roll < 0.8:
                 house.add_additional_gable(panel, x, y, rng.choice([16, 25, 40, 60]), roof_overhang=rng.choice([0, 2, 3, 5]))
+            else:                                              # a cross gable: x along the side wall below
+                house.add_cross_gable(panel, rng.uniform(5, house.geometry.x - 30), rng.choice([20, 30, 45]),
+                                      pitch=rng.choice([None, 35, 50]), roof_overhang=rng.choice([0, 2, 3]))
             placed += 1
         except (PlacementError, GeometryError):
             pass
@@ -144,3 +148,11 @@ def test_random_house_satisfies_every_invariant(seed):
         ridge_extra = t * abs(math.cos(math.radians(2 * phi))) if phi < 45 else 0.0
         check_feature(df, p.panel, f'dormer {i}',
                       ({f'additional_gable_roof_left_{i}', f'additional_gable_roof_right_{i}'}, ridge_extra))
+    for i, g in enumerate(cfg.cross_gables):
+        p, phi = g.position, g.geometry.phi_deg
+        wall = {'roof_panel_left': 'side_wall_left', 'roof_panel_right': 'side_wall_right'}[p.panel]
+        cf, _ = cross_gable_frames(frames[p.panel], frames[wall], g.wall_x, p.width, th, phi, t, k, kw['height'], index=i)
+        cf[wall] = frames[wall]
+        ridge_extra = t * abs(math.cos(math.radians(2 * phi))) if phi < 45 else 0.0
+        check_feature(cf, p.panel, f'cross gable {i}',
+                      ({f'cross_gable_roof_left_{i}', f'cross_gable_roof_right_{i}'}, ridge_extra))

@@ -264,3 +264,38 @@ def dormer_frames(roof: Frame, x, y, W, theta, phi, t, k, index=0, shift=0.0, wa
         frames[f'additional_gable_cheek_left_{index}'] = _slab(d['Ea'] - wall * Z + (t / 2) * a, -up, Z, t, k, shift)
         frames[f'additional_gable_cheek_right_{index}'] = _slab(B + t * up - (t / 2) * a, up, Z, t, k, shift)
     return frames, d
+
+
+
+# ------------------------------------------------------------------------------------------------
+# Cross gable (a side wall rising into a gable, with a small roof running back into the main roof)
+# ------------------------------------------------------------------------------------------------
+def cross_gable_points(roof: Frame, wall: Frame, x, W, theta, phi, t, wall_height):
+    """
+    Independent construction. The main roof's underside rests on the side wall's outer top corner, so its top surface
+    crosses the wall's outer face t / cos(theta) above the wall top: the cross gable's sill, from drawn wall x to
+    x + W. The apex P is (W/2) tan(phi) above the sill's middle; the ridge runs horizontally into the house until the
+    main roof rises to it (Q). A is the sill end with the smaller roof panel x (the library's left panel starts there).
+    """
+    th = math.radians(theta)
+    z_sill = wall_height + t / math.cos(th)
+    ends = []
+    for xx in (x, x + W):
+        p = wall.to_world(np.array([xx]), np.array([0.0]), np.array([t]))[0]     # on the outer face (w = t)
+        ends.append(np.array([p[0], p[1], z_sill]))
+    u = [roof.to_local(e[None, :])[0][0] for e in ends]
+    A, B = (ends[0], ends[1]) if u[0] < u[1] else (ends[1], ends[0])
+    H = (W / 2) * math.tan(math.radians(phi))
+    P = (A + B) / 2 + np.array([0.0, 0.0, H])
+    into = -np.asarray(wall.n, dtype=float)                        # horizontally into the house
+    Q = P + (H / math.tan(th)) * into
+    return dict(A=A, B=B, P=P, Q=Q, up=into, H=H)
+
+
+def cross_gable_frames(roof: Frame, wall: Frame, x, W, theta, phi, t, k, wall_height, index=0):
+    d = cross_gable_points(roof, wall, x, W, theta, phi, t, wall_height)
+    Z = np.array([0.0, 0.0, 1.0])
+    return {
+        f'cross_gable_roof_left_{index}': _plane_slab(d['A'], d['P'] - d['A'], d['up'], t, k, Z, 0.0),
+        f'cross_gable_roof_right_{index}': _plane_slab(d['P'], d['B'] - d['P'], d['up'], t, k, Z, 0.0),
+    }, d

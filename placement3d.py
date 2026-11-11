@@ -131,12 +131,13 @@ def chimney_frames(roof: Frame, x: float, y: float, W: float, D: float, theta: f
 
 # ------------------------------------------------------------------------------------------------ dormer
 def dormer_frames(roof: Frame, x: float, y: float, W: float, theta: float, phi: float, index: int,
-                  wall: float = 0.0) -> Dict[str, Frame]:
+                  wall: float = 0.0, cross: bool = False) -> Dict[str, Frame]:
     """
     Frames of a gable dormer on `roof`: the front face (a vertical triangle, a pentagon with side walls), the two
     roof panels and, with `wall` > 0, the two side walls (cheeks). The ridge is horizontal at the apex height, so the
     dormer ends where the main roof rises to that height. The roof panels' undersides start at the eave line, `wall`
     above the sill; the cheeks stand just inside the sill's ends, behind the face, from its rear surface back.
+    `cross`: a cross gable - its face is the side wall (not a panel of its own), its roof panels are cross_gable_*.
     """
     t = roof.thickness
     th, ph = math.radians(theta), math.radians(phi)
@@ -153,11 +154,13 @@ def dormer_frames(roof: Frame, x: float, y: float, W: float, theta: float, phi: 
     Ae, Be = _add(A, _mul(_Z, wall)), _add(B, _mul(_Z, wall))                # ends of the eave line
     offset = 0.0 if wall > 0 else lift / math.tan(ph)                       # without walls the lifted face is narrower
     face0 = _add(_add(_add(A, _mul(_Z, lift)), _mul(a, offset)), _mul(up, t / 2))
+    prefix = 'cross_gable' if cross else 'additional_gable'
     frames = {
-        f'additional_gable_front_{index}': _slab(face0, a, _Z, t),
-        f'additional_gable_roof_left_{index}': _plane_slab(Ae, _sub(P, Ae), up, t, _Z),
-        f'additional_gable_roof_right_{index}': _plane_slab(P, _sub(Be, P), up, t, _Z),
+        f'{prefix}_roof_left_{index}': _plane_slab(Ae, _sub(P, Ae), up, t, _Z),
+        f'{prefix}_roof_right_{index}': _plane_slab(P, _sub(Be, P), up, t, _Z),
     }
+    if not cross:
+        frames[f'additional_gable_front_{index}'] = _slab(face0, a, _Z, t)
     if wall > 0:
         eave = wall / math.tan(th)
         # left cheek: seen from outside (-a) its x runs from its back end towards the front; right cheek: from the face

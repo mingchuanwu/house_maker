@@ -307,6 +307,21 @@ class HouseMaker:
         return self.architectural_config.add_additional_gable(
             panel_name, x, y, width, height, roof_overhang, pitch, wall_height)
 
+    def add_cross_gable(self, side, x, width=30.0, pitch=None, roof_overhang=3.0):
+        """
+        Add a cross gable: the side wall rises into a gable over x .. x + width (mm along the wall, like its windows),
+        with its own small roof running back at right angles into the main roof; the main roof's eave is notched there.
+
+        Args:
+            side: 'left' or 'right' (or the roof panel name, roof_panel_left / roof_panel_right)
+            pitch: its roof pitch in degrees (default 45, a 90 degree apex)
+            roof_overhang: how far its roof projects in front of the wall (default 3mm)
+
+        Returns the AdditionalGable (cross=True). Raises PlacementError if it does not fit.
+        """
+        panel = side if str(side).startswith('roof_panel') else f'roof_panel_{side}'
+        return self.architectural_config.add_cross_gable(panel, x, width, roof_overhang, pitch)
+
     def add_dormers(self, side, count, width=25.0, y=None, roof_overhang=3.0, pitch=None, wall_height=None):
         """
         Add `count` identical dormers in a row on one roof panel or both.
