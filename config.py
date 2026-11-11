@@ -317,11 +317,80 @@ class ArchitecturalConfiguration:
                                     g.thickness, roof_overhang, pitch, wall_height)
         except (GeometryError, ValueError) as e:
             raise PlacementError('additional gable', getattr(e, 'message', str(e))) from e
-        fx, fy, fw, fd = gable.footprint()
-        self._check_roof_feature('additional gable', panel_name, (fx, fy, fx + fw, fy + fd),
-                                 reach=roof_overhang)
+        try:
+            self._check_dormer(gable, panel_name)
+        except PlacementError as e:
+            hints = self._dormer_hints(panel_name, x, y, width, roof_overhang, pitch, gable)
+            if not hints:
+                raise
+            raise PlacementError('additional gable', e.message.split(': ', 1)[1] +
+                                 ". It would fit with " + "; or ".join(hints)) from e
         self.additional_gables.append(gable)
         return gable
+
+    def _check_dormer(self, gable: AdditionalGable, panel_name: str):
+        fx, fy, fw, fd = gable.footprint()
+        self._check_roof_feature('additional gable', panel_name, (fx, fy, fx + fw, fy + fd), reach=gable.roof_overhang)
+
+    def _dormer_hints(self, panel_name: str, x: float, y: float, width: float, roof_overhang: float,
+                      pitch: Optional[float], gable: AdditionalGable) -> List[str]:
+        """Changes of ONE setting that would let a dormer that does not fit be placed: its position along either axis,
+        a lower side wall, a smaller width. Each is checked by building the changed dormer."""
+        g = self.house_geometry
+        wall = gable.geometry.wall_height
+
+        def fits(x=x, y=y, width=width, wall=wall):
+            try:
+                trial = AdditionalGable(ComponentPosition(x, y, width, 0.0, panel_name), g.theta, g.thickness,
+                                        roof_overhang, pitch, wall)
+                self._check_dormer(trial, panel_name)
+                return True
+            except (GeometryError, PlacementError, ValueError):
+                return False
+
+        def interval(values, ok, current):
+            """The run of fitting values nearest to `current` (values in ascending order), or None."""
+            runs, run = [], []
+            for v in values:
+                if ok(v):
+                    run.append(v)
+                elif run:
+                    runs.append(run)
+                    run = []
+            if run:
+                runs.append(run)
+            if not runs:
+                return None
+            return min(runs, key=lambda r: 0 if r[0] <= current <= r[-1] else min(abs(r[0] - current), abs(r[-1] - current)))
+
+        def largest(lo, hi, ok):
+            """Largest value in [lo, hi] that fits, assuming smaller ones fit too (0.1 mm resolution), or None."""
+            if not ok(lo):
+                return None
+            while hi - lo > 0.05:
+                mid = (lo + hi) / 2
+                lo, hi = (mid, hi) if ok(mid) else (lo, mid)
+            return math.floor(lo * 10) / 10
+
+        hints = []
+        pw, ph = g.get_panel_dimensions()[panel_name]
+        steps = lambda top: [i / 10 for i in range(int(top * 10) + 1)]
+        ys = interval(steps(ph), lambda v: fits(y=v), y)
+        if ys:
+            hints.append(f"y between {ys[0]:.1f} and {ys[-1]:.1f} (--additional-gable-y)")
+        xs = interval(steps(pw), lambda v: fits(x=v), x)
+        if xs and not (xs[0] <= x <= xs[-1]):
+            hints.append(f"x between {xs[0]:.1f} and {xs[-1]:.1f} (--additional-gable-x)")
+        if wall > 0:
+            lowest = gable.face_lift + g.thickness
+            w = largest(math.ceil(lowest * 10) / 10, wall, lambda v: fits(wall=v))
+            if w is not None:
+                hints.append(f"side walls at most {w:.1f}mm high, at least {math.ceil(lowest * 10) / 10:.1f} "
+                             f"(--additional-gable-wall-height)")
+        wd = largest(15.0, width, lambda v: fits(width=v))
+        if wd is not None and wd < width:
+            hints.append(f"width at most {wd:.1f}mm (--additional-gable-width)")
+        return hints
 
     def get_chimneys_for_panel(self, panel_name: str) -> List[Chimney]:
         return [c for c in self.chimneys if c.position.panel == panel_name]

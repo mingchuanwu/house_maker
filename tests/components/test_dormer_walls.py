@@ -4,6 +4,7 @@ The 3D fit (no penetration, tabs through their roofs, cheeks on the roof) is in 
 """
 
 import math
+import re
 import subprocess
 import sys
 import pathlib
@@ -102,3 +103,28 @@ def test_cli_wall_height(tmp_path, angle, extra, cheeks):
 def test_pitch_out_of_range_explains_pitch_vs_apex(pitch):
     with pytest.raises(PlacementError, match='apex angle is 180 - 2 x pitch'):
         dormer(60, pitch=pitch)
+
+
+def test_placement_error_proposes_settings_that_fit():
+    """`--angle 30 --add-additional-gable --additional-gable-wall-height 10 --additional-gable-pitch 30`: too deep for
+    the roof at y=15. The error lists a y range, a lower wall and a smaller width - and each of them does fit."""
+    kw = dict(length=80, width=60, height=70, gable_angle=30, material_thickness=3, finger_length=10)
+    house = make_house(**kw)
+    with pytest.raises(PlacementError) as err:
+        house.add_additional_gable('roof_panel_right', 30, 15, 25, wall_height=10, pitch=30)
+    msg = str(err.value)
+    y0, y1 = map(float, re.search(r'y between ([\d.]+) and ([\d.]+)', msg).groups())
+    wall = float(re.search(r'side walls at most ([\d.]+)mm', msg).group(1))
+    width = float(re.search(r'width at most ([\d.]+)mm', msg).group(1))
+    for change in (dict(y=y0), dict(y=y1), dict(wall_height=wall), dict(width=width)):
+        args = {**dict(x=30, y=15, width=25, wall_height=10, pitch=30), **change}
+        make_house(**kw).add_additional_gable('roof_panel_right', **args)            # does not raise
+    with pytest.raises(PlacementError):                                               # and the ranges are tight
+        make_house(**kw).add_additional_gable('roof_panel_right', 30, y1 + 0.2, 25, wall_height=10, pitch=30)
+
+
+def test_no_proposal_when_nothing_fits():
+    house = make_house(length=80, width=60, height=70, gable_angle=30, material_thickness=3)
+    with pytest.raises(PlacementError) as err:
+        house.add_additional_gable('roof_panel_right', 30, 15, 25, wall_height=60, pitch=60)   # far too deep anywhere
+    assert 'It would fit with' not in str(err.value)          # no single change helps: the plain reason only
