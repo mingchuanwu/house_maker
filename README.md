@@ -70,7 +70,13 @@ python3 generate_house.py --length 200 --width 140 --height 100 --angle 45 \
     --dormer left:x=25:y=30:width=35 \
     --dormer left:x=140:y=30:width=35:wall=12 \
     --dormer right:x=80:y=25:width=40 --3d view
+
+# A row of identical dormers: over the windows below when there are as many window columns, else in equal bays;
+# as low on the roof as they all fit; SIDE left, right or both; keys count (required), width, wall, pitch, overhang, y
+python3 generate_house.py --length 200 --width 140 --height 100 --dormers both:count=3:width=30 --3d view
 ```
+Dormers covering more than half a roof panel's width trigger a warning (a rule of thumb: more tends to dominate the
+roof). In Python: `house.add_dormers('both', 3, width=30)`.
 
 ### Command Line Options
 ```bash

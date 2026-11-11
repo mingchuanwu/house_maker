@@ -10,6 +10,7 @@ import pathlib
 from .components import ArchitecturalStyle, DoorType, RoofType, ShingleType, WindowType
 from .config import ArchitecturalConfiguration, create_preset_configuration
 from .constants import DEFAULT_KERF, HouseStyle
+from .dormer_layout import add_dormers
 from .formats3d import FORMATS, encode
 from .geometry import HouseGeometry
 from .model3d import build_model
@@ -305,6 +306,23 @@ class HouseMaker:
         """
         return self.architectural_config.add_additional_gable(
             panel_name, x, y, width, height, roof_overhang, pitch, wall_height)
+
+    def add_dormers(self, side, count, width=25.0, y=None, roof_overhang=3.0, pitch=None, wall_height=None):
+        """
+        Add `count` identical dormers in a row on one roof panel or both.
+
+        Args:
+            side: 'left', 'right' or 'both' (both roof panels, laid out the same way)
+            count: dormers per roof panel
+            width, roof_overhang, pitch, wall_height: as in `add_additional_gable`
+            y: their position up the roof panel (mm); default: as low (close to the eave) as they all fit
+
+        Across the roof they sit over the windows of the wall below when there are as many window columns as
+        dormers, otherwise in the middle of equal bays along the house. Warns if they cover more than half the
+        roof's width. Returns the list of AdditionalGables. Raises PlacementError if one does not fit.
+        """
+        return add_dormers(self.geometry, self.architectural_config, side, count, width, y, roof_overhang, pitch,
+                           wall_height)
 
     def get_windows_for_panel(self, panel_name):
         """Get all windows on a specific panel"""

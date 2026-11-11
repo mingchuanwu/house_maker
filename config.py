@@ -299,7 +299,7 @@ class ArchitecturalConfiguration:
     def add_additional_gable(self, panel_name: str, x: float, y: float,
                              width: Optional[float] = None, height: Optional[float] = None,
                              roof_overhang: float = 3.0, pitch: Optional[float] = None,
-                             wall_height: Optional[float] = None) -> AdditionalGable:
+                             wall_height: Optional[float] = None, warn_coverage: bool = True) -> AdditionalGable:
         """
         Add a gable dormer to a roof panel (see `dormer_geometry`).
 
@@ -312,6 +312,8 @@ class ArchitecturalConfiguration:
             pitch: dormer roof pitch in degrees; default 45 (a 90 degree apex)
             wall_height: side wall (cheek) height in mm; 0 = no walls. Default: on roofs steeper than 45 degrees
                 walls as tall as the dormer's gable, otherwise none
+            warn_coverage: warn when the dormers on the panel then cover more than half its width (see
+                `check_dormer_coverage`); a layout of several dormers checks once at the end instead
         """
         if height is not None:
             warn_caller("`height` of an additional gable is ignored: the depth is determined by "
@@ -332,7 +334,35 @@ class ArchitecturalConfiguration:
             raise PlacementError('additional gable', e.message.split(': ', 1)[1] +
                                  ". It would fit with (mm) " + "; or ".join(hints)) from e
         self.additional_gables.append(gable)
+        if warn_coverage:
+            self.check_dormer_coverage(panel_name)
         return gable
+
+    MAX_DORMER_COVERAGE = 0.5     # rule of thumb: dormers should cover at most half a roof's width
+
+    def dormer_coverage(self, panel_name: str) -> float:
+        """Fraction of a roof panel's width covered by its dormers (their widths added up)."""
+        width = self.house_geometry.get_panel_dimensions()[panel_name][0]
+        return sum(g.position.width for g in self.get_additional_gables_for_panel(panel_name)) / width
+
+    def check_dormer_coverage(self, panel_name: str):
+        """Warn when the dormers on a roof panel cover more than half its width: they would dominate the roof."""
+        share = self.dormer_coverage(panel_name)
+        if share > self.MAX_DORMER_COVERAGE:
+            warn_caller(f"dormers cover {share:.0%} of {panel_name}'s width; more than half tends to dominate the "
+                        f"roof (narrower or fewer dormers look better)")
+
+    def dormer_fits(self, panel_name: str, x: float, y: float, width: float, roof_overhang: float = 3.0,
+                    pitch: Optional[float] = None, wall_height: Optional[float] = None) -> bool:
+        """Would `add_additional_gable` with these settings succeed (nothing is added)?"""
+        g = self.house_geometry
+        try:
+            trial = AdditionalGable(ComponentPosition(x, y, width, 0.0, panel_name), g.theta, g.thickness,
+                                    roof_overhang, pitch, wall_height)
+            self._check_dormer(trial, panel_name)
+            return True
+        except (GeometryError, PlacementError, ValueError):
+            return False
 
     def _check_dormer(self, gable: AdditionalGable, panel_name: str):
         fx, fy, fw, fd = gable.footprint()
@@ -346,13 +376,7 @@ class ArchitecturalConfiguration:
         wall = gable.geometry.wall_height
 
         def fits(x=x, y=y, width=width, wall=wall):
-            try:
-                trial = AdditionalGable(ComponentPosition(x, y, width, 0.0, panel_name), g.theta, g.thickness,
-                                        roof_overhang, pitch, wall)
-                self._check_dormer(trial, panel_name)
-                return True
-            except (GeometryError, PlacementError, ValueError):
-                return False
+            return self.dormer_fits(panel_name, x, y, width, roof_overhang, pitch, wall)
 
         def interval(values, ok, current):
             """The run of fitting values nearest to `current` (values in ascending order), or None."""

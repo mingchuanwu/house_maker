@@ -13,7 +13,7 @@ LEVELS = {
     'panel': 3, 'kerf': 3, 'placement': 3, 'cutouts': 3, 'casings': 3, 'patterns': 3,
     'render': 4, 'config': 4, 'mates': 4, 'builders.box': 4, 'builders.chimney': 4, 'builders.dormer': 4,
     'assembly': 5, 'placement3d': 5,
-    'svg_generator': 6, 'model3d': 6,
+    'svg_generator': 6, 'model3d': 6, 'dormer_layout': 6,
     'maker': 7,
     '__init__': 8,
 }

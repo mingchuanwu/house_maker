@@ -52,18 +52,22 @@ ROOF_SIDES = {'left': 'roof_panel_left', 'right': 'roof_panel_right',
 FEATURE_KEYS = {
     'dormer': {'x': 30.0, 'y': 15.0, 'width': 25.0, 'wall': None, 'pitch': None, 'overhang': 3.0},
     'chimney': {'x': 50.0, 'y': 20.0, 'width': 10.0, 'depth': 15.0, 'height': 20.0},
+    'dormers': {'count': None, 'width': 25.0, 'wall': None, 'pitch': None, 'overhang': 3.0, 'y': None},
 }
+LAYOUT_SIDES = dict(ROOF_SIDES, both='both')
 
 
 def feature_spec(kind):
     """argparse type for --dormer / --chimney: 'SIDE[:key=value]...' (SIDE: left, right, roof_panel_left or
     roof_panel_right; keys in FEATURE_KEYS[kind]) -> (spec text, roof panel, {key: value}) with defaults filled in."""
     keys = FEATURE_KEYS[kind]
+    sides = LAYOUT_SIDES if kind == 'dormers' else ROOF_SIDES
 
     def parse(text):
         side, *pairs = text.split(':')
-        if side not in ROOF_SIDES:
-            raise argparse.ArgumentTypeError(f"{text!r}: start with the roof side, left or right (e.g. left:x=30:y=20)")
+        if side not in sides:
+            which = 'left, right or both (e.g. both:count=2)' if kind == 'dormers' else 'left or right (e.g. left:x=30:y=20)'
+            raise argparse.ArgumentTypeError(f"{text!r}: start with the roof side, {which}")
         values = {}
         for pair in pairs:
             key, sep, value = pair.partition('=')
@@ -76,7 +80,11 @@ def feature_spec(kind):
                 values[key] = float(value)
             except ValueError:
                 raise argparse.ArgumentTypeError(f"{text!r}: {key}={value!r} is not a number") from None
-        return text, ROOF_SIDES[side], {**keys, **values}
+        if kind == 'dormers':
+            if 'count' not in values or values['count'] < 1 or values['count'] != int(values['count']):
+                raise argparse.ArgumentTypeError(f"{text!r}: give count=N (a whole number of dormers, at least 1)")
+            values['count'] = int(values['count'])
+        return text, sides[side], {**keys, **values}
     return parse
 
 def create_parser():
@@ -181,6 +189,10 @@ Architectural options:
                        help='Add a dormer; repeat for more. SIDE is left or right (roof panel); keys: x, y, width, wall '
                             '(side wall height, 0 = none), pitch, overhang - e.g. --dormer left:x=25:y=30:width=35:wall=12. '
                             'Unset keys use the --additional-gable-* defaults')
+    parser.add_argument('--dormers', action='append', default=[], type=feature_spec('dormers'), metavar='SIDE:count=N[:KEY=VALUE...]',
+                       help='Add a row of N identical dormers on a roof side (left, right or both): over the windows below '
+                            'when there are N window columns, else evenly spaced; as low on the roof as they fit. Keys: '
+                            'count (required), width, wall, pitch, overhang, y - e.g. --dormers both:count=3:width=30')
     parser.add_argument('--chimney', action='append', default=[], type=feature_spec('chimney'), metavar='SIDE[:KEY=VALUE...]',
                        help='Add a chimney; repeat for more. Keys: x, y, width, depth, height - e.g. --chimney left:x=90:y=20')
 
@@ -342,6 +354,13 @@ def main():
                                            roof_overhang=v['overhang'], pitch=v['pitch'], wall_height=v['wall'])
             except PlacementError as e:
                 raise PlacementError('dormer', f"--dormer {text}: {e.message.split(': ', 1)[1]}") from e
+
+        for text, side, v in args.dormers:
+            try:
+                house.add_dormers(side, v['count'], width=v['width'], y=v['y'], roof_overhang=v['overhang'],
+                                  pitch=v['pitch'], wall_height=v['wall'])
+            except PlacementError as e:
+                raise PlacementError('dormers', f"--dormers {text}: {e.message.split(': ', 1)[1]}") from e
 
         if args.add_additional_gable:
             dormer = house.add_additional_gable(
