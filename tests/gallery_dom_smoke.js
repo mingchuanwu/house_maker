@@ -1,0 +1,20 @@
+// Run by tests/test_gallery.py: JSDOM_PATH=... node gallery_dom_smoke.js <index.html> <houses>
+const assert = require('assert');
+const fs = require('fs');
+const { JSDOM, VirtualConsole } = require(process.env.JSDOM_PATH);
+const errors = [];
+const vc = new VirtualConsole();
+vc.on('jsdomError', (e) => { if (!/getContext|HTMLCanvasElement/.test(String(e.message || e))) errors.push(e); });
+const dom = new JSDOM(fs.readFileSync(process.argv[2], 'utf8'), { runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc });
+const doc = dom.window.document, n = +process.argv[3];
+assert.deepStrictEqual(errors, [], 'no script errors');
+assert.strictEqual(doc.querySelectorAll('tbody tr').length, n, 'one row per house');
+assert.strictEqual(doc.querySelectorAll('canvas.preview').length, n, 'one preview per house');
+assert.strictEqual(doc.querySelectorAll('a[href^="views/"]').length, n, 'a full-viewer link per house');
+assert.ok(!doc.getElementById('nogl').hidden, 'no WebGL here: the page says so');
+let copied = null;
+Object.defineProperty(dom.window.navigator, 'clipboard', { value: { writeText: (t) => { copied = t; return Promise.resolve(); } } });
+const b = doc.querySelector('button.copy');
+b.click();
+assert.ok(copied && copied.startsWith('house-maker'), 'the copy button copies the command');
+console.log('gallery smoke test passed');

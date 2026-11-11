@@ -298,6 +298,93 @@ def convert_architectural_options(args):
     return options
 
 
+def build_house(args) -> 'HouseMaker':
+    """The house a parsed command line describes, with every roof feature added (no files written). Shared by
+    `main` and the gallery, so a gallery entry's command is exactly what built its model. Raises PlacementError."""
+    # Convert architectural options to enums
+    architectural_options = convert_architectural_options(args)
+    
+    if args.verbose:
+        print(f"Creating house: {args.length}×{args.width}×{args.height}mm")
+        print(f"Gable angle: {args.angle}°, Material: {args.thickness}mm")
+        if architectural_options.get('architectural_preset'):
+            print(f"Architectural preset: {args.architectural_preset}")
+        elif any(key in architectural_options for key in ['roof_type', 'architectural_style']):
+            print(f"Custom architectural options:")
+            for key, value in architectural_options.items():
+                if key != 'auto_add_components':
+                    print(f"  {key}: {value}")
+    
+    # Create HouseMaker with all options
+    house = HouseMaker(
+        length=args.length,
+        width=args.width,
+        height=args.height,
+        gable_angle=args.angle,
+        material_thickness=args.thickness,
+        finger_length=args.finger_length,
+        kerf=args.kerf,
+        material_width=args.material_width,
+        material_height=args.material_height,
+        single_joints=args.single_joints,
+        **architectural_options
+    )
+    
+    # Add roof features if requested (PlacementError explains what is wrong)
+    if args.add_chimney:
+        chimney = house.add_chimney(
+            panel_name=args.chimney_panel, x=args.chimney_x, y=args.chimney_y,
+            width=args.chimney_width, height=args.chimney_depth,
+            chimney_height=args.chimney_height)
+        if args.verbose:
+            x, y, w, d = chimney.footprint()
+            print(f"\n🏭 Chimney added on {args.chimney_panel}")
+            print(f"   Outer footprint on roof: {w:.1f}×{d:.1f}mm at ({x}, {y})")
+            print(f"   Exposure above roof: {chimney.chimney_height}mm up-slope, "
+                  f"{chimney.side_wall_heights()[0]:.1f}mm down-slope (level top)")
+
+    for text, panel, v in args.chimney:
+        try:
+            house.add_chimney(panel_name=panel, x=v['x'], y=v['y'], width=v['width'], height=v['depth'],
+                              chimney_height=v['height'])
+        except PlacementError as e:
+            raise PlacementError('chimney', f"--chimney {text}: {e.message.split(': ', 1)[1]}") from e
+    for text, panel, v in args.dormer:
+        try:
+            house.add_additional_gable(panel_name=panel, x=v['x'], y=v['y'], width=v['width'],
+                                       roof_overhang=v['overhang'], pitch=v['pitch'], wall_height=v['wall'])
+        except PlacementError as e:
+            raise PlacementError('dormer', f"--dormer {text}: {e.message.split(': ', 1)[1]}") from e
+
+    for text, panel, v in args.cross_gable:
+        try:
+            house.add_cross_gable(panel, v['x'], width=v['width'], pitch=v['pitch'], roof_overhang=v['overhang'])
+        except PlacementError as e:
+            raise PlacementError('cross gable', f"--cross-gable {text}: {e.message.split(': ', 1)[1]}") from e
+    for text, side, v in args.dormers:
+        try:
+            house.add_dormers(side, v['count'], width=v['width'], y=v['y'], roof_overhang=v['overhang'],
+                              pitch=v['pitch'], wall_height=v['wall'])
+        except PlacementError as e:
+            raise PlacementError('dormers', f"--dormers {text}: {e.message.split(': ', 1)[1]}") from e
+
+    if args.add_additional_gable:
+        dormer = house.add_additional_gable(
+            panel_name=args.additional_gable_panel, x=args.additional_gable_x,
+            y=args.additional_gable_y, width=args.additional_gable_width,
+            roof_overhang=args.additional_gable_overhang, pitch=args.additional_gable_pitch,
+            wall_height=args.additional_gable_wall_height)
+        if args.verbose:
+            g = dormer.geometry
+            print(f"\n🏠 Additional gable (dormer) added on {args.additional_gable_panel}")
+            print(f"   Width {g.width}mm, pitch {g.phi_deg:.1f}°, apex angle {g.apex_angle_deg:.1f}°")
+            print(f"   Depth on roof (from horizontal ridge): {dormer.position.height:.1f}mm, "
+                  f"gable height {g.gable_height:.1f}mm, rafter {g.rafter:.1f}mm, ridge {g.ridge:.1f}mm")
+            if g.walls:
+                print(f"   Side walls {g.wall_height:.1f}mm high, {g.eave_depth:.1f}mm deep")
+    return house
+
+
 def main():
     """Main CLI function"""
     parser = create_parser()
@@ -308,87 +395,7 @@ def main():
         sys.exit(1)
     
     try:
-        # Convert architectural options to enums
-        architectural_options = convert_architectural_options(args)
-        
-        if args.verbose:
-            print(f"Creating house: {args.length}×{args.width}×{args.height}mm")
-            print(f"Gable angle: {args.angle}°, Material: {args.thickness}mm")
-            if architectural_options.get('architectural_preset'):
-                print(f"Architectural preset: {args.architectural_preset}")
-            elif any(key in architectural_options for key in ['roof_type', 'architectural_style']):
-                print(f"Custom architectural options:")
-                for key, value in architectural_options.items():
-                    if key != 'auto_add_components':
-                        print(f"  {key}: {value}")
-        
-        # Create HouseMaker with all options
-        house = HouseMaker(
-            length=args.length,
-            width=args.width,
-            height=args.height,
-            gable_angle=args.angle,
-            material_thickness=args.thickness,
-            finger_length=args.finger_length,
-            kerf=args.kerf,
-            material_width=args.material_width,
-            material_height=args.material_height,
-            single_joints=args.single_joints,
-            **architectural_options
-        )
-        
-        # Add roof features if requested (PlacementError explains what is wrong)
-        if args.add_chimney:
-            chimney = house.add_chimney(
-                panel_name=args.chimney_panel, x=args.chimney_x, y=args.chimney_y,
-                width=args.chimney_width, height=args.chimney_depth,
-                chimney_height=args.chimney_height)
-            if args.verbose:
-                x, y, w, d = chimney.footprint()
-                print(f"\n🏭 Chimney added on {args.chimney_panel}")
-                print(f"   Outer footprint on roof: {w:.1f}×{d:.1f}mm at ({x}, {y})")
-                print(f"   Exposure above roof: {chimney.chimney_height}mm up-slope, "
-                      f"{chimney.side_wall_heights()[0]:.1f}mm down-slope (level top)")
-
-        for text, panel, v in args.chimney:
-            try:
-                house.add_chimney(panel_name=panel, x=v['x'], y=v['y'], width=v['width'], height=v['depth'],
-                                  chimney_height=v['height'])
-            except PlacementError as e:
-                raise PlacementError('chimney', f"--chimney {text}: {e.message.split(': ', 1)[1]}") from e
-        for text, panel, v in args.dormer:
-            try:
-                house.add_additional_gable(panel_name=panel, x=v['x'], y=v['y'], width=v['width'],
-                                           roof_overhang=v['overhang'], pitch=v['pitch'], wall_height=v['wall'])
-            except PlacementError as e:
-                raise PlacementError('dormer', f"--dormer {text}: {e.message.split(': ', 1)[1]}") from e
-
-        for text, panel, v in args.cross_gable:
-            try:
-                house.add_cross_gable(panel, v['x'], width=v['width'], pitch=v['pitch'], roof_overhang=v['overhang'])
-            except PlacementError as e:
-                raise PlacementError('cross gable', f"--cross-gable {text}: {e.message.split(': ', 1)[1]}") from e
-        for text, side, v in args.dormers:
-            try:
-                house.add_dormers(side, v['count'], width=v['width'], y=v['y'], roof_overhang=v['overhang'],
-                                  pitch=v['pitch'], wall_height=v['wall'])
-            except PlacementError as e:
-                raise PlacementError('dormers', f"--dormers {text}: {e.message.split(': ', 1)[1]}") from e
-
-        if args.add_additional_gable:
-            dormer = house.add_additional_gable(
-                panel_name=args.additional_gable_panel, x=args.additional_gable_x,
-                y=args.additional_gable_y, width=args.additional_gable_width,
-                roof_overhang=args.additional_gable_overhang, pitch=args.additional_gable_pitch,
-                wall_height=args.additional_gable_wall_height)
-            if args.verbose:
-                g = dormer.geometry
-                print(f"\n🏠 Additional gable (dormer) added on {args.additional_gable_panel}")
-                print(f"   Width {g.width}mm, pitch {g.phi_deg:.1f}°, apex angle {g.apex_angle_deg:.1f}°")
-                print(f"   Depth on roof (from horizontal ridge): {dormer.position.height:.1f}mm, "
-                      f"gable height {g.gable_height:.1f}mm, rafter {g.rafter:.1f}mm, ridge {g.ridge:.1f}mm")
-                if g.walls:
-                    print(f"   Side walls {g.wall_height:.1f}mm high, {g.eave_depth:.1f}mm deep")
+        house = build_house(args)
 
         if args.verbose:
             # Get architectural summary

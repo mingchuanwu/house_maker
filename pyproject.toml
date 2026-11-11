@@ -28,11 +28,12 @@ default = true
 # The repository root *is* the `house_maker` package.
 [tool.setuptools]
 package-dir = { "house_maker" = "." }
-packages = ["house_maker", "house_maker.builders", "house_maker.review", "house_maker.viewer3d"]    # warnings_util etc. are top-level modules of house_maker
+packages = ["house_maker", "house_maker.builders", "house_maker.review", "house_maker.viewer3d", "house_maker.gallery"]    # warnings_util etc. are top-level modules of house_maker
 
 [tool.setuptools.package-data]
 "house_maker.review" = ["viewer.html", "viewer.css", "viewer_core.js", "viewer_app.js"]
 "house_maker.viewer3d" = ["viewer.html", "viewer.css", "viewer_core.js", "viewer_app.js"]
+"house_maker.gallery" = ["index.template.html", "gallery.css", "preview.js"]
 
 [tool.setuptools_scm]
 # the repository root is the git root and the package root

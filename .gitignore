@@ -217,3 +217,4 @@ node_modules/
 *.stl
 *.glb
 *.view.html
+!gallery/views/*.view.html

@@ -22,6 +22,17 @@ A standalone Python library for generating precise laser-cut house boxes with so
 - **10 Preset Configurations**: Pre-configured architectural combinations (farmhouse, colonial, Tudor, German, modern, etc.)
 - **CLI & Python API**: Both command-line and programmatic interfaces with full backward compatibility
 
+## Gallery
+
+**[gallery/index.html](gallery/index.html)**: example houses in a table with the exact command that makes each one, a
+short description and a small 3D preview you can turn by dragging (double-click resets), plus a link to the full 3D
+viewer of each (`gallery/views/*.view.html`). Open the file in a browser (no server needed); on GitHub, download it or
+serve the repository with GitHub Pages, since GitHub does not render HTML files.
+
+The houses are listed in [gallery/houses.py](gallery/houses.py) (a command line and a description each); `make gallery`
+rebuilds the page, running every command through the CLI itself, and the tests check that the committed gallery is up to
+date.
+
 ## Quick Start - Command Line
 
 ### Basic Usage
@@ -451,6 +462,7 @@ house_maker/
 ├── mates.py              # declared mating edges / tab↔slot pairs (used by the review page and tests)
 ├── review/               # human review page (viewer_*.js/html/css), builder, feedback collector
 ├── viewer3d/             # built-in 3D viewer page (--3d view): payload.py, page.py, viewer_*.js/html/css
+├── gallery/              # example houses: houses.py (commands), build.py; index.html + views/ (generated, committed)
 ├── kerf.py               # kerf offset of arbitrary cut paths (cut-outs, trim frames)
 ├── warnings_util.py      # warnings attributed to the caller's code
 ├── tools/mutate.py       # mutation-testing runner (off by default; ≤ 3 workers, checks free memory)
