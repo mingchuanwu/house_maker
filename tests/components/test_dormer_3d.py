@@ -142,14 +142,26 @@ def test_dormer_parts_do_not_interpenetrate(scene):
             assert d.max() <= limit, f"{a} penetrates {b} by {d.max():.3f} mm (limit {limit:.3f})"
 
 
-def test_face_rake_tabs_sit_flush_in_the_roof_panels_when_there_are_tabs(scene):
-    s = scene
+# A rake tab plugs into a slot in the dormer roof panel just above its eave; without an overhang there is no material
+# beyond the slot (builders/dormer.py: _tab_slot keeps half a thickness to the panel edge), so the face has none.
+RAKE_TAB_SCENES = [sc for sc in SCENES if sc[4] > 0]
+
+
+def test_without_an_overhang_the_face_has_no_rake_tabs_but_keeps_its_base_tab():
+    flush = [sc for sc in SCENES if sc[4] == 0]
+    assert flush and len(RAKE_TAB_SCENES) + len(flush) == len(SCENES)
+    for sc in flush:
+        face = _build_scene(sc)['panels']['additional_gable_front_0']
+        assert 'rake_left' not in face.joints and 'rake_right' not in face.joints, sid(sc)
+        assert 'base' in face.joints, sid(sc)
+
+
+@pytest.mark.parametrize('params', RAKE_TAB_SCENES, ids=sid)
+def test_face_rake_tabs_sit_flush_in_the_roof_panels(params):
+    s = _build_scene(params)
     face = s['panels']['additional_gable_front_0']
-    if not face.joints:
-        pytest.skip('no tabs on this dormer')
     k = s['k']
-    if 'rake_left' not in face.joints:
-        pytest.skip('no rake tabs on this dormer')
+    assert 'rake_left' in face.joints and 'rake_right' in face.joints, 'a dormer with an overhang has rake tabs'
     pts, _ = s['samples']['additional_gable_front_0']
     tabs = tab_points(face, s['solids']['additional_gable_front_0'], pts)
     tabs = tabs[s['frames']['additional_gable_front_0'].to_local(tabs)[1] > 0]     # the base tab goes into the main roof

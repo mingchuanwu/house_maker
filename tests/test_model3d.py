@@ -64,11 +64,25 @@ SCENES = {
 }
 
 
+_SCENE_CACHE = {}
+
+
+def _scene(name):
+    if name not in _SCENE_CACHE:
+        house = full_house(**SCENES[name])
+        panels = house.build_panels()
+        _SCENE_CACHE[name] = dict(house=house, panels={p.name: p for p in panels},
+                                  parts={p.name: p for p in house.build_model()})
+    return _SCENE_CACHE[name]
+
+
 @pytest.fixture(params=list(SCENES), scope='module')
 def scene(request):
-    house = full_house(**SCENES[request.param])
-    panels = house.build_panels()
-    return dict(house=house, panels={p.name: p for p in panels}, parts={p.name: p for p in house.build_model()})
+    return _scene(request.param)
+
+
+# every scene gets its automatic windows and door, except those built without components
+DOOR_SCENES = [n for n, kw in SCENES.items() if kw.get('auto_add_components', True)]
 
 
 # ------------------------------------------------------------------ meshes
@@ -258,12 +272,18 @@ def _dist_to_polyline(p, pts):
     return best
 
 
-def test_door_casings_stand_on_the_ground(scene):
+def test_only_houses_built_without_components_have_no_door():
+    for name in SCENES:
+        doors = [n for n in _scene(name)['parts'] if n.endswith('door_casing')]
+        assert bool(doors) == (name in DOOR_SCENES), name
+
+
+@pytest.mark.parametrize('name', DOOR_SCENES)
+def test_door_casings_stand_on_the_ground(name):
     """A door casing is open at the bottom; its legs reach down to the underside of the floor (z = 0), level with the
     bottom of the walls, instead of stopping at the door's sill."""
+    scene = _scene(name)
     doors = [n for n in scene['parts'] if n.endswith('door_casing')]
-    if not doors:
-        pytest.skip('no door')
     floor = min(v[2] for v in scene['parts']['gable_wall_front'].mesh.vertices)
     assert floor == pytest.approx(0, abs=1e-6)
     for name in doors:
