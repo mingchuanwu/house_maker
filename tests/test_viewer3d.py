@@ -13,7 +13,7 @@ import pytest
 
 from house_maker import HouseMaker
 from house_maker.viewer3d import build_page, build_payload, part_group
-from house_maker.viewer3d.payload import GROUPS
+from house_maker.viewer3d.payload import DECIMALS, GROUPS
 
 HERE = pathlib.Path(__file__).resolve().parent
 PKG = HERE.parent
@@ -51,6 +51,9 @@ def test_payload_has_every_part_of_the_model(house, payload):
         assert len(p['vertices']) == 3 * len(mesh.vertices) and len(p['triangles']) == 3 * len(mesh.triangles)
         assert max(p['triangles']) < len(mesh.vertices) and min(p['triangles']) >= 0
         assert p['group'] in GROUPS and p['color'] == list(model[p['name']].color)
+        # the very vertices and triangles of the model, in mm (only rounded for the page)
+        assert p['vertices'] == pytest.approx([c for v in mesh.vertices for c in v], abs=10 ** -DECIMALS)
+        assert p['triangles'] == [i for t in mesh.triangles for i in t]
 
 
 def test_groups_cover_every_kind_of_part(payload):

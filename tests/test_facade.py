@@ -33,10 +33,31 @@ def test_failed_placement_raises_with_reason_and_changes_nothing():
     assert not house.architectural_config.chimneys and not house.architectural_config.windows
 
 
-@pytest.mark.parametrize('preset', ['basic', 'farmhouse', 'tudor', 'german', 'stone'])
+_PRESET_SPEC = {      # what the README promises for each preset: (style, window type, door type)
+    'basic': ('basic', 'rectangular', 'rectangular'), 'farmhouse': ('farmhouse', 'rectangular', 'rectangular'),
+    'colonial': ('colonial', 'rectangular', 'rectangular'), 'tudor': ('tudor', 'arched', 'arched'),
+    'victorian': ('victorian', 'arched', 'rectangular'), 'craftsman': ('craftsman', 'rectangular', 'rectangular'),
+    'german': ('fachwerkhaus', 'rectangular', 'arched'), 'brick': ('brick', 'rectangular', 'rectangular'),
+    'stone': ('stone', 'rectangular', 'rectangular'), 'modern_flat': ('basic', 'rectangular', 'rectangular'),
+    'barn_gambrel': ('farmhouse', 'rectangular', 'double'),
+}
+
+
+@pytest.mark.parametrize('preset', list(_PRESET_SPEC))
 def test_presets_generate(preset):
-    house = HouseMaker(architectural_preset=preset)
-    assert len(parse_svg(house.generate_svg()).panels) >= 7
+    """Every preset builds a complete house with its style, its window and door types, and engraving when styled."""
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')                 # flat and gambrel roofs warn: generated as gable
+        house = HouseMaker(architectural_preset=preset)
+    style, window, door = _PRESET_SPEC[preset]
+    cfg = house.architectural_config
+    assert cfg.architectural_style.value == style
+    assert cfg.windows and {w.type.value for w in cfg.windows} <= {window, 'attic'}
+    assert window in {w.type.value for w in cfg.windows}
+    assert [d.type.value for d in cfg.doors] == [door]
+    panels = {p.name: p for p in house.build_panels()}
+    assert set(parse_svg(house.generate_svg()).panels) == set(panels)
+    assert bool(panels['side_wall_left'].pattern) == (style != 'basic')
 
 
 def test_a_preset_supplies_what_is_not_given_explicitly():

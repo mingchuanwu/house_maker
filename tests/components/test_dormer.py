@@ -39,17 +39,33 @@ def scene(request, inspect):
     panels = inspect('dormer', f"a{theta}_pitch{phi or 'default'}", house,
                      ['roof_panel_left', lambda n: n.startswith('additional_gable')],
                      title=f'{theta}° main roof, dormer pitch {phi or DEFAULT_PITCH}, width {W}')
-    return dict(theta=theta, phi=phi or DEFAULT_PITCH, W=W, o=o, dormer=dormer, p={q.name: q for q in panels})
+    return dict(theta=theta, phi=phi or DEFAULT_PITCH, W=W, o=o, dormer=dormer, house=house,
+                p={q.name: q for q in panels})
 
 
 def test_roof_plane_has_the_right_pitch_and_a_horizontal_ridge(scene):
-    A, B, P, Q = dormer_3d(scene['theta'], scene['W'], scene['phi'])
-    n = cross(sub(P, A), sub(Q, A))
-    assert math.degrees(math.acos(abs(n[2]) / norm(n))) == pytest.approx(scene['phi'], abs=1e-6)
-    assert dot(sub(A, P), sub(Q, P)) == pytest.approx(0, abs=1e-9)         # ridge ⟂ rafter
-    assert Q[2] == P[2]                                                   # horizontal ridge
+    """The dormer roof panels as the assembled model places them: tilted at the dormer pitch, their ridge edges
+    horizontal and square to their front (rafter) edges, as in the independent construction."""
+    from house_maker.model3d import house_frames
+    house = scene['house']
+    panels = {p.name: p for p in house.build_panels()}
+    frames = house_frames(house.geometry, house.architectural_config, panels)
+    for name in ('additional_gable_roof_left_0', 'additional_gable_roof_right_0'):
+        f, panel = frames[name], panels[name]
+        assert math.degrees(math.acos(abs(f.n[2]) / norm(f.n))) == pytest.approx(scene['phi'], abs=1e-6), name
+        world = {e: [f.to_world(c.x, c.y, 0) for c in (panel.corners[i], panel.corners[(i + 1) % len(panel.corners)])]
+                 for i, e in enumerate(panel.edge_names)}
+        ridge, rafter = sub(*world['ridge']), sub(*world['front'])
+        assert ridge[2] == pytest.approx(0, abs=1e-6), f"{name}: ridge not horizontal"
+        assert dot(ridge, rafter) == pytest.approx(0, abs=1e-6 * norm(ridge) * norm(rafter)), name
+        lap = 3.0 if name.endswith('right_0') and panel.joints.get('ridge') else 0.0     # laps t past the ridge line
+        assert norm(rafter) == pytest.approx(norm(scene_P(scene)) + lap, abs=TOL), name               # true rafter
     # front face apex angle follows from the pitch
     assert scene['dormer'].geometry.apex_angle_deg == pytest.approx(180 - 2 * scene['phi'])
+
+
+def scene_P(scene):
+    return dormer_3d(scene['theta'], scene['W'], scene['phi'])[2]
 
 
 def test_front_face_is_triangle_ABP_lifted_clear_of_the_rising_roof(scene):
@@ -220,10 +236,7 @@ def test_ridge_notches_never_reach_the_valley(width, theta, t):
     the valley edge and the outline must stay a simple polygon, for every dormer size."""
     from ..geom import dedupe, is_simple, segment_distance
     house = make_house(length=400, width=300, height=100, gable_angle=theta, material_thickness=t, kerf=0.1)
-    try:
-        house.add_additional_gable('roof_panel_left', 40, 20, width)
-    except Exception:
-        pytest.skip('does not fit on the roof')
+    house.add_additional_gable('roof_panel_left', 40, 20, width)          # every size fits this roof
     p = {q.name: q for q in house.build_panels()}
     right, left = p['additional_gable_roof_right_0'], p['additional_gable_roof_left_0']
     outline_pts = dedupe(outline(right))
@@ -238,9 +251,13 @@ def test_ridge_notches_never_reach_the_valley(width, theta, t):
         assert bottoms
         for q in bottoms:
             assert segment_distance(q, valley, valley_end) >= t - 0.02, f"notch bottom {q} too close to the valley"
-    # mating: the left panel's fingers sit at the mirrored positions
+    # mating: as many tabs on the left panel's ridge as notches on the right one's, as wide once cut (where they land
+    # is checked in 3D: test_dormer_3d.py::test_ridge_fingers_land_in_the_right_panels_lap)
     lf, rf = edge_profile(left, 'ridge'), edge_profile(right, 'ridge')
-    assert len(lf) == len(rf)
+    assert len(lf) == len(rf) > 0 if left.joints.get('ridge') else not lf and not rf
+    assert all(f.depth > 0 for f in lf) and all(f.depth < 0 for f in rf)
+    width = lambda f: physical(f, 0.1).end - physical(f, 0.1).start
+    assert sorted(map(width, lf)) == pytest.approx(sorted(map(width, rf)), abs=5e-3)
 
 
 def test_steep_small_dormer_gets_single_narrow_tabs():

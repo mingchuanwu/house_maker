@@ -87,12 +87,17 @@ def test_automatic_components_flags():
 
 @pytest.mark.parametrize('dims', [(100, 100, 70), (200, 140, 100), (80, 60, 70), (160, 120, 140)])
 def test_attic_windows_only_in_gable_triangles(dims):
-    """An attic window (no frame, no panes) is only ever the small window in a gable triangle; every window on a
-    floor - including the ones placed beside the main window or the door - is an ordinary one."""
+    """A steep gable gets a small window in its triangle (above the wall top), on both gable walls; every window on a
+    floor - including the ones placed beside the main window or the door - is an ordinary, framed and paned one, never
+    an attic window (no frame, no panes)."""
     h = HouseMaker(length=dims[0], width=dims[1], height=dims[2], gable_angle=45)
-    for w in h.architectural_config.windows:
-        if w.type == WindowType.ATTIC:
-            assert w.position.panel.startswith('gable_wall') and w.position.y >= h.geometry.z, w.position
+    z = h.geometry.z
+    windows = h.architectural_config.windows
+    for wall in ('gable_wall_front', 'gable_wall_back'):
+        assert [w for w in windows if w.position.panel == wall and w.position.y >= z], f'{wall}: no window in the gable'
+    floor = [w for w in windows if w.position.y < z]
+    assert floor and all(w.type != WindowType.ATTIC for w in floor), [w.position for w in floor if w.type == WindowType.ATTIC]
+    assert all(w.position.panel.startswith('gable_wall') for w in windows if w.type == WindowType.ATTIC)
 
 
 def test_a_size_given_for_only_one_dimension_is_respected():

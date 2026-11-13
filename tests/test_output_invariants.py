@@ -92,9 +92,20 @@ _COMBOS = ([dict(window_type=w) for w in WindowType] +
 
 @pytest.mark.parametrize('kw', _COMBOS, ids=lambda kw: '-'.join(f'{v.name}' for v in kw.values()))
 def test_every_option_generates_valid_closed_outlines(kw):
-    doc = parse_svg(make_house(auto_add_components=True, **kw).generate_svg())
-    for pid, panel in doc.panels.items():
-        assert all(len(sub) >= 3 for sub in panel.cut), pid
+    """With every window, door, wall-style and roof-tile option: every cut sub-path in the file is closed (ends in Z)
+    and every panel passes the full set of panel invariants (simple CCW outline, planned fingers, area, slots and
+    cut-outs inside the outline without touching it or each other)."""
+    import re
+    from . import invariants
+    house = make_house(auto_add_components=True, **kw)
+    svg = house.generate_svg()
+    cut_paths = re.findall(r'<path[^>]*class="cut-line"[^>]*\sd="([^"]+)"|<path[^>]*\sd="([^"]+)"[^>]*class="cut-line"', svg)
+    subpaths = [chunk for pair in cut_paths for d in pair if d for chunk in re.split(r'(?=M)', d) if chunk.strip()]
+    assert subpaths
+    assert all(chunk.rstrip().endswith('Z') for chunk in subpaths), [c for c in subpaths if not c.rstrip().endswith('Z')][:2]
+    assert len(parse_svg(svg).panels) == len(house.build_panels())
+    for check in invariants.ALL_CHECKS:
+        check(house, house.build_panels())
 
 
 def test_cut_lines_are_a_0_001_inch_hairline_on_the_sheet():

@@ -92,6 +92,11 @@ def to_3mf(parts: Iterable[Part]) -> bytes:
 _MM_TO_M = 0.001
 
 
+def _f32(v: Vec) -> Vec:
+    """`v` rounded to float32, as the binary buffer stores it."""
+    return struct.unpack('<3f', struct.pack('<3f', *v))
+
+
 def to_glb(parts: Iterable[Part]) -> bytes:
     """glTF 2.0 binary: one mesh + node per part, flat-shaded, Y-up, metres."""
     parts = list(parts)
@@ -105,6 +110,7 @@ def to_glb(parts: Iterable[Part]) -> bytes:
             for x, y, z in v:                                        # Z-up (mm) -> Y-up (m): (x, y, z) -> (x, z, -y)
                 pos.append((x * _MM_TO_M, z * _MM_TO_M, -y * _MM_TO_M))
                 nor.append((n[0], n[2], -n[1]))
+        pos = [_f32(c) for c in pos]                             # bounds must be those of the stored float32 data
         lo = [min(c[k] for c in pos) for k in range(3)]
         hi = [max(c[k] for c in pos) for k in range(3)]
         attrs = {}

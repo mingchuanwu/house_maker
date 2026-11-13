@@ -149,7 +149,7 @@ def test_side_walls_get_one_centred_window_per_floor_when_it_fits(house):
                      for w in h.architectural_config.get_windows_for_panel(panel))
         # the placer's own validity filter may drop a window that would touch a margin; it never invents one
         assert set(map(lambda r: tuple(round(v, 6) for v in r), got)) <= set(tuple(round(v, 6) for v in e) for e in expected), panel
-        assert len(got) == len(expected) or len(got) >= len(expected) - 1
+        assert len(got) == len(expected), (panel, got, expected)
 
 
 def test_no_window_straddles_a_floor_boundary(house):

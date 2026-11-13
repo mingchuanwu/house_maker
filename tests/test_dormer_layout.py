@@ -11,6 +11,7 @@ import warnings
 import pytest
 
 from house_maker import PlacementError
+from house_maker.dormer_layout import Y_STEP
 from house_maker.placement3d import box_frames
 from .conftest import make_house
 
@@ -54,13 +55,17 @@ def test_one_row_as_low_as_they_all_fit_on_both_sides():
     for panel in ('roof_panel_left', 'roof_panel_right'):
         row = [d for d in dormers if d.position.panel == panel]
         assert len(row) == 3 and len({round(d.position.y, 9) for d in row}) == 1
-        # one step lower and at least one of them would not fit (with the others there it is checked one by one)
-        d = row[0]
-        others = [g for g in cfg.additional_gables if g is not d]
-        cfg.additional_gables[:] = others
-        assert not cfg.dormer_fits(panel, d.position.x, d.position.y + 0.1 + 1e-9, 25) or any(
-            not cfg.dormer_fits(panel, e.position.x, e.position.y + 0.1 + 1e-9, 25) for e in row[1:])
-        cfg.additional_gables[:] = others + [d]
+        # with the row taken off the roof again: every one of them fits at the row's height, and one step further
+        # (Y_STEP) at least one of them would not - the row is as far down the slope as all of them fit
+        y = row[0].position.y
+        kept = [g for g in cfg.additional_gables if g not in row]
+        everything = list(cfg.additional_gables)
+        cfg.additional_gables[:] = kept
+        try:
+            assert all(cfg.dormer_fits(panel, d.position.x, y, 25) for d in row)
+            assert not all(cfg.dormer_fits(panel, d.position.x, y + Y_STEP + 1e-9, 25) for d in row)
+        finally:
+            cfg.additional_gables[:] = everything
 
 
 def test_warning_when_dormers_cover_more_than_half_the_roof():

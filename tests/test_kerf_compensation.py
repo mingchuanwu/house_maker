@@ -131,6 +131,7 @@ def test_curves_are_flattened_finely_enough_for_a_cut_file(wtype):
     fine = [dedupe(s) for s in parse_path(window_cutout(w), 256)]
     drawn = [p for p in house.build_panels() if p.name == 'side_wall_left'][0].cut[1:]
     drawn_polys = [dedupe(s) for d in drawn for sub in [parse_path(d, 4)] for s in sub]       # as written: no re-flattening
+    assert len(drawn_polys) == len(fine) > 0
     for comp, nom in zip(drawn_polys, fine):
         for m in midpoints(comp):
             assert boundary_distance(m, nom) == pytest.approx(H, abs=0.01)

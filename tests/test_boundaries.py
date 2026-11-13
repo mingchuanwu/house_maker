@@ -277,8 +277,8 @@ def test_roof_feature_keepout_clears_the_gable_tab_slots():
     h.add_chimney('roof_panel_left', x_ok, y, 10, 12, 20)
     with pytest.raises(PlacementError):
         roof_house().add_chimney('roof_panel_left', x_ok - EPS, y, 10, 12, 20)
-    # and from the other side of the slot
-    roof_house().add_chimney('roof_panel_left', sx0 - t - m - fw, y, 10, 12, 20) if sx0 - t - m - fw >= m else None
+    # the slot's other side lies off the panel for this slot: test_keepout_clears_each_gable_slot_on_both_sides
+    # checks each side where it is on the panel
 
 
 def test_roof_features_need_a_roof_panel():
@@ -307,10 +307,9 @@ def test_pack_item_as_wide_as_the_sheet_fits_and_wider_is_an_error():
 
 def test_pack_orders_tallest_first_then_largest_area_then_input_order():
     pos = pack([('small', 10, 10), ('tall', 10, 50), ('wide', 30, 10), ('twin', 10, 10)], 200, 2)
-    assert pos['tall'] == (0, 0)                                   # tallest placed first
-    order = sorted(pos, key=lambda n: (pos[n][1], pos[n][0]))
-    assert order[0] == 'tall'
-    assert pos['wide'][0] < pos['small'][0] < pos['twin'][0] or pos['wide'][1] < pos['small'][1]   # wide before equal-height squares, small before twin
+    # one row, 2 mm apart, in the order tall (tallest), wide (larger area than the equal-height squares), small, twin
+    # (input order breaks the tie)
+    assert pos == {'tall': (0, 0), 'wide': (12, 0), 'small': (44, 0), 'twin': (56, 0)}
 
 
 def test_bbox_semantics():
@@ -435,14 +434,17 @@ def test_keepout_clears_each_gable_slot_on_both_sides(kind, slot):
     yc = (sy0 + sy1) / 2 - db / 2
     right_of = sx1 + T + mb
     left_of = sx0 - T - mb - wb
+    checked = 0
     for x, ok in ((right_of, True), (right_of - EPS, False), (left_of, True), (left_of + EPS, False)):
         if x < mb or x + wb > h.geometry.get_panel_dimensions()['roof_panel_left'][0] - mb:
             continue                                         # that side is outside the panel anyway
+        checked += 1
         if ok:
             add(roof_house(), kind, x, yc)
         else:
             with pytest.raises(PlacementError, match='overlaps'):
                 add(roof_house(), kind, x, yc)
+    assert checked >= 2, 'at least the side of the slot facing the panel is checked (allowed and refused)'
     # above and below the slot (slots are tall: use the keep-out in y)
     below = sy1 + T + mb_up
     above = sy0 - T - mb_down - db - rb

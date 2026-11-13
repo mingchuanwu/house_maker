@@ -10,6 +10,7 @@ chimneys on both roof panels, dormers incl. one big enough for fingers, every wi
 
 import pytest
 
+from . import invariants
 from .conftest import make_house
 
 CASES = {
@@ -61,4 +62,6 @@ def test_gallery_case(name, inspect):
     title, kwargs = CASES[name]
     house = _build(kwargs)
     panels = inspect('whole_house', name, house, [lambda n: True], title=title)
-    assert len(panels) >= 7
+    assert {p.name for p in panels} == {p.name for p in house.build_panels()}          # the whole house is shown
+    for check in invariants.ALL_CHECKS:                                                # and every panel is right
+        check(house, panels)

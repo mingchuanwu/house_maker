@@ -79,11 +79,43 @@ def test_every_panel_becomes_one_closed_solid(scene):
         assert part.mesh.volume() > 0, f"{name}: inside-out or empty"
 
 
+def _drawn_nominal_area(panel):
+    """Nominal area of a panel worked out from its drawn cut alone: the drawn outline is kerf/2 larger all round and
+    every drawn hole kerf/2 smaller, so (to first order) nominal = drawn -/+ kerf/2 x perimeter. The mitred corners
+    add a second-order term, at most ~ (kerf/2)^2 per corner; returns (area, tolerance)."""
+    from house_maker.svgpath import parse_path
+    subs = [sub for d in panel.cut for sub in parse_path(d, 64)]
+    h = K / 2
+
+    def area_perimeter(poly):
+        pts = [(p.x, p.y) for p in poly]
+        a = abs(signed_area(pts))
+        per = sum(math.dist(p, q) for p, q in zip(pts, pts[1:] + pts[:1]))
+        return a, per
+    a0, p0 = area_perimeter(subs[0])
+    area, corners = a0 - h * p0, len(subs[0])
+    for hole in subs[1:]:
+        a, per = area_perimeter(hole)
+        area -= a + h * per
+        corners += len(hole)
+    return area, 4 * h * h * corners + 1e-6 * a0
+
+
 def test_volume_is_nominal_area_times_thickness(scene):
+    """The solid is the nominal panel (outline and every hole, slot and pane) extruded one thickness: checked against
+    the drawn cut, independently of the code that builds the solid. A hole missing from the model shows up as at
+    least its own area (several mm^2) while the tolerance stays well below 1 mm^2."""
     for name, part in scene['parts'].items():
+        area, tol = _drawn_nominal_area(scene['panels'][name])
+        assert part.mesh.volume() == pytest.approx(area * T, abs=tol * T), name
         outer, holes = panel_rings(scene['panels'][name], K)
-        area = abs(signed_area(outer)) - sum(abs(signed_area(h)) for h in holes)
-        assert part.mesh.volume() == pytest.approx(area * T, rel=1e-6), name
+        drawn_holes = sum(len(parse_path_all(d)) for d in scene['panels'][name].cut) - 1
+        assert len(holes) == drawn_holes, f"{name}: {drawn_holes} holes drawn, {len(holes)} in the model"
+
+
+def parse_path_all(d):
+    from house_maker.svgpath import parse_path
+    return parse_path(d)
 
 
 def test_nominal_geometry_not_drawn_geometry(scene):
@@ -173,7 +205,7 @@ def test_panels_do_not_interpenetrate_in_the_exported_model(scene):
         limit = ridge if {a, b} == roof else tol
         if a.startswith('additional_gable_roof') and b.startswith('additional_gable_roof') and g.theta < 45:
             limit = ridge + T          # dormer ridge: same limitation, relative to the dormer pitch
-        assert depth <= limit + (T if 'additional_gable' in a + b else 0), f"{a} penetrates {b} by {depth:.3f} mm"
+        assert depth <= limit, f"{a} penetrates {b} by {depth:.3f} mm (limit {limit:.3f})"
 
 
 def test_casings_frame_the_wall_openings(scene):
@@ -184,8 +216,8 @@ def test_casings_frame_the_wall_openings(scene):
     for name, panel in scene['panels'].items():
         if 'casing' not in name or name.startswith('chimney'):
             continue
-        wall_name = name.split('_w')[0].split('_d')[0] if False else next(
-            w for w in ('side_wall_left', 'side_wall_right', 'gable_wall_front', 'gable_wall_back') if name.startswith(w))
+        wall_name = next(w for w in ('side_wall_left', 'side_wall_right', 'gable_wall_front', 'gable_wall_back')
+                         if name.startswith(w))
         wall, casing = frames[wall_name], frames[name]
         assert casing.n == pytest.approx(wall.n)
         # on the outer face of the wall: the casing's back face is the wall's front face
@@ -197,14 +229,21 @@ def test_casings_frame_the_wall_openings(scene):
         cw = [np.array(casing.to_world(u, v, 0)) for hole in c_holes for u, v in hole]
         if not c_holes:                                    # U-shaped door casing: its inner edges are part of the outline
             cw = [np.array(casing.to_world(u, v, 0)) for u, v in c_out]
-        ww = [np.array(wall.to_world(u, v, T)) for hole in w_holes for u, v in hole]
-        assert ww, f"{wall_name} has no hole for {name}"
-        far = [min(np.linalg.norm(p - q) for q in ww) for p in cw]
-        # every hole vertex of the casing sits on the wall hole's boundary polygon (distance to the nearest edge)
-        for p in cw[:: max(1, len(cw) // 40)]:
-            d = min(_dist_to_polyline(p, [np.array(wall.to_world(u, v, T)) for u, v in hole]) for hole in w_holes)
-            if c_holes:
+        assert w_holes, f"{wall_name} has no hole for {name}"
+        world_holes = [[np.array(wall.to_world(u, v, T)) for u, v in hole] for hole in w_holes]
+        if c_holes:
+            # every vertex of the casing's opening sits on a wall hole's boundary (distance to the nearest edge)
+            for p in cw[:: max(1, len(cw) // 40)]:
+                d = min(_dist_to_polyline(p, hole) for hole in world_holes)
                 assert d < 0.35 + 1e-6, f"{name}: casing opening is {d:.2f} mm off the wall hole"
+        else:
+            # U-shaped door casing: every corner of the door hole it frames lies on the casing's outline (its legs run
+            # down the hole's sides, its top bar along the hole's top)
+            centre = np.mean(cw, axis=0)
+            door = min(world_holes, key=lambda hole: float(np.linalg.norm(np.mean(hole, axis=0) - centre)))
+            for q in door:
+                d = _dist_to_polyline(q, cw)
+                assert d < 0.35 + 1e-6, f"{name}: door hole corner is {d:.2f} mm off the casing's inner edge"
         checked += 1
     assert checked == len([n for n in scene['panels'] if 'casing' in n and not n.startswith('chimney')])
 
@@ -309,9 +348,17 @@ def test_stl_has_every_triangle(parts):
     (count,) = struct.unpack_from('<I', data, 80)
     assert count == sum(len(p.mesh.triangles) for p in parts)
     assert len(data) == 84 + 50 * count
-    # the stored normal agrees with the winding (outward-facing, so the volume is positive)
-    n0 = struct.unpack_from('<3f', data, 84)
-    assert math.sqrt(sum(c * c for c in n0)) == pytest.approx(1.0, abs=1e-5)
+    # every stored normal is the unit normal of its triangle's winding, and the winding faces outward: the triangle
+    # soup encloses exactly the parts' volume (a flipped normal or winding fails one or the other)
+    volume = 0.0
+    for i in range(count):
+        rec = struct.unpack_from('<12f', data, 84 + 50 * i)
+        n, a, b, c = np.array(rec[0:3]), np.array(rec[3:6]), np.array(rec[6:9]), np.array(rec[9:12])
+        face = np.cross(b - a, c - a)
+        if np.linalg.norm(face) > 1e-9:
+            assert np.dot(n, face / np.linalg.norm(face)) == pytest.approx(1.0, abs=1e-4), f"triangle {i}"
+        volume += float(np.dot(a, np.cross(b, c))) / 6
+    assert volume == pytest.approx(sum(p.mesh.volume() for p in parts), rel=1e-4)
 
 
 def test_3mf_package_parses_and_round_trips(parts):
@@ -352,6 +399,37 @@ def test_glb_is_a_valid_glb_with_one_node_per_part(parts):
     assert min(a['min'][1] for a in pos) == pytest.approx(0, abs=1e-9)
     zmax = max(v[2] for p in parts for v in p.mesh.vertices) / 1000
     assert max(a['max'][1] for a in pos) == pytest.approx(zmax, abs=1e-6)
+
+
+def _glb_vec3(data, doc, index):
+    jlen = struct.unpack_from('<I', data, 12)[0]
+    acc = doc['accessors'][index]
+    view = doc['bufferViews'][acc['bufferView']]
+    start = 20 + jlen + 8 + view['byteOffset'] + acc.get('byteOffset', 0)
+    return acc, [struct.unpack_from('<3f', data, start + 12 * k) for k in range(acc['count'])]
+
+
+def test_glb_normals_face_outward_and_bounds_match_the_data(parts):
+    """Every part: flat normals that are the unit normals of the triangle winding, an outward winding (positive
+    enclosed volume, equal to the part's), and POSITION min/max equal to the stored float32 values (glTF requires
+    them exact; validators report ACCESSOR_MIN/MAX_MISMATCH otherwise)."""
+    data = to_glb(parts)
+    doc = json.loads(data[20:20 + struct.unpack_from('<I', data, 12)[0]])
+    for mesh, part in zip(doc['meshes'], parts):
+        attrs = mesh['primitives'][0]['attributes']
+        acc, pos = _glb_vec3(data, doc, attrs['POSITION'])
+        _, nor = _glb_vec3(data, doc, attrs['NORMAL'])
+        assert acc['min'] == [min(p[k] for p in pos) for k in range(3)], part.name
+        assert acc['max'] == [max(p[k] for p in pos) for k in range(3)], part.name
+        volume = 0.0
+        for t in range(0, len(pos), 3):
+            a, b, c = (np.array(pos[t + j]) for j in range(3))
+            face = np.cross(b - a, c - a)
+            if np.linalg.norm(face) > 1e-12:
+                for j in range(3):
+                    assert np.dot(nor[t + j], face / np.linalg.norm(face)) == pytest.approx(1.0, abs=1e-3), part.name
+            volume += float(np.dot(a, np.cross(b, c))) / 6
+        assert volume * 1e9 == pytest.approx(part.mesh.volume(), rel=1e-4), part.name     # m^3 -> mm^3
 
 
 def test_unknown_format_is_rejected(parts):

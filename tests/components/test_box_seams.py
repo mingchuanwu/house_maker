@@ -11,6 +11,7 @@ import math
 
 import pytest
 
+from .. import invariants
 from ..conftest import make_house
 from ..profiles import edge_length, edge_profile, mirrored, physical
 
@@ -138,4 +139,6 @@ def test_seam_assembly_svgs(inspect, name, angle):
     house = make_house(gable_angle=angle, length=120, width=90, height=70)
     panels = inspect('box_seams', f'{name}_a{angle}', house, ASSEMBLIES[name],
                      title=f'{name.replace("_", " ")} at {angle}°: the two sides of each seam')
-    assert len(panels) == len(ASSEMBLIES[name])
+    assert [p.name for p in panels] == ASSEMBLIES[name]
+    for check in invariants.ALL_CHECKS:
+        check(house, panels)

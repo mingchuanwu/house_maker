@@ -51,7 +51,9 @@ def test_case_record_is_json_and_complete():
         for p in rec['panels']:
             assert len(p['corners']) == len(p['edges']) >= 3
             assert p['bbox'][0] < p['bbox'][2]
-    assert 'chimneys' in _cases()[-2]['house']
+    # the house description carries the components: the last case's chimney, where it is and how big
+    (chimney,) = _cases()[-1]['house']['chimneys']
+    assert chimney == dict(panel='roof_panel_right', x=30, y=25, width=12, height=16, chimney_height=30)
 
 
 @pytest.mark.skipif(shutil.which('node') is None, reason='node not installed')

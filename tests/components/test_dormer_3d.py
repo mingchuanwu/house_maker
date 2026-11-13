@@ -45,9 +45,31 @@ def expected_wall(theta, phi, W, wall):
     return (W / 2) * math.tan(math.radians(phi or 45.0)) if theta > 45 else 0.0
 
 
+WALL_SCENES = [sc for sc in SCENES if expected_wall(sc[0], sc[1], sc[3], sc[6])]
+TALL_WALL_SCENES = [sc for sc in WALL_SCENES if expected_wall(sc[0], sc[1], sc[3], sc[6]) >= 20]
+
+
 @pytest.fixture(params=SCENES, ids=sid, scope='module')
 def scene(request):
-    theta, phi, panel, W, o, k, wall = request.param
+    return _build_scene(request.param)
+
+
+@pytest.fixture(params=WALL_SCENES, ids=sid, scope='module')
+def walled(request):
+    """The scenes whose dormer has side walls (cheeks)."""
+    return _build_scene(request.param)
+
+
+_SCENE_CACHE = {}
+
+
+def _build_scene(params):
+    if params not in _SCENE_CACHE:
+        _SCENE_CACHE[params] = _make_scene(*params)
+    return _SCENE_CACHE[params]
+
+
+def _make_scene(theta, phi, panel, W, o, k, wall):
     house = make_house(length=220, width=170, height=90, gable_angle=theta, material_thickness=T, kerf=k)
     dormer = house.add_additional_gable(panel, POS[0], POS[1], W, roof_overhang=o, pitch=phi, wall_height=wall)
     panels = {p.name: p for p in house.build_panels()}
@@ -199,12 +221,6 @@ def test_ridge_fingers_land_in_the_right_panels_lap(scene):
 
 
 # ------------------------------------------------------------------ side walls (cheeks)
-def _walls(scene):
-    if not scene['wall']:
-        pytest.skip('no side walls')
-    return scene
-
-
 def _into_roof(s, side, pts):
     """Depth of points into a dormer roof panel, measured from its underside (the plane through the eave line's end,
     which is w = 0 or w = t of the slab depending on which way its frame normal points)."""
@@ -220,8 +236,8 @@ def _edge_points(panel, frame, edge, w, n=15):
     return frame.to_world(np.linspace(a.x, b.x, n), np.linspace(a.y, b.y, n), np.full(n, w))
 
 
-def test_cheek_bottoms_lie_on_the_main_roof(scene):
-    s = _walls(scene)
+def test_cheek_bottoms_lie_on_the_main_roof(walled):
+    s = walled
     origin, n = _top_plane(s['roof'])
     for side in ('left', 'right'):
         name = f'additional_gable_cheek_{side}_0'
@@ -230,10 +246,10 @@ def test_cheek_bottoms_lie_on_the_main_roof(scene):
             assert np.abs(gap).max() <= s['k'] + 0.05, f"{side} cheek bottom is {np.abs(gap).max():.3f} mm off the roof"
 
 
-def test_cheek_tops_carry_the_dormer_roof_on_their_outer_face(scene):
+def test_cheek_tops_carry_the_dormer_roof_on_their_outer_face(walled):
     """The roof panel's underside passes through the cheek top's outer edge; inside, it rises away (a wedge, hidden
     within the dormer) - so the cheek never digs into the roof."""
-    s = _walls(scene)
+    s = walled
     k = s['k']
     for side in ('left', 'right'):
         name = f'additional_gable_cheek_{side}_0'
@@ -244,10 +260,10 @@ def test_cheek_tops_carry_the_dormer_roof_on_their_outer_face(scene):
         assert (-inner).min() == pytest.approx(wedge, abs=k + 0.05)
 
 
-def test_cheek_tabs_go_through_the_roofs_they_plug_into(scene):
+def test_cheek_tabs_go_through_the_roofs_they_plug_into(walled):
     """Bottom tab: through the main roof, square to it, ending flush with its underside. Front fingers: inside the
     face's thickness. Top tab (if any): inside the dormer roof's thickness, flush with its top at the outer face."""
-    s = _walls(scene)
+    s = walled
     k = s['k']
     tol = k + 0.05
     for side in ('left', 'right'):
@@ -299,10 +315,13 @@ def test_cheek_tabs_go_through_the_roofs_they_plug_into(scene):
         assert np.abs(tip).max() <= k + 0.15, f"{side}: bottom tab tip is {tip} mm off the roof's underside"
 
 
-def test_tall_walls_get_a_cheek_top_tab(scene):
-    s = _walls(scene)
-    if s['wall'] < 20:
-        pytest.skip('walls too low for a top tab on this roof')
+@pytest.mark.parametrize('params', TALL_WALL_SCENES, ids=sid)
+def test_tall_walls_get_a_cheek_top_tab(params):
+    s = _build_scene(params)
     for side in ('left', 'right'):
         assert 'top' in s['panels'][f'additional_gable_cheek_{side}_0'].joints
         assert 'side' in s['panels'][f'additional_gable_roof_{side}_0'].joints
+
+
+def test_the_scene_lists_cover_both_kinds_of_dormer():
+    assert len(WALL_SCENES) >= 3 and TALL_WALL_SCENES and len(SCENES) - len(WALL_SCENES) >= 3

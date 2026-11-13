@@ -124,7 +124,9 @@ def test_random_house_satisfies_every_invariant(seed):
     # 5. chimneys and dormers assemble onto their roof panel without interpenetration
     cfg = house.architectural_config
     def check_feature(parts, roof_name, label, extra_limit=None):
-        solids = {n: PanelSolid(by_name[n], fr) for n, fr in parts.items() if n in by_name}
+        missing = set(parts) - set(by_name)
+        assert not missing, f"{ctx}\n{label}: frames for panels that were not built: {sorted(missing)}"
+        solids = {n: PanelSolid(by_name[n], fr) for n, fr in parts.items()}
         solids[roof_name] = PanelSolid(by_name[roof_name], frames[roof_name])
         samples = {n: sl.sample(step=1.0)[0] for n, sl in solids.items()}
         for a in solids:

@@ -87,10 +87,12 @@ assert.ok(Math.abs(mv.rot - 0) > 1e-6 || Math.abs(mv.tx) + Math.abs(mv.ty) > 1, 
 // ---- note (pin) on an edge
 key('Escape'); key('p');
 const wallFill = doc.querySelector('g[id="floor"] .hitfill');
-const poseNow = pose('floor');
-// click near the floor's bottom edge: local (width/2, 0) -> F = matrix * local
-const m = HR.panelMatrix({ tx: 0, ty: 0, rot: 0, flip: false }, [0, 0]);
-fire(wallFill, 'pointerdown', { clientX: 0, clientY: 0 });
+// click the middle of the floor's bottom edge: local point -> sheet (the panel's transform) -> client (the stubbed
+// screen CTM of the panel group shifts by (10, 10))
+const floorMeta = c1.panels.find((p) => p.name === 'floor');
+const [c0, c1b] = [floorMeta.corners[floorMeta.edges.indexOf('bottom')], floorMeta.corners[(floorMeta.edges.indexOf('bottom') + 1) % floorMeta.corners.length]];
+const sheetPt = HR.apply(pose('floor'), [(c0[0] + c1b[0]) / 2, (c0[1] + c1b[1]) / 2]);
+fire(wallFill, 'pointerdown', { clientX: sheetPt[0] + 10, clientY: sheetPt[1] + 10 });
 assert.ok(!$('form').hidden, 'note form opened');
 const ta = $('form').querySelector('textarea'); ta.value = 'finger 2 looks 0.3mm too narrow';
 $('form').querySelector('select').value = 'bug';
@@ -98,6 +100,11 @@ $('form').querySelector('select').value = 'bug';
 assert.strictEqual(state().pins.length, 1, 'pin saved');
 assert.strictEqual(state().pins[0].text, 'finger 2 looks 0.3mm too narrow');
 assert.ok(state().pins[0].target && state().pins[0].case === 'box_seams/floor_to_side_wall_a30');
+const pinned = state().pins[0];
+assert.strictEqual(pinned.panel, 'floor', 'pin attached to the clicked panel');
+assert.ok(['edge', 'finger'].includes(pinned.target.type) && pinned.target.edge === 'bottom',
+          'pin attached to the clicked edge: ' + JSON.stringify(pinned.target));
+assert.ok(Math.abs(pinned.target.s - Math.hypot(c1b[0] - c0[0], c1b[1] - c0[1]) / 2) < 0.5, 'at the clicked place');
 assert.ok(doc.querySelectorAll('.pin').length === 1 && doc.querySelectorAll('.pinrow').length === 1, 'pin drawn and listed');
 
 // ---- export
