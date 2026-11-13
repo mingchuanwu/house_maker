@@ -1,6 +1,8 @@
 # House maker - common tasks. Run `make` for the list.
 SHELL      := /bin/bash
 UV         ?= uv
+# --frozen: install exactly what uv.lock says and never rewrite it (a local mirror such as UV_DEFAULT_INDEX would
+# otherwise make uv re-lock against the mirror). After changing dependencies in pyproject.toml run `uv lock`.
 REVIEW_DIR ?= /tmp/house_gallery
 INBOX      ?= /tmp/house_review_inbox
 # the package is the repo root, so run python tools from its parent directory when not installed
@@ -14,45 +16,45 @@ help: ## list the targets
 	@echo; echo "  variables: REVIEW_DIR=$(REVIEW_DIR)  INBOX=$(INBOX)"
 
 setup: ## create .venv and install the Python dependencies (uv sync); also node-deps if npm exists
-	$(UV) sync
+	$(UV) sync --frozen
 	@command -v npm >/dev/null && $(MAKE) --no-print-directory node-deps || echo "npm not found: skipping the optional node tests"
 
 node-deps: ## install jsdom (only needed for the review-page browser-logic tests)
 	npm ci --no-audit --no-fund
 
 test: ## run the whole test suite
-	$(UV) run pytest -q
+	$(UV) run --frozen pytest -q
 
 test-fast: ## stop at the first failure
-	$(UV) run pytest -q -x
+	$(UV) run --frozen pytest -q -x
 
 build: ## build the wheel and sdist into dist/ (after running the tests)
-	$(UV) run pytest -q
+	$(UV) run --frozen pytest -q
 	$(UV) build
 	@echo; ls -1 dist/
 
 review: ## run the tests, write all SVGs + review.html to REVIEW_DIR and open the review page
 	rm -rf $(REVIEW_DIR)
-	$(UV) run pytest -q --svg-dir $(REVIEW_DIR)
+	$(UV) run --frozen pytest -q --svg-dir $(REVIEW_DIR)
 	@mkdir -p $(INBOX)
 	@echo; echo "Review page : $(REVIEW_DIR)/review.html"
 	@echo "Save exported feedback in : $(INBOX)   (then: make feedback)"
 	@$(OPEN) $(REVIEW_DIR)/review.html
 
 collect: ## move exported feedback files from the inbox into house_maker/review/feedback/ and print them
-	@$(UV) run python -m house_maker.review collect --inbox $(INBOX) || echo "(nothing to collect in $(INBOX))"
+	@$(UV) run --frozen python -m house_maker.review collect --inbox $(INBOX) || echo "(nothing to collect in $(INBOX))"
 
 feedback: collect ## alias of collect
 
 house: ## generate a sample house: make house ARGS="--add-chimney --angle 40"
-	$(UV) run house-maker --output house_box.svg $(ARGS)
+	$(UV) run --frozen house-maker --output house_box.svg $(ARGS)
 
 view: ## generate a sample house with the 3D viewer page and open it: make view ARGS="--add-chimney"
-	$(UV) run house-maker --output house_box.svg --3d view $(ARGS)
+	$(UV) run --frozen house-maker --output house_box.svg --3d view $(ARGS)
 	@$(OPEN) house_box.view.html
 
 gallery: ## rebuild the house gallery (gallery/index.html + gallery/views/*.view.html) and open it
-	$(UV) run python -m house_maker.gallery
+	$(UV) run --frozen python -m house_maker.gallery
 	@$(OPEN) gallery/index.html
 
 clean: ## remove caches and generated reviews
