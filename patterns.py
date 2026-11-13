@@ -7,18 +7,92 @@ Roof/brick helpers take a panel-local `position` (the panel origin) so they can 
 
 import math
 import random
+import re
 import zlib
-from typing import List, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 from .components import ArchitecturalStyle, ShingleType
 from .constants import COORDINATE_PRECISION
-from .geometry import HouseGeometry, Point
+from .geometry import HouseGeometry, Point, offset_polygon
+from .svgpath import parse_path
 
 
 def pattern_scale(panel_bounds: Tuple[float, float]) -> float:
     """Scale factor for decorative patterns (1.0 for a 100x100mm panel)."""
     width, height = panel_bounds
     return max(0.5, min(math.sqrt(width * height / 10000), 3.0))
+
+
+_CLIP_EPS = 1e-9
+_P = COORDINATE_PRECISION
+
+
+def _clip_segment(a: Point, b: Point, region: Sequence[Point]) -> Optional[Tuple[Point, Point]]:
+    """The part of segment a-b inside the convex counter-clockwise polygon `region` (Cyrus-Beck), or None."""
+    t0, t1 = 0.0, 1.0
+    dx, dy = b.x - a.x, b.y - a.y
+    for i in range(len(region)):
+        p, q = region[i], region[(i + 1) % len(region)]
+        nx, ny = -(q.y - p.y), q.x - p.x                       # inward normal of a CCW edge
+        num = nx * (a.x - p.x) + ny * (a.y - p.y)              # >= 0: a is on the inner side
+        den = nx * dx + ny * dy
+        if abs(den) < _CLIP_EPS:
+            if num < -_CLIP_EPS:
+                return None                                    # parallel to this edge and outside it
+            continue
+        t = -num / den
+        if den > 0:
+            t0 = max(t0, t)
+        else:
+            t1 = min(t1, t)
+        if t0 > t1 + _CLIP_EPS:
+            return None
+    return Point(a.x + t0 * dx, a.y + t0 * dy), Point(a.x + t1 * dx, a.y + t1 * dy)
+
+
+def _inside_convex(pt: Point, region: Sequence[Point]) -> bool:
+    return all((q.x - p.x) * (pt.y - p.y) - (q.y - p.y) * (pt.x - p.x) >= -1e-6
+               for p, q in zip(region, list(region[1:]) + [region[0]]))
+
+
+def clip_pattern(d: str, region: Sequence[Point]) -> str:
+    """The engraving path `d` cut back to the convex counter-clockwise polygon `region`. Sub-paths lying wholly
+    inside are kept as they are (curves included); the others are flattened and only their inside pieces kept."""
+    out = []
+    for chunk in (c.strip() for c in re.split(r'(?=M)', d)):
+        if not chunk:
+            continue
+        pts = [p for sub in parse_path(chunk) for p in sub]
+        if not pts:
+            continue
+        if all(_inside_convex(p, region) for p in pts):
+            out.append(chunk)
+            continue
+        chain = pts + [pts[0]] if 'Z' in chunk else pts
+        piece: List[Point] = []
+        for a, b in zip(chain, chain[1:]):
+            seg = _clip_segment(a, b, region)
+            if seg is None or (abs(seg[0].x - seg[1].x) < _CLIP_EPS and abs(seg[0].y - seg[1].y) < _CLIP_EPS):
+                if len(piece) > 1:
+                    out.append(_polyline(piece))
+                piece = []
+                continue
+            if piece and abs(piece[-1].x - seg[0].x) < 1e-9 and abs(piece[-1].y - seg[0].y) < 1e-9:
+                piece.append(seg[1])
+            else:
+                if len(piece) > 1:
+                    out.append(_polyline(piece))
+                piece = [seg[0], seg[1]]
+            if seg[1] != b:                                    # left the region inside this segment
+                out.append(_polyline(piece))
+                piece = []
+        if len(piece) > 1:
+            out.append(_polyline(piece))
+    return " ".join(out)
+
+
+def _polyline(points: Sequence[Point]) -> str:
+    return "M " + " L ".join(f"{p.x:.{_P}f},{p.y:.{_P}f}" for p in points)
 
 
 class ArchitecturalPatternGenerator:
@@ -30,7 +104,18 @@ class ArchitecturalPatternGenerator:
         self.stone_jitter = stone_jitter  # Control jitter in stone pattern
     
     def generate_pattern_for_panel(self, panel_name: str, panel_bounds: Tuple[float, float]) -> str:
-        """Generate SVG pattern elements for a specific panel"""
+        """SVG pattern elements for a specific panel. On a gable wall (a pentagon) the pattern is clipped to the
+        outline inset by one thickness, so nothing is engraved on the scrap beside the roof slopes."""
+        if not panel_name.startswith('gable_wall'):
+            return self._style_pattern(panel_name, panel_bounds)
+        g = self.house_geometry
+        w, h = panel_bounds
+        if self.style == ArchitecturalStyle.VICTORIAN:         # its corner brackets go under the eaves
+            panel_bounds = (w, g.z_kerf)
+        pentagon = [Point(0, 0), Point(w, 0), Point(w, g.z_kerf), Point(w / 2, h), Point(0, g.z_kerf)]
+        return clip_pattern(self._style_pattern(panel_name, panel_bounds), offset_polygon(pentagon, -g.thickness))
+
+    def _style_pattern(self, panel_name: str, panel_bounds: Tuple[float, float]) -> str:
         if self.style == ArchitecturalStyle.BASIC:
             return ""  # No decorative elements
         elif self.style == ArchitecturalStyle.FACHWERKHAUS:

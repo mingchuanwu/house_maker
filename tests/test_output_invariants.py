@@ -95,3 +95,16 @@ def test_every_option_generates_valid_closed_outlines(kw):
     doc = parse_svg(make_house(auto_add_components=True, **kw).generate_svg())
     for pid, panel in doc.panels.items():
         assert all(len(sub) >= 3 for sub in panel.cut), pid
+
+
+def test_cut_lines_are_a_0_001_inch_hairline_on_the_sheet():
+    """The viewBox maps one user unit to one mm, so the cut stroke must be 0.0254 user units. In SVG CSS `px` is one
+    user unit while `mm` is 3.78, so a width written in mm would cut (or engrave) with a 3.78x thicker line."""
+    import re
+    svg = make_house().generate_svg()
+    w, h = (float(v) for v in re.search(r'width="([\d.]+)mm"\s+height="([\d.]+)mm"', svg).groups())
+    vb = parse_svg(svg).viewbox
+    assert abs(vb.max_x - vb.min_x - w) < 1e-6 and abs(vb.max_y - vb.min_y - h) < 1e-6   # 1 user unit = 1 mm
+    rule = re.search(r'\.cut-line \{[^}]*stroke-width:\s*([\d.]+)(px|mm)?;', svg)
+    user_units = float(rule.group(1)) * (96 / 25.4 if rule.group(2) == 'mm' else 1)
+    assert abs(user_units - 0.0254) < 1e-9, rule.group(0)

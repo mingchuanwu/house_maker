@@ -8,7 +8,7 @@ so adding components after a previous `generate_svg()` is always reflected in th
 import pathlib
 
 from .components import ArchitecturalStyle, DoorType, RoofType, ShingleType, WindowType
-from .config import ArchitecturalConfiguration, create_preset_configuration
+from .config import ArchitecturalConfiguration, create_preset_configuration, preset_options
 from .constants import DEFAULT_KERF, HouseStyle
 from .dormer_layout import add_dormers
 from .formats3d import FORMATS, encode
@@ -29,13 +29,13 @@ class HouseMaker:
                  house_style=HouseStyle.BASIC_HOUSE,
                  material_width=457.2, material_height=304.8,
                  # New architectural parameters
-                 roof_type=RoofType.GABLE,
-                 architectural_style=ArchitecturalStyle.BASIC,
+                 roof_type=None,
+                 architectural_style=None,
                  shingle_type=ShingleType.SHINGLES,
                  architectural_preset=None,
                  auto_add_components=True,
-                 window_type=WindowType.RECTANGULAR,
-                 door_type=DoorType.RECTANGULAR,
+                 window_type=None,
+                 door_type=None,
                  stone_jitter=True,
                  single_joints=False):
         """
@@ -56,7 +56,8 @@ class HouseMaker:
             # Architectural features (NEW!)
             roof_type: Type of roof (gable, flat, hip, gambrel, shed, mansard)
             architectural_style: Decorative style (basic, farmhouse, colonial, tudor, etc.)
-            architectural_preset: Use preset configuration ('farmhouse', 'colonial', etc.)
+            architectural_preset: Use preset configuration ('farmhouse', 'colonial', etc.): it sets the roof type,
+                style, window type and door type that are not given explicitly (an explicit value wins)
             auto_add_components: Automatically add doors and windows with aesthetic proportions
             window_type: Default window type for automatic placement
             door_type: Default door type for automatic placement
@@ -78,27 +79,23 @@ class HouseMaker:
         self.material_height = material_height
         self.single_joints = single_joints
         
-        # Initialize architectural configuration
+        # Initialize architectural configuration: explicit options win over the preset, the preset over the defaults
+        chosen = dict(roof_type=RoofType.GABLE, architectural_style=ArchitecturalStyle.BASIC,
+                      window_type=WindowType.RECTANGULAR, door_type=DoorType.RECTANGULAR)
         if architectural_preset:
-            # Use preset configuration
-            self.architectural_config = create_preset_configuration(self.geometry, architectural_preset)
-        else:
-            # Use custom configuration
-            self.architectural_config = ArchitecturalConfiguration(
-                self.geometry, roof_type, architectural_style, shingle_type, stone_jitter
-            )
-            
-            if auto_add_components:
-                # Add doors and windows with automatic sizing
-                # By default, door is placed on gable_wall_front at ground level
-                self.architectural_config.add_automatic_components(
-                    add_windows=True,
-                    add_doors=True,
-                    window_type=window_type,
-                    door_type=door_type,
-                    door_panel='gable_wall_front'  # Can be changed to 'side_wall_right'
-                )
-    
+            chosen.update(preset_options(architectural_preset))
+        for key, value in (('roof_type', roof_type), ('architectural_style', architectural_style),
+                           ('window_type', window_type), ('door_type', door_type)):
+            if value is not None:
+                chosen[key] = value
+        self.architectural_config = ArchitecturalConfiguration(
+            self.geometry, chosen['roof_type'], chosen['architectural_style'], shingle_type, stone_jitter)
+        if auto_add_components:
+            # Add doors and windows with automatic sizing; the door goes on gable_wall_front at ground level
+            self.architectural_config.add_automatic_components(
+                add_windows=True, add_doors=True, window_type=chosen['window_type'],
+                door_type=chosen['door_type'], door_panel='gable_wall_front')
+
     def _svg_generator(self):
         return SVGGenerator(self.geometry, self.style,
                             material_width=self.material_width,

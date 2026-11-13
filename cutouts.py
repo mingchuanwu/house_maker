@@ -68,48 +68,6 @@ def _generate_circular_cutout(x: float, y: float, width: float, height: float) -
 
     return path
 
-def _generate_cross_pane_cutout(x: float, y: float, width: float, height: float) -> str:
-    """Generate a cross-pane window cutout with cross mullions"""
-    center_x = x + width / 2
-    center_y = y + height / 2
-    mullion_width = 1.0  # 1mm mullion width
-
-    # Main window opening
-    main = _generate_rectangular_cutout(x, y, width, height)
-
-    # Vertical mullion (center)
-    vert_mullion = _generate_rectangular_cutout(
-        center_x - mullion_width/2, y, mullion_width, height)
-
-    # Horizontal mullion (center)
-    horiz_mullion = _generate_rectangular_cutout(
-        x, center_y - mullion_width/2, width, mullion_width)
-
-    return main + " " + vert_mullion + " " + horiz_mullion
-
-def _generate_multi_pane_cutout(x: float, y: float, width: float, height: float) -> str:
-    """Generate a multi-pane window cutout (3x2 grid with internal mullions)"""
-    mullion_width = 1.0  # 1mm mullion width
-    pane_width = width / 3
-    pane_height = height / 2
-
-    # Main window opening
-    main = _generate_rectangular_cutout(x, y, width, height)
-
-    # Vertical mullions (2 internal divisions for 3 columns)
-    mullions = []
-    for i in range(1, 3):
-        mullion_x = x + i * pane_width - mullion_width/2
-        mullions.append(_generate_rectangular_cutout(
-            mullion_x, y, mullion_width, height))
-
-    # Horizontal mullion (1 internal division for 2 rows)
-    mullion_y = y + pane_height - mullion_width/2
-    mullions.append(_generate_rectangular_cutout(
-        x, mullion_y, width, mullion_width))
-
-    return main + " " + " ".join(mullions)
-
 def _generate_colonial_set_cutout(x: float, y: float, width: float, height: float) -> str:
     """Generate a colonial set window cutout (3 separate windows)"""
     window_width = width / 3
@@ -177,20 +135,6 @@ def _generate_gothic_arch_cutout(x: float, y: float, width: float, height: float
 
     return path
 
-def _generate_double_hung_cutout(x: float, y: float, width: float, height: float) -> str:
-    """Generate a double-hung window cutout with horizontal division"""
-    divider_height = 1.0  # 1mm divider height
-    mid_y = y + height / 2
-
-    # Main window opening
-    main = _generate_rectangular_cutout(x, y, width, height)
-
-    # Horizontal divider in the middle
-    divider = _generate_rectangular_cutout(
-        x, mid_y - divider_height/2, width, divider_height)
-
-    return main + " " + divider
-
 def _generate_dormer_cutout(x: float, y: float, width: float, height: float) -> str:
     """Generate a dormer window cutout (rectangular with peaked roof top)"""
     peak_height = height * 0.2  # Top 20% is peaked
@@ -252,6 +196,26 @@ def paned_cutout(x: float, y: float, width: float, height: float, bar: float,
                     for j in range(rows) for i in range(cols))
 
 
+# Windows with a fixed pane grid (columns, rows); the glazing bars between the panes are left standing as wall material
+FIXED_PANE_GRIDS = {
+    WindowType.CROSS_PANE: (2, 2),       # a cross of bars
+    WindowType.MULTI_PANE: (3, 2),
+    WindowType.DOUBLE_HUNG: (1, 2),      # upper and lower sash
+}
+DEFAULT_BAR = 1.0                        # mm, glazing bar width when the material thickness is not known
+
+
+def fixed_grid_cutout(x: float, y: float, width: float, height: float, grid: Tuple[int, int], bar: float) -> str:
+    """The opening as the panes of `grid`, separated by bars `bar` wide. A direction whose panes would come out
+    narrower than one bar gets fewer divisions (down to a single pane)."""
+    cols, rows = grid
+    while cols > 1 and (width - (cols - 1) * bar) / cols < bar:
+        cols -= 1
+    while rows > 1 and (height - (rows - 1) * bar) / rows < bar:
+        rows -= 1
+    return paned_cutout(x, y, width, height, bar, (cols, rows))
+
+
 _RECT = _generate_rectangular_cutout
 
 WINDOW_CUTOUTS = {
@@ -259,12 +223,9 @@ WINDOW_CUTOUTS = {
     WindowType.ARCHED: _generate_arched_cutout,
     WindowType.CIRCULAR: _generate_circular_cutout,
     WindowType.ATTIC: _RECT,
-    WindowType.CROSS_PANE: _generate_cross_pane_cutout,
-    WindowType.MULTI_PANE: _generate_multi_pane_cutout,
     WindowType.COLONIAL_SET: _generate_colonial_set_cutout,
     WindowType.PALLADIAN: _generate_palladian_cutout,
     WindowType.GOTHIC_PAIR: _generate_gothic_pair_cutout,
-    WindowType.DOUBLE_HUNG: _generate_double_hung_cutout,
     WindowType.CASEMENT: _RECT,
     WindowType.BAY: _RECT,
     WindowType.DORMER: _generate_dormer_cutout,
@@ -280,10 +241,13 @@ DOOR_CUTOUTS = {
 
 def window_cutout(window: Window, thickness: Optional[float] = None) -> str:
     """Cutout path for a window at its panel-local position. Given the material `thickness`, a rectangular window is
-    cut as a grid of panes with glazing bars one thickness wide (see `pane_grid`)."""
+    cut as a grid of panes with glazing bars one thickness wide (see `pane_grid`); cross-pane, multi-pane and
+    double-hung windows are cut as their fixed pane grid (`FIXED_PANE_GRIDS`) with bars one thickness wide."""
     p = window.position
     if window.type == WindowType.RECTANGULAR and thickness:
         return paned_cutout(p.x, p.y, p.width, p.height, thickness)
+    if window.type in FIXED_PANE_GRIDS:
+        return fixed_grid_cutout(p.x, p.y, p.width, p.height, FIXED_PANE_GRIDS[window.type], thickness or DEFAULT_BAR)
     return WINDOW_CUTOUTS.get(window.type, _RECT)(p.x, p.y, p.width, p.height)
 
 

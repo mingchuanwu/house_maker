@@ -77,3 +77,43 @@ def test_the_casing_opening_frames_the_panes():
     h = max(q.y for q in opening) - min(q.y for q in opening)
     k = house.geometry.kerf                                # the opening is a hole in a cut part: drawn kerf smaller
     assert (w + k, h + k) == pytest.approx((win.position.width, win.position.height), abs=1e-3)
+
+
+def _subpath_polys(panel):
+    from ..geom import dedupe
+    return [dedupe(s) for d in panel.cut[1:] for s in parse_path(d, 32)]
+
+
+@pytest.mark.parametrize('wtype', list(WindowType), ids=lambda t: t.name.lower())
+def test_no_hole_lies_inside_or_overlaps_another(wtype):
+    """A hole drawn inside another hole is cut out of the piece that falls away, so it adds nothing to the part: a
+    window whose bars are drawn as rectangles inside the opening comes out as one plain hole. Every window type's
+    holes must be disjoint (bars between panes stay as wall material)."""
+    from ..geom import point_in_polygon, segments_cross
+    house = make_house(length=160, width=120, height=100, auto_add_components=False)
+    house.add_window('side_wall_left', 50, 30, 40, 30, window_type=wtype)
+    wall = next(p for p in house.build_panels() if p.name == 'side_wall_left')
+    polys = _subpath_polys(wall)
+    assert polys
+    for i, a in enumerate(polys):
+        for b in polys[i + 1:]:
+            assert not any(point_in_polygon(p, b) for p in a) and not any(point_in_polygon(p, a) for p in b)
+            assert not any(segments_cross(a[k - 1], a[k], b[m - 1], b[m])
+                           for k in range(len(a)) for m in range(len(b)))
+
+
+@pytest.mark.parametrize('wtype,panes', [(WindowType.CROSS_PANE, 4), (WindowType.MULTI_PANE, 6),
+                                         (WindowType.DOUBLE_HUNG, 2)])
+def test_barred_windows_leave_their_bars_standing(wtype, panes):
+    """Cross-pane, multi-pane and double-hung windows are cut as separate panes with bars one thickness wide."""
+    from ..geom import bounds
+    house = make_house(length=160, width=120, height=100, material_thickness=T, kerf=0, auto_add_components=False)
+    house.add_window('side_wall_left', 50, 30, 40, 30, window_type=wtype)
+    polys = _subpath_polys(next(p for p in house.build_panels() if p.name == 'side_wall_left'))
+    assert len(polys) == panes
+    boxes = [bounds(p) for p in polys]
+    for lo, hi, start, end in ((0, 2, 50, 90), (1, 3, 30, 60)):          # x then y: opening 50..90 x 30..60
+        starts, ends = sorted({round(b[lo], 6) for b in boxes}), sorted({round(b[hi], 6) for b in boxes})
+        assert starts[0] == pytest.approx(start) and ends[-1] == pytest.approx(end)
+        assert all(s - e == pytest.approx(T) for s, e in zip(starts[1:], ends[:-1]))   # bars one thickness wide
+    assert len({(round(b[0], 6), round(b[1], 6)) for b in boxes}) == panes            # a full grid, no duplicates

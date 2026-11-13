@@ -8,7 +8,7 @@ import pytest
 from house_maker import ArchitecturalStyle, ShingleType
 from house_maker.svgpath import parse_path
 from ..conftest import make_house
-from ..geom import bounds, outline
+from ..geom import bounds, outline, point_in_polygon, segment_distance
 
 TOL = 0.2          # engraving is jittered/hand-drawn; allow a hair of overshoot
 
@@ -25,11 +25,12 @@ def test_wall_pattern_stays_inside_the_wall(inspect, style, wall):
     house = make_house(architectural_style=style, length=120, width=100, height=90)
     (panel,) = inspect('wall_style', f'{style.name.lower()}_on_{wall}', house, [wall],
                        title=f'{style.name} pattern on {wall}')
-    box = engraving_bounds(panel)
-    assert box is not None
-    ox0, oy0, ox1, oy1 = bounds(outline(panel))
-    assert box[0] >= -TOL and box[1] >= -TOL                     # nominal origin is (0, 0)
-    assert box[2] <= panel.nominal_size[0] + TOL and box[3] <= panel.nominal_size[1] + TOL
+    pts = [p for sub in parse_path(panel.pattern) for p in sub]
+    assert len(pts) >= 4, 'the wall gets a decoration'
+    edge = outline(panel)                 # the drawn cut outline, finger notches and the gable's slopes included
+    outside = [p for p in pts if not point_in_polygon(p, edge)
+               and min(segment_distance(p, a, b) for a, b in zip(edge, edge[1:] + edge[:1])) > TOL]
+    assert not outside, f'{len(outside)} of {len(pts)} engraving points off the panel, e.g. {outside[:3]}'
 
 
 def test_basic_style_has_no_wall_engraving():

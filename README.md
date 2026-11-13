@@ -19,7 +19,7 @@ A standalone Python library for generating precise laser-cut house boxes with so
   - **Dormers** (`--add-additional-gable`): gable dormer with horizontal ridge; its depth follows from width and pitch (default pitch 45°, a 90° apex; a steeper pitch makes the dormer taller and deeper). It uses its own finger size (at most half its shortest joint edge, at least 2 thicknesses), so even small dormers get ridge fingers and face tabs/slots; the front face also plugs a tab through a slot in the main roof (the valley edges are glued). On roofs steeper than 45° the dormer gets **side walls** (cheeks) as tall as its gable, which lift and deepen it; `--additional-gable-wall-height H` sets them (0 = none) on any roof. The cheeks are finger-jointed to the face, tabbed through the main roof, and (when tall enough) tabbed into the dormer roof's side edge. The dormer's face gets a slim double-hung window: up to 65% of the face wide, twice as tall as wide (like model-house dormer windows), centred (top on the eave line of a walled face when it fits), 2x3 panes with half-thickness bars (2x2, 1x2 or one pane when smaller); tiny faces get none
   - **Attic Window Support**: Automatic detection for tall houses and steep gables (>30° and sufficient height)
   - **Proportional Sizing**: All components automatically sized using golden ratio (1.618) and architectural best practices
-- **10 Preset Configurations**: Pre-configured architectural combinations (farmhouse, colonial, Tudor, German, modern, etc.)
+- **11 Preset Configurations**: Pre-configured architectural combinations (farmhouse, colonial, Tudor, German, modern, etc.)
 - **CLI & Python API**: Both command-line and programmatic interfaces with full backward compatibility
 
 ## Gallery
@@ -120,14 +120,17 @@ Architectural Features:
   --architectural-style   Style: basic, fachwerkhaus, farmhouse, colonial, brick, tudor, victorian, craftsman
   --window-type          Window type: rectangular, arched, circular, attic
   --door-type            Door type: rectangular, double, arched, dutch
-  --architectural-preset  Preset: basic, farmhouse, colonial, tudor, german, victorian, craftsman, brick_house, modern_flat, barn_gambrel
+  --architectural-preset  Preset: basic, farmhouse, colonial, tudor, german, victorian, craftsman, brick, stone, modern_flat, barn_gambrel
+                         (sets roof, style, window and door types; an explicit --roof-type, --architectural-style,
+                         --window-type or --door-type wins over it, and --no-auto-components still applies)
   --no-auto-components   Disable automatic door/window placement
 
 Output:
   --output, -o        Output SVG filename (default: house_box.svg)
   --3d FORMAT         Also write the assembled house as a 3D model next to the SVG:
                       3mf (default), stl, glb, view (built-in 3D viewer page),
-                      all (3mf, stl, glb and view) or none
+                      all (3mf, stl, glb and view) or none. An --output name that a 3D file would
+                      overwrite (e.g. -o house.stl --3d stl) is refused
   --no-labels         Disable panel labels in SVG
   --spacing, -s       Panel spacing in mm (default: 3)
   --rotated-layout    Use rotated layout pattern
@@ -169,16 +172,18 @@ The HouseMaker system includes a comprehensive architectural component system wi
 - **Arched**: Classical arched top doors
 - **Dutch**: Split doors with separate upper and lower sections
 
-### Preset Configurations (10 Available)
-Ready-to-use architectural combinations:
+### Preset Configurations (11 Available)
+Ready-to-use architectural combinations. A preset fills in the roof type, style, window type and door type you don't
+give explicitly; explicit options win over it.
 - **basic**: Simple gable roof with basic style
-- **farmhouse**: Gambrel roof with farmhouse style and practical components
+- **farmhouse**: Gable roof with farmhouse style and practical components
 - **colonial**: Gable roof with colonial style and symmetrical layout
 - **tudor**: Gable roof with Tudor style and arched components
 - **german**: Gable roof with Fachwerkhaus style (traditional German timber frame)
 - **victorian**: Gable roof with Victorian style and ornate details
 - **craftsman**: Gable roof with Craftsman style and horizontal emphasis
-- **brick_house**: Gable roof with brick patterns and classic proportions
+- **brick**: Gable roof with brick patterns and classic proportions
+- **stone**: Gable roof with stone wall patterns
 - **modern_flat**: Flat roof with basic style for contemporary designs
 - **barn_gambrel**: Gambrel roof with farmhouse style for barn-like structures
 

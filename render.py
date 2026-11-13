@@ -5,6 +5,8 @@ from typing import Dict, List, Tuple
 from .constants import COORDINATE_PRECISION
 from .panel import Panel
 
+# Line widths in user units (= mm: the viewBox is in mm). The CSS writes them as px, which is one user unit;
+# CSS mm would be 3.78 user units, i.e. a 3.78x thicker line on the cutter.
 LASER_LINE_WIDTH = 0.0254                    # 0.001 inch hairline for cut lines
 DECORATIVE_LINE_WIDTH = LASER_LINE_WIDTH * 3  # visually distinct engraving lines
 FONT_SIZE = 2.5                              # label text height in *user units* (= mm: the viewBox is in mm)
@@ -17,7 +19,7 @@ _P = COORDINATE_PRECISION
 
 def _style_block() -> List[str]:
     def rule(cls, stroke, width):
-        return [f'      .{cls} {{', f'        stroke: {stroke};', f'        stroke-width: {width:.6f}mm;',
+        return [f'      .{cls} {{', f'        stroke: {stroke};', f'        stroke-width: {width:.6f}px;',
                 '        fill: none;', '        stroke-linecap: round;', '        stroke-linejoin: round;',
                 '      }']
     lines = ['  <defs>', '    <style type="text/css">']

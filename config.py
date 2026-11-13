@@ -610,6 +610,13 @@ _PRESETS = {
 }
 
 
+def preset_options(preset_name: str) -> Dict:
+    """The roof type, style, window type and door type a preset stands for (raises ValueError if unknown)."""
+    if preset_name not in _PRESETS:
+        raise ValueError(f"Unknown preset: {preset_name}. Available presets: {list(_PRESETS)}")
+    return dict(zip(('roof_type', 'architectural_style', 'window_type', 'door_type'), _PRESETS[preset_name]))
+
+
 def create_preset_configuration(house_geometry: HouseGeometry, preset_name: str) -> ArchitecturalConfiguration:
     """
     Create a preset configuration with automatic windows and doors.
@@ -617,9 +624,9 @@ def create_preset_configuration(house_geometry: HouseGeometry, preset_name: str)
     Presets: basic, farmhouse, colonial, tudor, victorian, craftsman, german, brick, stone,
     modern_flat (flat roof), barn_gambrel (gambrel roof). Non-gable roofs are not generated yet.
     """
-    if preset_name not in _PRESETS:
-        raise ValueError(f"Unknown preset: {preset_name}. Available presets: {list(_PRESETS)}")
-    roof, style, window, door = _PRESETS[preset_name]
-    config = ArchitecturalConfiguration(house_geometry, roof_type=roof, architectural_style=style)
-    config.add_automatic_components(add_windows=True, add_doors=True, window_type=window, door_type=door)
+    o = preset_options(preset_name)
+    config = ArchitecturalConfiguration(house_geometry, roof_type=o['roof_type'],
+                                        architectural_style=o['architectural_style'])
+    config.add_automatic_components(add_windows=True, add_doors=True, window_type=o['window_type'],
+                                    door_type=o['door_type'])
     return config

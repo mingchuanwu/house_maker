@@ -162,7 +162,7 @@ Architectural options:
                        help='Door type (default: rectangular)')
     parser.add_argument('--architectural-preset', type=str, default=None,
                        choices=['basic', 'farmhouse', 'colonial', 'tudor', 'german', 'victorian', 'craftsman', 'brick', 'stone', 'modern_flat', 'barn_gambrel'],
-                       help='Pre-configured architectural style preset')
+                       help='Pre-configured roof, style, window and door types; explicit --roof-type, --architectural-style, --window-type and --door-type win over it')
     parser.add_argument('--no-auto-components', action='store_true',
                        help='Disable automatic door/window placement')
     parser.add_argument('--stone-jitter', action='store_true', default=True,
@@ -239,6 +239,13 @@ Architectural options:
                        help='Show detailed generation information')
     
     return parser
+
+
+def model_3d_paths(output, model_3d):
+    """The (format, path) pairs the --3d option writes next to the SVG `output`."""
+    output = Path(output)
+    formats = ('3mf', 'stl', 'glb', 'view') if model_3d == 'all' else () if model_3d == 'none' else (model_3d,)
+    return [(fmt, output.with_suffix('.view.html' if fmt == 'view' else f'.{fmt}')) for fmt in formats]
 
 
 def validate_dimensions(args):
@@ -393,6 +400,11 @@ def main():
     # Validate dimensions
     if not validate_dimensions(args):
         sys.exit(1)
+    clash = [str(path) for _, path in model_3d_paths(args.output, args.model_3d)
+             if path.resolve() == Path(args.output).resolve()]
+    if clash:
+        parser.error(f"--output {args.output} would be overwritten by the --3d {args.model_3d} model; "
+                     f"give the SVG a .svg name (the 3D files are written next to it)")
     
     try:
         house = build_house(args)
@@ -419,14 +431,11 @@ def main():
         print(f"✅ House box SVG generated successfully!")
         print(f"📁 Output: {output_path.absolute()}")
         
-        if args.model_3d != 'none':
-            for fmt in (('3mf', 'stl', 'glb', 'view') if args.model_3d == 'all' else (args.model_3d,)):
-                if fmt == 'view':
-                    path = output_path.with_suffix('.view.html')
-                    house.generate_view(str(path))
-                    print(f"👀 3D viewer: {path.absolute()}")
-                    continue
-                path = output_path.with_suffix(f'.{fmt}')
+        for fmt, path in model_3d_paths(args.output, args.model_3d):
+            if fmt == 'view':
+                house.generate_view(str(path))
+                print(f"👀 3D viewer: {path.absolute()}")
+            else:
                 house.generate_3d(str(path), fmt)
                 print(f"🧊 3D model ({fmt}): {path.absolute()}")
 

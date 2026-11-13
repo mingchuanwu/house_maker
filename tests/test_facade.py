@@ -39,6 +39,32 @@ def test_presets_generate(preset):
     assert len(parse_svg(house.generate_svg()).panels) >= 7
 
 
+def test_a_preset_supplies_what_is_not_given_explicitly():
+    from house_maker import ArchitecturalStyle, DoorType, ShingleType, WindowType
+    tudor = HouseMaker(architectural_preset='tudor').architectural_config
+    assert tudor.architectural_style == ArchitecturalStyle.TUDOR
+    assert {w.type for w in tudor.windows} == {WindowType.ARCHED} and {d.type for d in tudor.doors} == {DoorType.ARCHED}
+
+    house = HouseMaker(architectural_preset='tudor', architectural_style=ArchitecturalStyle.STONE,
+                       window_type=WindowType.CIRCULAR, shingle_type=ShingleType.SCALLOPS, stone_jitter=False)
+    c = house.architectural_config
+    assert c.architectural_style == ArchitecturalStyle.STONE and c.shingle_type == ShingleType.SCALLOPS
+    assert c.stone_jitter is False
+    assert c.windows and {w.type for w in c.windows} == {WindowType.CIRCULAR}
+    assert {d.type for d in c.doors} == {DoorType.ARCHED}          # not overridden: still the preset's
+
+    bare = HouseMaker(architectural_preset='farmhouse', auto_add_components=False).architectural_config
+    assert bare.architectural_style == ArchitecturalStyle.FARMHOUSE and not bare.windows and not bare.doors
+
+
+def test_cli_explicit_flags_win_over_the_preset(tmp_path):
+    out = tmp_path / 'h.svg'
+    r = _cli('-o', str(out), '--3d', 'none', '-v', '--architectural-preset', 'modern_flat', '--no-auto-components',
+             '--architectural-style', 'stone')
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert 'Components: 0 windows, 0 doors' in r.stdout and 'Architectural style: stone' in r.stdout
+
+
 def test_unimplemented_roof_types_warn_instead_of_silently_ignoring():
     with pytest.warns(UserWarning, match='not implemented'):
         HouseMaker(roof_type=RoofType.HIP)

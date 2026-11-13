@@ -42,6 +42,10 @@ SCENES = {
     '35-features': dict(),
     '45-arched': dict(angle=45, window=WindowType.ARCHED, door=DoorType.ARCHED),
     '60-circular': dict(angle=60, window=WindowType.CIRCULAR),
+    # windows cut as separate panes with bars of wall material between them
+    '35-multi-pane': dict(window=WindowType.MULTI_PANE, chimney=False, dormer=False),
+    '35-cross-pane': dict(window=WindowType.CROSS_PANE, chimney=False, dormer=False),
+    '35-double-hung': dict(window=WindowType.DOUBLE_HUNG, chimney=False, dormer=False),
     '25-features': dict(angle=25),
     'cli-default': dict(length=80, width=60, height=70, chimney=False, dormer=False),   # small gable: attic window
     # `house-maker --add-chimney --add-additional-gable` with every default: a small dormer with its own small fingers

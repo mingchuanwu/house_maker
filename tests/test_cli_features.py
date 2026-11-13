@@ -62,3 +62,20 @@ def test_an_overlapping_feature_names_its_flag_and_proposes_a_fit(tmp_path):
 def test_a_typo_stops_before_anything_is_built(tmp_path):
     r, svg = run(tmp_path, '--dormer', 'left:widht=30')
     assert r.returncode == 2 and 'widht' in r.stderr and not svg
+
+
+@pytest.mark.parametrize('name,model', [('h.stl', 'stl'), ('h.3mf', '3mf'), ('h.glb', 'all')])
+def test_a_3d_model_never_overwrites_the_svg(tmp_path, name, model):
+    out = tmp_path / name
+    r = subprocess.run([sys.executable, '-m', 'house_maker.generate_house', '-o', str(out), '--3d', model],
+                       capture_output=True, text=True, cwd=PKG.parent)
+    assert r.returncode != 0 and 'would be overwritten' in r.stderr, r.stdout + r.stderr
+    assert not out.exists()
+
+
+def test_the_3d_model_is_written_next_to_the_svg(tmp_path):
+    out = tmp_path / 'h.svg'
+    r = subprocess.run([sys.executable, '-m', 'house_maker.generate_house', '-o', str(out), '--3d', 'stl'],
+                       capture_output=True, text=True, cwd=PKG.parent)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert out.read_text().lstrip().startswith('<?xml') and (tmp_path / 'h.stl').stat().st_size > 84
